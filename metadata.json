@@ -1,0 +1,6 @@
+{
+  "name": "BAZAR THOLE",
+  "description": "A clean, modern, lightweight, and professional grocery e-commerce website with responsive design, admin dashboard, order tracking, and inventory management.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
