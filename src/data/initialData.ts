@@ -462,5 +462,11 @@ export const DEFAULT_SETTINGS: StoreSettings = {
   // Special Offer default configuration
   specialOfferTitle: 'Special Offer',
   specialOfferDesc: 'Tap to apply coupon discount!',
-  specialOfferImage: 'https://images.unsplash.com/photo-1619566636858-adf3ef46400b?auto=format&fit=crop&q=80&w=600'
+  specialOfferImage: 'https://images.unsplash.com/photo-1619566636858-adf3ef46400b?auto=format&fit=crop&q=80&w=600',
+
+  // Default scrolling notices configurations
+  enableTopNotice: true,
+  topNoticeText: '🔥 বিশেষ ছাড়! সকল শাক-সবজি ও ফলমূলে পেয়ে যান ১০% পর্যন্ত ক্যাশব্যাক! বিস্তারিত জানতে পেজটি স্ক্রোল করুন অথবা সাপোর্ট হেল্পলাইনে কল করুন। BAZAR-এ আপনাকে স্বাগতম।',
+  enableBottomNotice: true,
+  bottomNoticeText: '📢 ঢাকা সিটির ভিতরে ডেলিভারি চার্জ মাত্র ৫০ টাকা! ৮০০ টাকার উপরে অর্ডারে পাচ্ছেন সম্পূর্ণ ফ্রি ডেলিভারি! নিরাপদ শপিং-এর একমাত্র বিশ্বস্ত বাজার।'
 };

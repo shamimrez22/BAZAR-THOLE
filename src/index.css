@@ -62,3 +62,116 @@
   transform: scale(1.05);
 }
 
+/* Beautiful dynamic marquee animations for notices */
+@keyframes noticeMarquee {
+  0% {
+    transform: translateX(100%);
+  }
+  100% {
+    transform: translateX(-100%);
+  }
+}
+
+.animate-notice-marquee {
+  display: inline-block;
+  white-space: nowrap;
+  animation: noticeMarquee 35s linear infinite;
+}
+
+.animate-notice-marquee:hover {
+  animation-play-state: paused;
+}
+
+/* --- HIGH LEGIBILITY TICKET STYLE FORM CONFIGURATIONS (matches user screenshot) --- */
+
+/* Globally scaled, tight, and sharp retro-ticket typography for compact elegance */
+.text-sm {
+  font-size: 11.5px !important;
+  line-height: 1.35 !important;
+}
+
+.text-xs,
+.text-xs-important {
+  font-size: 10.5px !important;
+  line-height: 1.3 !important;
+}
+
+.text-\[11px\] {
+  font-size: 11px !important;
+  line-height: 1.3 !important;
+}
+
+.text-\[10px\] {
+  font-size: 10px !important;
+  line-height: 1.25 !important;
+}
+
+.text-\[9px\] {
+  font-size: 9px !important;
+  line-height: 1.2 !important;
+}
+
+.text-\[8px\] {
+  font-size: 8px !important;
+  line-height: 1.15 !important;
+}
+
+.text-\[7px\] {
+  font-size: 7.2px !important;
+  line-height: 1.1 !important;
+}
+
+/* Medium text override for labels and standard descriptive paragraphs */
+label, .label-styled {
+  font-size: 11.5px !important;
+  font-weight: 700 !important;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #1C1917 !important; /* Deep stone-900 high contrast */
+}
+
+/* Solid high-contrast input boxes matching the uploaded screenshot */
+input[type="text"],
+input[type="number"],
+input[type="email"],
+input[type="tel"],
+input[type="password"],
+input[type="search"],
+select,
+textarea {
+  background-color: #DCDCDC !important; /* light grey/silver background exactly as shown in screenshot */
+  border: 1.5px solid #000000 !important; /* robust black border */
+  border-radius: 0px !important; /* completely sharp flat corners */
+  color: #000000 !important; /* readable pitch black text */
+  font-weight: 700 !important; /* bold inputs for supreme legibility */
+  font-size: 11.5px !important;
+  padding: 4px 8px !important; /* tighter padding */
+  font-family: var(--font-sans), system-ui, sans-serif !important;
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+/* Focus state matching modern active responsive input */
+input[type="text"]:focus,
+input[type="number"]:focus,
+input[type="email"]:focus,
+input[type="tel"]:focus,
+input[type="password"]:focus,
+input[type="search"]:focus,
+select:focus,
+textarea:focus {
+  background-color: #FFFFFF !important; /* crisp white on active focus */
+  border-color: #000000 !important;
+  box-shadow: 0px 0px 0px 2px rgba(0, 0, 0, 0.25) !important;
+}
+
+/* Ensure checkbox terms text has the custom blue terms alignment */
+.chk-terms-label {
+  font-size: 12px !important;
+  font-weight: 800 !important;
+  color: #0000FF !important; /* Blue terms and conditions text */
+  text-transform: uppercase;
+}
+
+
+

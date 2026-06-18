@@ -335,7 +335,14 @@ export const db = {
   // SETTINGS
   getSettings(): StoreSettings {
     initDb();
-    return JSON.parse(localStorage.getItem(KEYS.SETTINGS) || JSON.stringify(DEFAULT_SETTINGS));
+    const stored = localStorage.getItem(KEYS.SETTINGS);
+    if (!stored) return { ...DEFAULT_SETTINGS };
+    try {
+      const parsed = JSON.parse(stored);
+      return { ...DEFAULT_SETTINGS, ...parsed };
+    } catch {
+      return { ...DEFAULT_SETTINGS };
+    }
   },
   saveSettings(settings: StoreSettings): StoreSettings {
     localStorage.setItem(KEYS.SETTINGS, JSON.stringify(settings));

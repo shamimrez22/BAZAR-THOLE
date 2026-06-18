@@ -554,11 +554,25 @@ export default function App() {
         {/* VIEW 1: HOME PAGE */}
         {activeTab === 'home' && (
           <div className="space-y-6 animate-fade-in">
+
+            {/* TOP SCROLLING MARQUEE NOTICE */}
+            {settings.enableTopNotice && settings.topNoticeText && (
+              <div className="bg-[#00796B] text-white py-2 px-4 rounded-2xl overflow-hidden shadow-sm border border-teal-600/30 flex items-center gap-3 relative select-none">
+                <span className="bg-red-500 text-white font-extrabold text-[9px] uppercase tracking-wider px-2 py-0.5 rounded-md shrink-0 flex items-center justify-center animate-pulse z-10 shadow">
+                  NOTICE
+                </span>
+                <div className="relative w-full overflow-hidden flex items-center">
+                  <div className="animate-notice-marquee font-sans font-medium text-xs sm:text-sm tracking-wide">
+                    {settings.topNoticeText}
+                  </div>
+                </div>
+              </div>
+            )}
             
             {/* Interactive Grid: Special Offer Banner on the Left, Main Slider on the Right */}
             <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-4 items-stretch">
               
-              {/* Left Column: Special Offer Tall Banner (takes 1/4 layout on desktop) */}
+              {/* Left Column: Special Offer Tall Banner (takes 1/4 layout on desktop, hidden on mobile/tablet) */}
               <div 
                 onClick={() => {
                   if (coupons.length > 0) {
@@ -574,7 +588,7 @@ export default function App() {
                     triggerToast('🎟️ Applied Promo Code BAZAR10 - enjoy Flat 10% OFF!');
                   }
                 }}
-                className="md:col-span-1 rounded-3xl p-4 sm:p-5 text-white bg-slate-900 border border-slate-200/50 flex flex-col justify-between shadow-sm relative overflow-hidden group select-none min-h-[290px] md:min-h-full md:h-[290px] lg:h-[320px] cursor-pointer active:scale-[0.99] transition-all duration-200"
+                className="hidden md:flex md:col-span-1 rounded-3xl p-4 sm:p-5 text-white bg-slate-900 border border-slate-200/50 flex-col justify-between shadow-sm relative overflow-hidden group select-none min-h-[290px] md:min-h-full md:h-[290px] lg:h-[320px] cursor-pointer active:scale-[0.99] transition-all duration-200"
               >
                 {/* Full-size Immersive Beautiful background with sharp visibility */}
                 <div className="absolute inset-0 z-0">
@@ -661,24 +675,27 @@ export default function App() {
                         <div className="absolute inset-0 bg-gradient-to-r from-black/85 via-black/55 to-transparent"></div>
                       </div>
 
-                      <div className="space-y-2.5 sm:space-y-3 max-w-xl text-left relative z-10">
-                        <span className="inline-block bg-orange-500 border border-orange-400 rounded-full px-3 py-1 text-[10px] font-extrabold tracking-widest text-white uppercase select-none shadow-sm">
-                          {slide.badge}
-                        </span>
-                        <h2 className="font-display font-black text-xl sm:text-2xl md:text-3.5xl lg:text-4xl text-white leading-tight select-none drop-shadow-md">
+                      {/* Compact, ultra-unique small glassmorphic overlay card positioned in the corner */}
+                      <div className="absolute bottom-4 left-4 z-10 bg-black/85 backdrop-blur-md border border-white/15 p-4 rounded-2xl max-w-[260px] sm:max-w-[320px] text-left space-y-1.5 shadow-2xl transition-all duration-300 hover:bg-black/90 hover:border-white/25">
+                        <div className="flex items-center gap-1.5">
+                          <span className="bg-orange-600 text-white font-mono text-[8px] font-extrabold px-1.5 py-0.5 rounded tracking-wide uppercase select-none">
+                            {slide.badge}
+                          </span>
+                        </div>
+                        <h2 className="font-display font-black text-[11px] sm:text-xs text-white leading-tight uppercase tracking-wide select-none drop-shadow-sm line-clamp-2">
                           {slide.title}
                         </h2>
-                        <p className="text-xs sm:text-sm text-gray-200 leading-relaxed font-sans max-w-md select-none line-clamp-3 select-none drop-shadow-sm">
+                        <p className="text-[10px] text-gray-300 leading-normal font-sans font-medium select-none line-clamp-2 drop-shadow-sm">
                           {slide.subtitle}
                         </p>
-                        <div className="pt-2">
+                        <div className="pt-1 select-none">
                           <button
                             id={`hero-shop-cta-btn-${slide.id}`}
                             onClick={(e) => { e.stopPropagation(); setActiveTab('shop'); setSelectedCategory('all'); }}
-                            className="bg-orange-500 hover:bg-orange-600 text-white font-bold px-5 py-2.5 rounded-full text-xs transition-all tracking-wider shadow hover:shadow-md active:scale-95 flex items-center gap-1.5 cursor-pointer border border-orange-600/20"
+                            className="bg-orange-600 hover:bg-orange-700 text-white font-black px-2.5 py-1.5 rounded text-[8.5px] uppercase tracking-wider transition-all active:scale-95 flex items-center gap-1 cursor-pointer border border-orange-700/20 shadow-sm"
                           >
-                            Explore Fresh Catalog
-                            <ArrowRight className="h-3.5 w-3.5" />
+                            SHOP NOW
+                            <ArrowRight className="h-2.5 w-2.5 text-white" />
                           </button>
                         </div>
                       </div>
@@ -729,6 +746,20 @@ export default function App() {
               </div>
 
             </div>
+
+            {/* BOTTOM SCROLLING MARQUEE NOTICE */}
+            {settings.enableBottomNotice && settings.bottomNoticeText && (
+              <div className="bg-amber-50 border border-amber-200 text-amber-900 py-2 px-4 rounded-2xl overflow-hidden shadow-xs flex items-center gap-3 relative select-none">
+                <span className="bg-amber-600 text-white font-extrabold text-[9px] uppercase tracking-wider px-2 py-0.5 rounded-md shrink-0 flex items-center justify-center z-10 shadow">
+                  ANNOUNCEMENT
+                </span>
+                <div className="relative w-full overflow-hidden flex items-center">
+                  <div className="animate-notice-marquee font-sans font-bold text-xs sm:text-sm tracking-wider">
+                    {settings.bottomNoticeText}
+                  </div>
+                </div>
+              </div>
+            )}
 
 
             {/* Quick search shortcuts Categories lists */}
@@ -2525,141 +2556,171 @@ export default function App() {
               {/* Left Column forms */}
               <div className="lg:col-span-2 space-y-6">
                 
-                <form id="checkout-billing-form" onSubmit={handleCheckoutSubmit} className="bg-white border border-gray-100 rounded-3xl p-6 shadow-sm space-y-4 text-xs">
-                  <h3 className="font-display font-bold text-slate-800 text-base pb-3 border-b border-slate-50 mb-2">1. Delivery Parameters</h3>
+                <form id="checkout-billing-form" onSubmit={handleCheckoutSubmit} className="bg-[#FAF5EE] border-2 border-stone-900 p-0 shadow-sm space-y-0 text-sm overflow-hidden">
                   
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  {/* Crimson Banner Head like user screenshot: "PERSONAL INFORMATION:" style */}
+                  <div className="bg-[#9E2A2B] text-white px-5 py-3 font-bold text-sm uppercase tracking-wider border-b border-stone-900 select-none flex items-center justify-between">
+                    <span>📋 RECIPIENT & PERSONAL DETAILS (ব্যক্তিগত এবং ডেলিভারি তথ্য)</span>
+                    <span className="text-xs bg-red-950/40 px-2 py-0.5 border border-red-700/50 font-mono font-bold">SECTIONS: ALL</span>
+                  </div>
+                  
+                  <div className="p-6 space-y-5">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                      <div>
+                        <label className="block text-xs font-bold text-stone-700 mb-1.5 uppercase tracking-wide">RECIPIENT NAME (নাম) :*</label>
+                        <input
+                          id="bill-name"
+                          type="text"
+                          required
+                          placeholder="e.g. Shamim Reza"
+                          className="w-full font-sans"
+                          value={billingName}
+                          onChange={(e) => setBillingName(e.target.value)}
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-bold text-stone-700 mb-1.5 uppercase tracking-wide">MOBILE NUMBER (মোবাইল নম্বর) :*</label>
+                        <div className="flex items-stretch">
+                          <span className="inline-flex items-center px-3 bg-stone-300 border-2 border-r-0 border-stone-900 text-stone-900 font-bold text-sm select-none">
+                            88
+                          </span>
+                          <input
+                            id="bill-phone"
+                            type="text"
+                            required
+                            placeholder="e.g. 01712345678"
+                            className="w-full font-mono flex-1"
+                            value={billingPhone}
+                            onChange={(e) => setBillingPhone(e.target.value)}
+                          />
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 gap-5">
+                      <div>
+                        <label className="block text-xs font-bold text-stone-700 mb-1.5 uppercase tracking-wide">DISTRICT / DIVISION (জেলা / বিভাগ) :*</label>
+                        <select
+                          id="bill-city"
+                          className="w-full cursor-pointer h-11"
+                          value={billingCity}
+                          onChange={(e) => setBillingCity(e.target.value)}
+                        >
+                          {BANGLADESH_DISTRICTS.map((dst) => (
+                            <option key={dst.en} value={dst.en}>
+                              {dst.bn} ({dst.en})
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                    </div>
+
                     <div>
-                      <label className="block text-[10px] font-semibold text-slate-500 mb-1 uppercase tracking-wider">Recipient Full Name</label>
-                      <input
-                        id="bill-name"
-                        type="text"
+                      <label className="block text-xs font-bold text-stone-700 mb-1.5 uppercase tracking-wide">DETAILED ADDRESS COORDINATES (বিস্তারিত ঠিকানা) :*</label>
+                      <textarea
+                        id="bill-address"
+                        rows={2.5}
                         required
-                        placeholder="e.g. Shamim Reza"
-                        className="w-full border rounded-lg px-3 py-2 text-xs font-sans text-slate-700 focus:outline-none focus:border-emerald-500"
-                        value={billingName}
-                        onChange={(e) => setBillingName(e.target.value)}
+                        placeholder="e.g. Appt 4B, House 12, Road 4, Section 11, Uttara"
+                        className="w-full p-3 text-sm focus:outline-none"
+                        value={billingAddress}
+                        onChange={(e) => setBillingAddress(e.target.value)}
                       />
                     </div>
-                    <div>
-                      <label className="block text-[10px] font-semibold text-slate-500 mb-1 uppercase tracking-wider">Mobile Number (BD formatted)</label>
-                      <input
-                        id="bill-phone"
-                        type="text"
-                        required
-                        placeholder="e.g. 01712345678"
-                        className="w-full border rounded-lg px-3 py-2 text-xs font-mono text-slate-700 focus:outline-none focus:border-emerald-500"
-                        value={billingPhone}
-                        onChange={(e) => setBillingPhone(e.target.value)}
-                      />
-                    </div>
+
+                  {/* RED CRIMSON BANNER HEAD 2 */}
+                  <div className="bg-[#9E2A2B] text-white px-4 py-2 font-bold text-xs uppercase tracking-wider relative -left-6 w-[calc(100%+3rem)] select-none mt-6 border-y border-stone-900">
+                    ⚡ SELECT PAYMENT METHOD (পেমেন্ট পদ্ধতি নির্ধারণ করুন) :*
                   </div>
 
-                  <div className="grid grid-cols-1 gap-4">
-                    <div>
-                      <label className="block text-[10px] font-semibold text-slate-500 mb-1 uppercase tracking-wider">District / Division</label>
-                      <select
-                        id="bill-city"
-                        className="w-full border rounded-lg px-3 py-2 text-xs bg-white text-slate-700 focus:outline-none focus:border-emerald-500 font-sans cursor-pointer h-10"
-                        value={billingCity}
-                        onChange={(e) => setBillingCity(e.target.value)}
-                      >
-                        {BANGLADESH_DISTRICTS.map((dst) => (
-                          <option key={dst.en} value={dst.en}>
-                            {dst.bn}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-                  </div>
-
-                  <div>
-                    <label className="block text-[10px] font-semibold text-slate-500 mb-1 uppercase tracking-wider">Detailed Shipping Address Coordinates</label>
-                    <textarea
-                      id="bill-address"
-                      rows={2.5}
-                      required
-                      placeholder="e.g. Appt 4B, House 12, Road 4, Section 11, Uttara"
-                      className="w-full border rounded-lg p-3 text-xs focus:outline-none focus:border-emerald-500"
-                      value={billingAddress}
-                      onChange={(e) => setBillingAddress(e.target.value)}
-                    />
-                  </div>
-
-                  <h3 className="font-display font-bold text-slate-800 text-base pb-3 border-b border-slate-50 pt-4 mb-2">2. Payment Gateway Sandbox Integrations</h3>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 pt-3">
                     
-                    <label className={`flex items-center gap-3 p-3.5 rounded-xl border cursor-pointer select-none transition-all ${paymentOption === 'Cash on Delivery' ? 'border-emerald-600 bg-emerald-50/20 shadow-xs' : 'border-gray-100 hover:bg-gray-50'}`}>
+                    <label className={`flex items-center gap-3 p-3.5 border-2 cursor-pointer select-none transition-all ${paymentOption === 'Cash on Delivery' ? 'border-[#9E2A2B] bg-[#9E2A2B]/10' : 'border-stone-900 bg-[#DCDCDC] hover:bg-stone-300'}`}>
                       <input
                         id="pay-method-cod"
                         type="radio"
                         name="payment_opt"
-                        className="accent-emerald-600"
+                        className="h-4 w-4 accent-[#9E2A2B]"
                         checked={paymentOption === 'Cash on Delivery'}
                         onChange={() => setPaymentOption('Cash on Delivery')}
                       />
                       <div>
-                        <span className="font-bold text-slate-800 text-xs block">Cash on Delivery</span>
-                        <span className="text-[10px] text-slate-400">Pay cash in hand after box check</span>
+                        <span className="font-bold text-stone-900 text-xs block uppercase">Cash on Delivery (ক্যাশ অন ডেলিভারি)</span>
+                        <span className="text-[11px] text-stone-600 font-medium">হাতে পণ্য পেয়ে মূল্য পরিশোধ করুন</span>
                       </div>
                     </label>
 
-                    <label className={`flex items-center gap-3 p-3.5 rounded-xl border cursor-pointer select-none transition-all ${paymentOption === 'bKash' ? 'border-[#e11e5f] bg-pink-50/10 shadow-xs' : 'border-gray-100 hover:bg-gray-50'}`}>
+                    <label className={`flex items-center gap-3 p-3.5 border-2 cursor-pointer select-none transition-all ${paymentOption === 'bKash' ? 'border-[#9E2A2B] bg-[#9E2A2B]/10' : 'border-stone-900 bg-[#DCDCDC] hover:bg-stone-300'}`}>
                       <input
                         id="pay-method-bkash"
                         type="radio"
                         name="payment_opt"
-                        className="accent-pink-600"
+                        className="h-4 w-4 accent-[#9E2A2B]"
                         checked={paymentOption === 'bKash'}
                         onChange={() => setPaymentOption('bKash')}
                       />
                       <div>
-                        <span className="font-extrabold text-[#e11e5f] text-xs block">bKash (বিকাশ)</span>
-                        <span className="text-[10px] text-slate-400">Instant secure mobile wallet PIN</span>
+                        <span className="font-extrabold text-[#e11e5f] text-xs block uppercase">bKash Mobile Wallet (বিকাশ)</span>
+                        <span className="text-[11px] text-[#e11e5f] font-bold">বিকাশ ওয়ালেট থেকে পেমেন্ট করুন</span>
                       </div>
                     </label>
 
-                    <label className={`flex items-center gap-3 p-3.5 rounded-xl border cursor-pointer select-none transition-all ${paymentOption === 'Nagad' ? 'border-orange-500 bg-orange-50/10 shadow-xs' : 'border-gray-100 hover:bg-gray-50'}`}>
+                    <label className={`flex items-center gap-3 p-3.5 border-2 cursor-pointer select-none transition-all ${paymentOption === 'Nagad' ? 'border-[#9E2A2B] bg-[#9E2A2B]/10' : 'border-stone-900 bg-[#DCDCDC] hover:bg-stone-300'}`}>
                       <input
                         id="pay-method-nagad"
                         type="radio"
                         name="payment_opt"
-                        className="accent-orange-500"
+                        className="h-4 w-4 accent-[#9E2A2B]"
                         checked={paymentOption === 'Nagad'}
                         onChange={() => setPaymentOption('Nagad')}
                       />
                       <div>
-                        <span className="font-extrabold text-orange-600 text-xs block">Nagad (নগদ)</span>
-                        <span className="text-[10px] text-slate-400">Direct postal bank integration</span>
+                        <span className="font-extrabold text-[#E65100] text-xs block uppercase">Nagad Mobile Wallet (নগদ)</span>
+                        <span className="text-[11px] text-[#E65100] font-bold">নগদ ওয়ালেট থেকে পেমেন্ট করুন</span>
                       </div>
                     </label>
 
-                    <label className={`flex items-center gap-3 p-3.5 rounded-xl border cursor-pointer select-none transition-all ${paymentOption === 'SSLCommerz' ? 'border-slate-800 bg-slate-50 shadow-xs' : 'border-gray-100 hover:bg-gray-50'}`}>
+                    <label className={`flex items-center gap-3 p-3.5 border-2 cursor-pointer select-none transition-all ${paymentOption === 'SSLCommerz' ? 'border-[#9E2A2B] bg-[#9E2A2B]/10' : 'border-stone-900 bg-[#DCDCDC] hover:bg-stone-300'}`}>
                       <input
                         id="pay-method-ssl"
                         type="radio"
                         name="payment_opt"
-                        className="accent-slate-800"
+                        className="h-4 w-4 accent-[#9E2A2B]"
                         checked={paymentOption === 'SSLCommerz'}
                         onChange={() => setPaymentOption('SSLCommerz')}
                       />
                       <div>
-                        <span className="font-bold text-slate-800 text-xs block">SSLCommerz Sandbox</span>
-                        <span className="text-[10px] text-slate-400">Debit cards / local banks transfer</span>
+                        <span className="font-bold text-stone-900 text-xs block uppercase">SSLCommerz Sandbox Interface</span>
+                        <span className="text-[11px] text-stone-600 font-medium font-bold">কার্ড বা অন্য অনলাইন ব্যাংকিং</span>
                       </div>
                     </label>
 
                   </div>
 
-                  <div className="pt-4 text-right">
+                  {/* Blue check Terms Agreement exactly matching the blue checkbox text at the bottom order form */}
+                  <div className="pt-4 border-t border-stone-300 flex items-center justify-center gap-2">
+                    <input 
+                      id="chk-terms-agree"
+                      type="checkbox" 
+                      className="h-4 w-4 accent-[#0000FF]" 
+                      defaultChecked={true} 
+                      required
+                    />
+                    <label htmlFor="chk-terms-agree" className="chk-terms-label cursor-pointer select-none font-bold text-xs text-[#0000FF] uppercase tracking-wide">
+                      I AGREE TO ALL THE TERMS AND CONDITIONS (আমি শর্তাবলীতে সম্মতি জানাচ্ছি)
+                    </label>
+                  </div>
+
+                  <div className="pt-2">
                     <button
                       id="place-order-submit-btn"
                       type="submit"
-                      className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold py-3.5 rounded-2xl text-center shadow-lg shadow-emerald-600/15 cursor-pointer text-sm animate-pulse active:scale-95 transition-all uppercase tracking-wider"
+                      className="w-full bg-[#9E2A2B] hover:bg-[#8D2B24] text-white font-extrabold py-3.5 text-center shadow cursor-pointer text-sm active:scale-95 transition-all uppercase tracking-wider flex items-center justify-center gap-2 border-2 border-stone-900 animate-pulse"
                     >
-                      CONFIRM ORDER ⚡
+                      ⚡ CONFIRM SECURE ORDER (অর্ডার নিশ্চিত করুন)
                     </button>
                   </div>
+                </div>
                 </form>
 
               </div>
@@ -2668,102 +2729,139 @@ export default function App() {
               <div className="space-y-6">
                 
                 {/* Applied coupons vouchers info panel */}
-                <div className="bg-white border border-gray-100 rounded-3xl p-6 shadow-sm space-y-4 text-xs">
-                  <h4 className="font-display font-bold text-slate-800 uppercase tracking-wider text-xs">Promotional Voucher Discount</h4>
+                <div className="bg-[#FAF5EE] border-2 border-stone-900 p-0 shadow-sm overflow-hidden text-sm">
+                  <div className="bg-[#9E2A2B] text-white px-4 py-2.5 font-bold text-xs uppercase tracking-wider border-b border-stone-900 select-none">
+                    🎟️ PROMOTIONAL VOUCHER (কুপন ডিসকাউন্ট)
+                  </div>
                   
-                  <form onSubmit={handleApplyCoupon} className="flex gap-2">
-                    <input
-                      id="checkout-coupon-input"
-                      type="text"
-                      placeholder="e.g. BAZAR15"
-                      className="flex-1 bg-slate-50 border rounded-lg px-3 py-2 text-xs font-mono uppercase tracking-widest text-slate-700 focus:outline-none focus:bg-white"
-                      value={enteredCoupon}
-                      onChange={(e) => setEnteredCoupon(e.target.value)}
-                    />
-                    <button type="submit" className="bg-slate-800 hover:bg-slate-950 text-white font-semibold px-4 rounded-lg cursor-pointer">Apply</button>
-                  </form>
+                  <div className="p-4 space-y-3">
+                    <form onSubmit={handleApplyCoupon} className="flex gap-2">
+                      <input
+                        id="checkout-coupon-input"
+                        type="text"
+                        placeholder="e.g. BAZAR15"
+                        className="flex-1 uppercase font-mono tracking-widest"
+                        value={enteredCoupon}
+                        onChange={(e) => setEnteredCoupon(e.target.value)}
+                      />
+                      <button type="submit" className="bg-[#9E2A2B] hover:bg-[#8D2B24] text-white font-bold px-4 text-xs transition-colors cursor-pointer border-2 border-stone-900">APPLY</button>
+                    </form>
 
-                  {couponError && <p className="text-[10px] text-red-500 font-semibold">{couponError}</p>}
-                  
-                  {appliedCoupon ? (
-                    <div className="bg-emerald-50 border border-emerald-150 p-3 rounded-xl flex justify-between items-center">
-                      <div>
-                        <span className="text-[10px] text-emerald-600 font-bold block">Applied Voucher Coupon</span>
-                        <strong className="text-emerald-800 font-mono">{appliedCoupon.code} ({appliedCoupon.discountPercent}% flat)</strong>
+                    {couponError && <p className="text-xs text-red-650 font-bold">{couponError}</p>}
+                    
+                    {appliedCoupon ? (
+                      <div className="bg-emerald-50 border border-emerald-500 p-3 flex justify-between items-center text-xs">
+                        <div>
+                          <span className="text-emerald-700 font-extrabold block">VOUCHER ACTIVE (কুপন সক্রিয়)</span>
+                          <strong className="text-emerald-950 font-mono text-sm">{appliedCoupon.code} ({appliedCoupon.discountPercent}% OFF)</strong>
+                        </div>
+                        <button onClick={() => { setAppliedCoupon(null); setEnteredCoupon(''); }} className="text-xs text-red-650 font-extrabold hover:underline cursor-pointer">REMOVE</button>
                       </div>
-                      <button onClick={() => { setAppliedCoupon(null); setEnteredCoupon(''); }} className="text-[11px] text-red-500 font-bold hover:underline">Remove</button>
-                    </div>
-                  ) : (
-                    <div className="bg-slate-50 p-2.5 rounded-lg text-[10px] text-slate-400 text-center leading-relaxed">
-                      💡 Tip: Copy code <strong className="font-mono text-slate-600">BAZAR15</strong> from home screens to save 15% flat!
-                    </div>
-                  )}
+                    ) : (
+                      <div className="bg-stone-200 border border-stone-300 p-2 text-stone-700 text-xs text-center font-bold leading-relaxed">
+                        💡 Use coupon <strong className="font-mono text-[#9E2A2B]">BAZAR15</strong> to save 15% flat!
+                      </div>
+                    )}
+                  </div>
                 </div>
 
-                {/* Items in cart list & mathematical calculations */}
-                <div className="bg-white border border-gray-100 rounded-3xl p-6 shadow-sm space-y-4 text-xs font-medium">
-                  <h4 className="font-display font-bold text-slate-800 uppercase tracking-wider text-xs border-b pb-2 mb-2">Cart Summary ({cart.length} items)</h4>
+                {/* Items in cart list & mathematical calculations - Designed like "SEAT INFORMATION:" ticket table */}
+                <div className="bg-[#FAF5EE] border-2 border-stone-900 p-0 shadow-sm overflow-hidden text-xs">
                   
-                  <div className="divide-y divide-slate-100 max-h-[360px] overflow-y-auto no-scrollbar space-y-3.5 pr-1">
-                    {cart.map((item, idx) => (
-                      <div key={idx} className="flex items-center justify-between py-3.5 first:pt-0 leading-tight">
-                        <div className="flex items-center gap-4">
-                          <img src={item.product.image} className="h-24 w-24 object-contain bg-white border border-slate-200 p-1 shadow-sm" alt="" />
-                          <div className="space-y-1.5 flex-1 min-w-0">
-                            <span className="font-bold text-slate-800 block text-sm tracking-tight leading-snug">{item.product.name}</span>
-                            <span className="text-xs text-orange-600 font-bold block">
-                              Quantity: {item.quantity} × {item.product.unit}
-                            </span>
-                          </div>
-                        </div>
-                        <span className="font-mono font-black text-slate-750 text-sm">৳ {(item.product.price * item.quantity).toLocaleString('en-US')}</span>
-                      </div>
-                    ))}
+                  {/* SEAT INFORMATION header styling */}
+                  <div className="bg-[#9E2A2B] text-white px-4 py-2.5 font-bold text-xs uppercase tracking-wider flex items-center justify-between border-b border-stone-900 select-none">
+                    <span>🛒 SEAT / ITEM CHECKOUT INFO (পণ্য চেকআউট বিবরণ)</span>
+                    <span className="font-extrabold bg-[#781B1C] px-2 py-0.5 rounded text-[10px]">{cart.length} ITEMS</span>
                   </div>
 
-                  {/* Financial computations layout */}
-                  <div className="border-t border-slate-50 pt-4 space-y-2 text-slate-500 font-semibold text-xs font-sans">
-                    <div className="flex justify-between">
-                      <span>Subtotal items list:</span>
-                      <span className="text-slate-800 font-mono">৳ {cart.reduce((acc, item) => acc + item.product.price * item.quantity, 0).toLocaleString('en-US')}</span>
-                    </div>
+                  {/* Seat table columns matching: SEAT NO - FARE - REMOVE */}
+                  <table className="w-full text-left border-collapse text-xs">
+                    <thead>
+                      <tr className="bg-[#8D2B24] text-white text-[10px] font-bold uppercase tracking-wider text-center border-b border-stone-900">
+                        <th className="py-2.5 px-3 border-r border-stone-900 text-left">ITEM NAME (আইটেম / পণ্য)</th>
+                        <th className="py-2.5 px-3 border-r border-stone-900">QTY (পরিমাণ)</th>
+                        <th className="py-2.5 px-3">FARE (TAKA)</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                  
+                      {cart.map((item, idx) => (
+                        <tr key={idx} className="bg-[#FAF5EE] border-b border-stone-300 font-bold text-stone-900 border-r border-l border-stone-900">
+                          <td className="py-3 px-3 border-r border-[#DCDCDC] text-left leading-snug">
+                            {item.product.name}
+                          </td>
+                          <td className="py-3 px-3 border-r border-[#DCDCDC] text-center font-mono">
+                            {item.quantity} × {item.product.unit}
+                          </td>
+                          <td className="py-3 px-3 text-right font-mono">
+                            ৳ {(item.product.price * item.quantity).toLocaleString('en-US')}
+                          </td>
+                        </tr>
+                      ))}
 
-                    {appliedCoupon && (
-                      <div className="flex justify-between text-red-650">
-                        <span>Flat {appliedCoupon.discountPercent}% Voucher Savings:</span>
-                        <span className="font-mono font-bold">- ৳ {Math.round((cart.reduce((acc, item) => acc + item.product.price * item.quantity, 0) * appliedCoupon.discountPercent) / 100).toLocaleString('en-US')}</span>
-                      </div>
-                    )}
+                      {/* Summary calculations styled as transport ticket fares */}
+                      <tr className="bg-stone-200/85 font-black border-t-2 border-stone-900">
+                        <td colSpan={2} className="py-2.5 px-3 border-r border-stone-300 text-right uppercase">
+                          TOTAL PRICE (মোট মূল্য):
+                        </td>
+                        <td className="py-2.5 px-3 text-right font-mono text-stone-900 font-black">
+                          ৳ {cart.reduce((acc, item) => acc + item.product.price * item.quantity, 0).toLocaleString('en-US')}
+                        </td>
+                      </tr>
 
-                    <div className="flex justify-between">
-                      <span>Standard Shipping:</span>
-                      <span className="text-slate-800 font-mono">
-                        {cart.reduce((acc, item) => acc + item.product.price * item.quantity, 0) >= settings.freeDeliveryThreshold ? 'FREE' : `৳ ${settings.deliveryFee}`}
-                      </span>
-                    </div>
+                      {appliedCoupon && (
+                        <tr className="bg-red-50 text-red-800 font-bold border-t border-stone-300">
+                          <td colSpan={2} className="py-2.5 px-3 border-r border-stone-300 text-right uppercase">
+                            COUPON SAVINGS ({appliedCoupon.code}):
+                          </td>
+                          <td className="py-2.5 px-3 text-right font-mono font-black text-red-650">
+                            - ৳ {Math.round((cart.reduce((acc, item) => acc + item.product.price * item.quantity, 0) * appliedCoupon.discountPercent) / 100).toLocaleString('en-US')}
+                          </td>
+                        </tr>
+                      )}
 
-                    {cart.some(item => !!item.product.deliveryFee) && (
-                      <div className="flex justify-between text-amber-700">
-                        <span>Product Delivery Charge:</span>
-                        <span className="font-mono font-bold">+ ৳ {cart.reduce((acc, item) => acc + (item.product.deliveryFee || 0) * item.quantity, 0).toLocaleString('en-US')}</span>
-                      </div>
-                    )}
+                      <tr className="bg-stone-200/80 font-bold text-stone-700 border-t border-stone-300">
+                        <td colSpan={2} className="py-2.5 px-3 border-r border-stone-300 text-right uppercase">
+                          SHIPPING / CONVENIENCE CHARGE:
+                        </td>
+                        <td className="py-2.5 px-3 text-right font-mono text-stone-900">
+                          {cart.reduce((acc, item) => acc + item.product.price * item.quantity, 0) >= settings.freeDeliveryThreshold ? (
+                            <span className="text-emerald-700 font-bold uppercase text-[10px] bg-emerald-100 px-1.5 py-0.5 border border-emerald-300 font-sans">FREE</span>
+                          ) : (
+                            `৳ ${settings.deliveryFee}`
+                          )}
+                        </td>
+                      </tr>
 
-                    <div className="border-t border-slate-100 pt-3 flex justify-between font-black text-slate-900 text-sm">
-                      <span>Final grand sum:</span>
-                      <span className="text-emerald-600 font-display text-base">
-                        ৳ {
-                          (
-                            cart.reduce((acc, item) => acc + item.product.price * item.quantity, 0) 
-                            - (appliedCoupon ? Math.round((cart.reduce((acc, item) => acc + item.product.price * item.quantity, 0) * appliedCoupon.discountPercent) / 100) : 0)
-                            + (cart.reduce((acc, item) => acc + item.product.price * item.quantity, 0) >= settings.freeDeliveryThreshold ? 0 : settings.deliveryFee)
-                            + cart.reduce((acc, item) => acc + (item.product.deliveryFee || 0) * item.quantity, 0)
-                          ).toLocaleString('en-US')
-                        }
-                      </span>
-                    </div>
-                  </div>
+                      {cart.some(item => !!item.product.deliveryFee) && (
+                        <tr className="bg-stone-200/80 font-bold text-stone-700 border-t border-stone-300">
+                          <td colSpan={2} className="py-2.5 px-3 border-r border-stone-300 text-right uppercase">
+                            ADDITIONAL PACKAGING FARE:
+                          </td>
+                          <td className="py-2.5 px-3 text-right font-mono text-stone-950 font-black">
+                            + ৳ {cart.reduce((acc, item) => acc + (item.product.deliveryFee || 0) * item.quantity, 0).toLocaleString('en-US')}
+                          </td>
+                        </tr>
+                      )}
 
+                      {/* Prominent NET FARE row */}
+                      <tr className="bg-amber-100 text-stone-950 font-extrabold border-t-2 border-stone-900">
+                        <td colSpan={2} className="py-3.5 px-3 border-r border-stone-900 text-right text-[11px] uppercase tracking-wider font-extrabold">
+                          NET FARE / PAYABLE AMOUNT (সর্বমোট প্রদেয়):
+                        </td>
+                        <td className="py-3.5 px-3 text-right font-mono text-sm text-[#9E2A2B] font-black">
+                          ৳ {
+                            (
+                              cart.reduce((acc, item) => acc + item.product.price * item.quantity, 0) 
+                              - (appliedCoupon ? Math.round((cart.reduce((acc, item) => acc + item.product.price * item.quantity, 0) * appliedCoupon.discountPercent) / 100) : 0)
+                              + (cart.reduce((acc, item) => acc + item.product.price * item.quantity, 0) >= settings.freeDeliveryThreshold ? 0 : settings.deliveryFee)
+                              + cart.reduce((acc, item) => acc + (item.product.deliveryFee || 0) * item.quantity, 0)
+                            ).toLocaleString('en-US')
+                          }
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
                 </div>
 
               </div>

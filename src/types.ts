@@ -153,6 +153,12 @@ export interface StoreSettings {
   specialOfferTitle?: string;
   specialOfferDesc?: string;
   specialOfferImage?: string;
+
+  // Homepage Scrolling Notices
+  enableTopNotice?: boolean;
+  topNoticeText?: string;
+  enableBottomNotice?: boolean;
+  bottomNoticeText?: string;
 }
 
 export const BANGLADESH_DISTRICTS = [

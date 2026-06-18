@@ -15,7 +15,7 @@ interface AdminPanelProps {
 }
 
 export default function AdminPanel({ onDataChanged, onClose }: AdminPanelProps) {
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'products' | 'categories' | 'orders' | 'customers' | 'coupons' | 'banners' | 'settings' | 'developer'>('dashboard');
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'products' | 'categories' | 'orders' | 'customers' | 'coupons' | 'banners' | 'settings' | 'developer' | 'live_notices'>('dashboard');
 
   // Custom visual confirm & alert state for secure sandboxed iframe execution
   const [customDialog, setCustomDialog] = useState<{
@@ -527,67 +527,72 @@ export default function AdminPanel({ onDataChanged, onClose }: AdminPanelProps) 
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex flex-col bg-slate-100 text-slate-800 animate-fade-in font-sans">
+    <div className="fixed inset-0 z-50 flex flex-col bg-[#FAF5EE] text-stone-800 animate-fade-in font-sans">
       
-      {/* --- HIGH FIDELITY TOPBAR GERMAN TEAL GRAPHICS BAR --- */}
-      <div className="bg-[#00796B] text-white h-16 w-full px-5 flex items-center justify-between shadow-md shrink-0 select-none">
+      {/* --- RED CRIMSON TOPBAR MATCHING SCREENSHOT AESTHETIC --- */}
+      <div className="bg-[#9E2A2B] text-white h-12 w-full px-4 flex items-center justify-between shadow shrink-0 select-none">
         
         {/* Left segment: Logo + Menu + Live Indicators */}
-        <div className="flex items-center gap-4">
-          <div className="flex items-center gap-2 bg-[#004D40]/30 py-1.5 px-3 rounded border border-teal-600/30">
-            <span className="bg-white text-[#00796B] font-display font-black text-sm px-2 py-0.5 rounded shadow">BA</span>
-            <span className="font-display font-bold text-sm tracking-widest text-[#E0F2F1]">ADMIN_PANEL</span>
+        <div className="flex items-center gap-3">
+          <div className="flex items-center gap-1.5 bg-red-950/40 py-1 px-2.5 rounded border border-red-700/50">
+            <span className="bg-white text-[#9E2A2B] font-bold text-xs px-1.5 py-0.5 rounded shadow animate-pulse">BAZAR</span>
+            <span className="font-bold text-xs tracking-wider text-red-100">ADMIN PANEL</span>
           </div>
           
           <button className="text-white/80 hover:text-white p-1 rounded hover:bg-white/10 transition-colors">
             <Menu className="h-5 w-5" />
           </button>
-          
-          <div className="flex items-center gap-1.5 bg-white/10 border border-white/20 rounded px-2.5 py-1 text-[11px] font-bold text-white font-mono">
-            <span className="h-2 w-2 rounded-full bg-white inline-block"></span>
-            ADMIN
-          </div>
 
           <button 
             onClick={onClose}
-            className="flex items-center gap-1 text-[11px] font-bold text-[#E0F2F1]/80 hover:text-white bg-white/5 hover:bg-white/10 border border-white/10 rounded px-2.5 py-1 transition-all"
+            className="flex items-center gap-1 text-[11px] font-bold text-red-100 hover:text-white bg-white/10 hover:bg-white/20 border border-white/15 rounded px-2.5 py-1 transition-all cursor-pointer"
           >
             <ArrowUpRight className="h-3 w-3" />
-            LIVE_STOREFRONT
+            Go to Store (স্টোর দেখুন)
           </button>
         </div>
 
         {/* Center search input bar */}
-        <div className="relative w-72 md:w-96">
-          <Search className="absolute left-3 top-2.5 h-4 w-4 text-white/60" />
+        <div className="relative w-64 md:w-80">
+          <Search className="absolute left-2.5 top-2 h-3.5 w-3.5 text-white/50" />
           <input 
             type="text" 
-            placeholder="অর্ডার বা কাস্টমার খুঁজুন..." 
+            placeholder="অর্ডার বা প্রোডাক্ট খুঁজুন..." 
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full bg-[#005B52] text-xs text-white placeholder-teal-100/60 pl-9 pr-4 py-2 rounded focus:outline-none focus:bg-[#004D40] focus:ring-1 focus:ring-emerald-400 transition-all font-sans"
+            className="w-full bg-red-950/35 text-xs text-white placeholder-red-200/50 pl-8 pr-3 py-1 rounded border border-red-800/40 focus:outline-none focus:bg-red-950/50 transition-all font-sans"
           />
         </div>
 
-        {/* Right segment: Live ticking Uptime alarm + Bell indicator + User avatar */}
-        <div className="flex items-center gap-5">
-          <div className="hidden md:flex items-center gap-1.5 text-xs text-[#E0F2F1]/90 font-mono font-medium">
-            <Clock className="h-3.5 w-3.5 text-teal-300 animate-spin-slow" />
-            <span>UPTIME: {uptime}</span>
-          </div>
+        {/* Right segment: Notifications + User profile */}
+        <div className="flex items-center gap-3">
+          <button 
+            onClick={() => setActiveTab('live_notices')}
+            className="flex items-center gap-1 bg-amber-500 hover:bg-amber-600 text-stone-950 font-extrabold text-[10px] uppercase tracking-wide px-2.5 py-1 rounded transition-all cursor-pointer"
+          >
+            <Megaphone className="h-3 w-3 animate-bounce" />
+            Notices: {settings.enableTopNotice ? '🟢 ON' : '🔴 OFF'}
+          </button>
 
-          <div className="relative cursor-pointer p-1 rounded-full hover:bg-white/10 transition-all">
-            <Bell className="h-5 w-5 text-white" />
-            <span className="absolute -top-1 -right-1 bg-[#2E7D32] text-white font-mono text-[9px] font-bold h-4 w-4 rounded-full flex items-center justify-center border border-[#00796B]">7</span>
-          </div>
+          <button 
+            type="button"
+            onClick={() => { setActiveTab('orders'); setShowProductForm(false); }}
+            title="View Pending Orders"
+            className="relative cursor-pointer p-1 rounded-full hover:bg-white/10 transition-all border-none bg-transparent flex items-center justify-center"
+          >
+            <Bell className="h-4 w-4 text-white" />
+            <span className="absolute -top-1 -right-1 bg-amber-500 text-stone-950 font-mono text-[8px] font-bold h-3.5 w-3.5 rounded-full flex items-center justify-center">
+              {orders.filter(o => o.status === 'Pending').length || 7}
+            </span>
+          </button>
 
           <div className="flex items-center gap-2">
-            <div className="h-8 w-8 rounded-full bg-[#004D40] border border-emerald-400/30 flex items-center justify-center font-display font-black text-xs text-teal-100 shadow">
+            <div className="h-8 w-8 rounded-full bg-red-900 border border-red-700 flex items-center justify-center text-xs text-stone-100 font-bold shadow-sm">
               {settings.storeName.charAt(0).toUpperCase() || "B"}
             </div>
             <div className="hidden lg:block text-left text-xs leading-none">
-              <div className="font-bold text-white tracking-wide">ADMIN ACCOUNT</div>
-              <div className="text-[9px] text-[#A7F3D0] font-mono font-bold mt-0.5">ONLINE_SYNC</div>
+              <div className="font-bold text-white tracking-wide uppercase">{settings.storeName || "ADMIN"}</div>
+              <div className="text-[9px] text-[#A7F3D0] font-mono font-bold mt-0.5">AUTHORIZED</div>
             </div>
           </div>
         </div>
@@ -596,40 +601,62 @@ export default function AdminPanel({ onDataChanged, onClose }: AdminPanelProps) 
       {/* Main Horizontal Area Row */}
       <div className="flex-1 flex overflow-hidden">
         
-        {/* --- HIGH FIDELITY SIDEBAR PANEL (SOLID WHITE CONTAINER WITH THIN GRAY LINE - EXACT MATCH) --- */}
-        <div className="w-64 bg-white border-r border-slate-200 flex flex-col justify-between shrink-0 select-none">
+        {/* --- RETRO TICKET-STYLE SIDEBAR PANEL (CREAM BEIGE WITH DARK BORDER - EXACT MATCH) --- */}
+        <div className="w-64 bg-[#FAF5EE] border-r-2 border-stone-900 flex flex-col justify-between shrink-0 select-none">
           
           <div className="flex-1 overflow-y-auto no-scrollbar flex flex-col">
             {/* Admin Badge - Sticky header at top of scroll panel */}
-            <div className="p-4 border-b border-slate-100 bg-slate-50/95 backdrop-blur-sm flex items-center gap-3 sticky top-0 z-10">
-              <div className="h-10 w-10 rounded-full bg-slate-200 flex items-center justify-center border border-slate-300 text-slate-500 font-bold">
+            <div className="p-4 border-b-2 border-stone-900 bg-[#EFE9DB] flex items-center gap-3 sticky top-0 z-10 font-sans">
+              <div className="h-10 w-10 bg-[#DCDCDC] flex items-center justify-center border-2 border-stone-950 text-stone-900 font-bold">
                 <Users className="h-5 w-5" />
               </div>
               <div className="text-left">
-                <h4 className="font-bold text-xs text-slate-800 tracking-wider">ADMIN</h4>
-                <span className="text-[10px] text-emerald-600 font-mono font-bold flex items-center gap-1 mt-0.5">
-                  <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 inline-block animate-pulse"></span>
-                  LIVE_NODE
+                <h4 className="font-display font-extrabold text-xs text-stone-900 tracking-wider">SYSTEM ADMIN</h4>
+                <span className="text-[10px] text-red-800 font-mono font-bold flex items-center gap-1 mt-0.5">
+                  <span className="h-1.5 w-1.5 bg-[#9E2A2B] border border-black inline-block animate-pulse"></span>
+                  LIVE_TICKET_COCKPIT
                 </span>
               </div>
             </div>
 
             {/* Structured Navigation menus */}
-            <div className="py-4 px-3 space-y-1 flex-1">
+            <div className="py-4 px-3 space-y-2 flex-1">
               <button
                 onClick={() => { setActiveTab('dashboard'); setShowProductForm(false); }}
-                className={`w-full flex items-center gap-3 px-4 py-3 rounded text-xs font-bold uppercase tracking-wider transition-all border-l-4 ${activeTab === 'dashboard' ? 'bg-[#00796B] text-white border-l-[#00BFA5] font-black shadow-sm' : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900 border-l-transparent'}`}
+                className={`w-full flex items-center p-0 rounded-none text-xs font-bold uppercase tracking-wider transition-all border-2 ${
+                  activeTab === 'dashboard' 
+                    ? 'bg-[#9E2A2B] text-white border-stone-950 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]' 
+                    : 'bg-[#EFE9DB] hover:bg-stone-300/80 text-stone-800 border-stone-900/60 shadow-[1px_1px_0px_0px_rgba(0,0,0,1)]'
+                }`}
               >
-                <BarChart3 className="h-4 w-4 shrink-0" />
-                Dashboard
+                <div className={`h-11 w-11 shrink-0 flex items-center justify-center border-r-2 ${
+                  activeTab === 'dashboard' ? 'bg-[#781E20] text-white border-stone-950' : 'bg-white text-stone-800 border-stone-900/60'
+                }`}>
+                  <BarChart3 className="h-5 w-5" />
+                </div>
+                <div className="flex-1 text-left px-3 py-0.5 leading-tight select-none">
+                  <div className="font-extrabold text-[10px] tracking-wider">DASHBOARD</div>
+                  <div className={`text-[9px] font-bold ${activeTab === 'dashboard' ? 'text-red-200' : 'text-stone-500'}`}>(ড্যাশবোর্ড)</div>
+                </div>
               </button>
 
               <button
                 onClick={() => { setActiveTab('products'); setShowProductForm(false); }}
-                className={`w-full flex items-center gap-3 px-4 py-3 rounded text-xs font-bold uppercase tracking-wider transition-all border-l-4 ${activeTab === 'products' && !showProductForm ? 'bg-[#00796B] text-white border-l-[#00BFA5] font-black shadow-sm' : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900 border-l-transparent'}`}
+                className={`w-full flex items-center p-0 rounded-none text-xs font-bold uppercase tracking-wider transition-all border-2 ${
+                  activeTab === 'products' && !showProductForm 
+                    ? 'bg-[#9E2A2B] text-white border-stone-950 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]' 
+                    : 'bg-[#EFE9DB] hover:bg-stone-300/80 text-stone-800 border-stone-900/60 shadow-[1px_1px_0px_0px_rgba(0,0,0,1)]'
+                }`}
               >
-                <ShoppingBag className="h-4 w-4 shrink-0" />
-                Manage Products
+                <div className={`h-11 w-11 shrink-0 flex items-center justify-center border-r-2 ${
+                  activeTab === 'products' && !showProductForm ? 'bg-[#781E20] text-white border-stone-950' : 'bg-white text-stone-800 border-stone-900/60'
+                }`}>
+                  <ShoppingBag className="h-5 w-5" />
+                </div>
+                <div className="flex-1 text-left px-3 py-0.5 leading-tight select-none">
+                  <div className="font-extrabold text-[10px] tracking-wider">PRODUCTS</div>
+                  <div className={`text-[9px] font-bold ${activeTab === 'products' && !showProductForm ? 'text-red-200' : 'text-stone-500'}`}>(পণ্য তালিকা)</div>
+                </div>
               </button>
 
               <button
@@ -643,130 +670,225 @@ export default function AdminPanel({ onDataChanged, onClose }: AdminPanelProps) 
                   });
                   setShowProductForm(true);
                 }}
-                className={`w-full flex items-center gap-3 px-4 py-3 rounded text-xs font-bold uppercase tracking-wider transition-all border-l-4 ${activeTab === 'products' && showProductForm ? 'bg-[#00796B] text-white border-l-[#00BFA5] font-black shadow-sm' : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900 border-l-transparent'}`}
+                className={`w-full flex items-center p-0 rounded-none text-xs font-bold uppercase tracking-wider transition-all border-2 ${
+                  activeTab === 'products' && showProductForm 
+                    ? 'bg-[#9E2A2B] text-white border-stone-950 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]' 
+                    : 'bg-[#EFE9DB] hover:bg-stone-300/80 text-stone-800 border-stone-900/60 shadow-[1px_1px_0px_0px_rgba(0,0,0,1)]'
+                }`}
               >
-                <Plus className="h-4 w-4 shrink-0 text-emerald-500" />
-                Add Product
-              </button>
-
-              <button
-                onClick={() => { setActiveTab('orders'); setShowProductForm(false); }}
-                className={`w-full flex items-center gap-3 px-4 py-3 rounded text-xs font-bold uppercase tracking-wider transition-all border-l-4 ${activeTab === 'orders' ? 'bg-[#00796B] text-white border-l-[#00BFA5] font-black shadow-sm' : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900 border-l-transparent'}`}
-              >
-                <FileSpreadsheet className="h-4 w-4 shrink-0" />
-                All Orders
-              </button>
-
-              <button
-                onClick={() => { setActiveTab('orders'); setShowProductForm(false); }}
-                className="w-full flex items-center justify-between px-4 py-3 rounded text-xs font-bold uppercase tracking-wider transition-all text-slate-600 hover:bg-slate-50 hover:text-slate-900 border-l-4 border-l-transparent"
-              >
-                <div className="flex items-center gap-3">
-                  <Clock className="h-4 w-4 shrink-0 text-[#00796B]" />
-                  Pending Orders
+                <div className={`h-11 w-11 shrink-0 flex items-center justify-center border-r-2 ${
+                  activeTab === 'products' && showProductForm ? 'bg-[#781E20] text-white border-stone-950' : 'bg-white text-red-700 border-stone-900/60'
+                }`}>
+                  <Plus className="h-5 w-5 font-black" />
                 </div>
-                <span className="bg-[#00796B] text-white font-mono text-[9px] px-2 py-0.5 rounded-full font-black">
-                  {orders.filter(o => o.status === 'Pending').length || 7}
-                </span>
+                <div className="flex-1 text-left px-3 py-0.5 leading-tight select-none">
+                  <div className="font-extrabold text-[10px] tracking-wider">ADD PRODUCT</div>
+                  <div className={`text-[9px] font-bold ${activeTab === 'products' && showProductForm ? 'text-red-200' : 'text-stone-500'}`}>(পণ্য যোগ করুন)</div>
+                </div>
+              </button>
+
+              <button
+                onClick={() => { setActiveTab('orders'); setShowProductForm(false); }}
+                className={`w-full flex items-center p-0 rounded-none text-xs font-bold uppercase tracking-wider transition-all border-2 ${
+                  activeTab === 'orders' 
+                    ? 'bg-[#9E2A2B] text-white border-stone-950 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]' 
+                    : 'bg-[#EFE9DB] hover:bg-stone-300/80 text-stone-800 border-stone-900/60 shadow-[1px_1px_0px_0px_rgba(0,0,0,1)]'
+                }`}
+              >
+                <div className={`h-11 w-11 shrink-0 flex items-center justify-center border-r-2 ${
+                  activeTab === 'orders' ? 'bg-[#781E20] text-white border-stone-950' : 'bg-white text-stone-850 border-stone-900/60'
+                }`}>
+                  <FileSpreadsheet className="h-5 w-5" />
+                </div>
+                <div className="flex-1 text-left px-3 py-0.5 leading-tight select-none">
+                  <div className="font-extrabold text-[10px] tracking-wider">ALL ORDERS</div>
+                  <div className={`text-[9px] font-bold ${activeTab === 'orders' ? 'text-red-200' : 'text-stone-500'}`}>(সব অর্ডার)</div>
+                </div>
+              </button>
+
+              <button
+                onClick={() => { setActiveTab('orders'); setShowProductForm(false); }}
+                className={`w-full flex items-center justify-between p-0 rounded-none text-xs font-bold uppercase tracking-wider transition-all border-2 ${
+                  activeTab === 'orders' 
+                    ? 'bg-[#9E2A2B] text-white border-stone-950 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]' 
+                    : 'bg-[#EFE9DB] hover:bg-stone-300/80 text-stone-800 border-stone-900/60 shadow-[1px_1px_0px_0px_rgba(0,0,0,1)]'
+                }`}
+              >
+                <div className="flex items-center flex-1 min-w-0">
+                  <div className={`h-11 w-11 shrink-0 flex items-center justify-center border-r-2 ${
+                    activeTab === 'orders' ? 'bg-[#781E20] text-white border-stone-950' : 'bg-white text-stone-700 border-stone-900/60'
+                  }`}>
+                    <Clock className="h-5 w-5" />
+                  </div>
+                  <div className="flex-1 text-left px-3 py-0.5 leading-tight select-none min-w-0">
+                    <div className="font-extrabold text-[10px] tracking-wider truncate">PENDING FARES</div>
+                    <div className={`text-[9px] font-bold ${activeTab === 'orders' ? 'text-red-200' : 'text-stone-500'}`}>(পেন্ডিং ফেয়ারস)</div>
+                  </div>
+                </div>
+                <div className="pr-3 shrink-0">
+                  <span className={`font-mono text-[9px] px-1.5 py-0.5 rounded-none font-black border ${
+                    activeTab === 'orders' ? 'bg-white text-[#9E2A2B] border-white' : 'bg-[#9E2A2B] text-white border-stone-950 shadow-sm'
+                  }`}>
+                    {orders.filter(o => o.status === 'Pending').length || 7}
+                  </span>
+                </div>
               </button>
 
               <button
                 onClick={() => { setActiveTab('customers'); setShowProductForm(false); }}
-                className={`w-full flex items-center gap-3 px-4 py-3 rounded text-xs font-bold uppercase tracking-wider transition-all border-l-4 ${activeTab === 'customers' ? 'bg-[#00796B] text-white border-l-[#00BFA5] font-black shadow-sm' : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900 border-l-transparent'}`}
+                className={`w-full flex items-center p-0 rounded-none text-xs font-bold uppercase tracking-wider transition-all border-2 ${
+                  activeTab === 'customers' 
+                    ? 'bg-[#9E2A2B] text-white border-stone-950 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]' 
+                    : 'bg-[#EFE9DB] hover:bg-stone-300/80 text-stone-800 border-stone-900/60 shadow-[1px_1px_0px_0px_rgba(0,0,0,1)]'
+                }`}
               >
-                <Users className="h-4 w-4" />
-                Customers
+                <div className={`h-11 w-11 shrink-0 flex items-center justify-center border-r-2 ${
+                  activeTab === 'customers' ? 'bg-[#781E20] text-white border-stone-950' : 'bg-white text-stone-850 border-stone-900/60'
+                }`}>
+                  <Users className="h-5 w-5" />
+                </div>
+                <div className="flex-1 text-left px-3 py-0.5 leading-tight select-none">
+                  <div className="font-extrabold text-[10px] tracking-wider">CUSTOMERS</div>
+                  <div className={`text-[9px] font-bold ${activeTab === 'customers' ? 'text-red-200' : 'text-stone-500'}`}>(গ্রাহক তালিকা)</div>
+                </div>
               </button>
 
               <button
                 onClick={() => { setActiveTab('banners'); setShowProductForm(false); }}
-                className={`w-full flex items-center gap-3 px-4 py-3 rounded text-xs font-bold uppercase tracking-wider transition-all border-l-4 ${activeTab === 'banners' ? 'bg-[#00796B] text-white border-l-[#00BFA5] font-black shadow-sm' : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900 border-l-transparent'}`}
+                className={`w-full flex items-center p-0 rounded-none text-xs font-bold uppercase tracking-wider transition-all border-2 ${
+                  activeTab === 'banners' 
+                    ? 'bg-[#9E2A2B] text-white border-stone-950 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]' 
+                    : 'bg-[#EFE9DB] hover:bg-stone-300/80 text-stone-800 border-stone-900/60 shadow-[1px_1px_0px_0px_rgba(0,0,0,1)]'
+                }`}
               >
-                <ImageIcon className="h-4 w-4 animate-pulse" />
-                Slider Banners
+                <div className={`h-11 w-11 shrink-0 flex items-center justify-center border-r-2 ${
+                  activeTab === 'banners' ? 'bg-[#781E20] text-white border-stone-950' : 'bg-white text-stone-700 border-stone-900/60'
+                }`}>
+                  <ImageIcon className="h-5 w-5" />
+                </div>
+                <div className="flex-1 text-left px-3 py-0.5 leading-tight select-none">
+                  <div className="font-extrabold text-[10px] tracking-wider">SLIDER BANNERS</div>
+                  <div className={`text-[9px] font-bold ${activeTab === 'banners' ? 'text-red-200' : 'text-stone-500'}`}>(স্লাইড ব্যানার)</div>
+                </div>
               </button>
 
               <button
                 onClick={() => { setActiveTab('categories'); setShowProductForm(false); }}
-                className={`w-full flex items-center gap-3 px-4 py-3 rounded text-xs font-bold uppercase tracking-wider transition-all border-l-4 ${activeTab === 'categories' ? 'bg-slate-50 text-[#00695C] border-l-[#00796B] font-extrabold shadow-sm' : 'text-[#00796B] hover:bg-slate-50 hover:text-[#004D40] border-l-transparent'}`}
+                className={`w-full flex items-center p-0 rounded-none text-xs font-bold uppercase tracking-wider transition-all border-2 ${
+                  activeTab === 'categories' 
+                    ? 'bg-[#9E2A2B] text-white border-stone-950 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]' 
+                    : 'bg-[#EFE9DB] hover:bg-stone-300/80 text-stone-800 border-stone-900/60 shadow-[1px_1px_0px_0px_rgba(0,0,0,1)]'
+                }`}
               >
-                <List className="h-4.5 w-4.5 text-[#00796B] shrink-0" />
-                CATEGORIES
+                <div className={`h-11 w-11 shrink-0 flex items-center justify-center border-r-2 ${
+                  activeTab === 'categories' ? 'bg-[#781E20] text-white border-stone-950' : 'bg-white text-stone-850 border-stone-900/60'
+                }`}>
+                  <List className="h-5 w-5" />
+                </div>
+                <div className="flex-1 text-left px-3 py-0.5 leading-tight select-none">
+                  <div className="font-extrabold text-[10px] tracking-wider">CATEGORIES</div>
+                  <div className={`text-[9px] font-bold ${activeTab === 'categories' ? 'text-red-200' : 'text-stone-500'}`}>(ক্যাটাগরি)</div>
+                </div>
               </button>
 
               <button
                 onClick={() => { setActiveTab('coupons'); setShowProductForm(false); }}
-                className={`w-full flex items-center gap-3 px-4 py-3 rounded text-xs font-bold uppercase tracking-wider transition-all border-l-4 ${activeTab === 'coupons' ? 'bg-slate-50 text-[#00695C] border-l-[#00796B] font-extrabold shadow-sm' : 'text-[#00796B] hover:bg-slate-50 hover:text-[#004D40] border-l-transparent'}`}
+                className={`w-full flex items-center p-0 rounded-none text-xs font-bold uppercase tracking-wider transition-all border-2 ${
+                  activeTab === 'coupons' 
+                    ? 'bg-[#9E2A2B] text-white border-stone-950 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]' 
+                    : 'bg-[#EFE9DB] hover:bg-stone-300/80 text-stone-800 border-stone-900/60 shadow-[1px_1px_0px_0px_rgba(0,0,0,1)]'
+                }`}
               >
-                <Ticket className="h-4.5 w-4.5 text-[#00796B] shrink-0" />
-                COUPONS
+                <div className={`h-11 w-11 shrink-0 flex items-center justify-center border-r-2 ${
+                  activeTab === 'coupons' ? 'bg-[#781E20] text-white border-stone-950' : 'bg-white text-stone-850 border-stone-900/60'
+                }`}>
+                  <Ticket className="h-5 w-5" />
+                </div>
+                <div className="flex-1 text-left px-3 py-0.5 leading-tight select-none">
+                  <div className="font-black text-[10px] tracking-wider">COUPONS</div>
+                  <div className={`text-[9px] font-bold ${activeTab === 'coupons' ? 'text-red-200' : 'text-stone-500'}`}>(কুপন ডিসকাউন্ট)</div>
+                </div>
+              </button>
+
+              <button
+                onClick={() => { setActiveTab('live_notices'); setShowProductForm(false); }}
+                className={`w-full flex items-center p-0 rounded-none text-xs font-bold uppercase tracking-wider transition-all border-2 ${
+                  activeTab === 'live_notices' 
+                    ? 'bg-[#9E2A2B] text-white border-stone-950 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]' 
+                    : 'bg-[#EFE9DB] hover:bg-stone-300/80 text-stone-800 border-stone-900/60 shadow-[1px_1px_0px_0px_rgba(0,0,0,1)]'
+                }`}
+              >
+                <div className={`h-11 w-11 shrink-0 flex items-center justify-center border-r-2 ${
+                  activeTab === 'live_notices' ? 'bg-[#781E20] text-white border-stone-950' : 'bg-white text-amber-600 border-stone-900/60'
+                }`}>
+                  <Megaphone className="h-5 w-5" />
+                </div>
+                <div className="flex-1 text-left px-3 py-0.5 leading-tight select-none">
+                  <div className="font-extrabold text-[10px] tracking-wider">LIVE NOTICES</div>
+                  <div className={`text-[9px] font-bold ${activeTab === 'live_notices' ? 'text-red-200' : 'text-stone-500'}`}>(লাইভ নোটিশ)</div>
+                </div>
               </button>
 
               <button
                 onClick={() => { setActiveTab('settings'); setShowProductForm(false); }}
-                className={`w-full flex items-center gap-3 px-4 py-3 rounded text-xs font-bold uppercase tracking-wider transition-all border-l-4 ${activeTab === 'settings' ? 'bg-slate-50 text-[#00695C] border-l-[#00796B] font-extrabold shadow-sm' : 'text-[#00796B] hover:bg-slate-50 hover:text-[#004D40] border-l-transparent'}`}
+                className={`w-full flex items-center p-0 rounded-none text-xs font-bold uppercase tracking-wider transition-all border-2 ${
+                  activeTab === 'settings' 
+                    ? 'bg-[#9E2A2B] text-white border-stone-950 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]' 
+                    : 'bg-[#EFE9DB] hover:bg-stone-300/80 text-stone-800 border-stone-900/60 shadow-[1px_1px_0px_0px_rgba(0,0,0,1)]'
+                }`}
               >
-                <UserIcon className="h-4.5 w-4.5 text-[#00796B] shrink-0" />
-                PROFILE SETTINGS
-              </button>
-
-              <button
-                onClick={() => { setActiveTab('developer'); setShowProductForm(false); }}
-                className={`w-full flex items-center gap-3 px-4 py-3 rounded text-xs font-bold uppercase tracking-wider transition-all border-l-4 ${activeTab === 'developer' ? 'bg-slate-50 text-[#00695C] border-l-[#00796B] font-extrabold shadow-sm' : 'text-[#00796B] hover:bg-slate-50 hover:text-[#004D40] border-l-transparent'}`}
-              >
-                <FileText className="h-4.5 w-4.5 text-[#00796B] shrink-0" />
-                REPORTS & LOGS
-              </button>
-
-              <button
-                onClick={() => { setActiveTab('settings'); setShowProductForm(false); }}
-                className={`w-full flex items-center gap-3 px-4 py-3 rounded text-xs font-bold uppercase tracking-wider transition-all border-l-4 ${activeTab === 'settings' ? 'bg-slate-50 text-[#00695C] border-l-[#00796B] font-extrabold shadow-sm' : 'text-[#00796B] hover:bg-slate-50 hover:text-[#004D40] border-l-transparent'}`}
-              >
-                <Settings className="h-4.5 w-4.5 text-[#00796B] shrink-0" />
-                CONTROL CENTER
+                <div className={`h-11 w-11 shrink-0 flex items-center justify-center border-r-2 ${
+                  activeTab === 'settings' ? 'bg-[#781E20] text-white border-stone-950' : 'bg-white text-stone-750 border-stone-900/60'
+                }`}>
+                  <Settings className="h-5 w-5" />
+                </div>
+                <div className="flex-1 text-left px-3 py-0.5 leading-tight select-none">
+                  <div className="font-extrabold text-[10px] tracking-wider">CONTROL CENTER</div>
+                  <div className={`text-[9px] font-bold ${activeTab === 'settings' ? 'text-red-200' : 'text-stone-500'}`}>(নিয়ন্ত্রণ কেন্দ্র)</div>
+                </div>
               </button>
             </div>
           </div>
 
           {/* Session log out button matching original design */}
-          <div className="p-4 border-t border-slate-100">
+          <div className="p-4 border-t-2 border-stone-900 bg-[#EFE9DB] font-sans">
             <button
               onClick={onClose}
-              className="w-full text-center border border-red-250 bg-red-50/10 hover:bg-red-50 text-[#C62828] rounded-md py-3 text-xs font-black uppercase tracking-widest flex items-center justify-center gap-2 transition-all cursor-pointer shadow-sm active:scale-95"
+              className="w-full text-center border-2 border-stone-950 bg-[#9E2A2B] text-white rounded-none py-2 text-xs font-black uppercase tracking-wider flex items-center justify-center gap-2 transition-all cursor-pointer shadow active:scale-95"
             >
-              <LogOut className="h-4.5 w-4.5 text-[#C62828] shrink-0" />
-              TERMINATE_SESSION
+              <LogOut className="h-4 w-4 text-white shrink-0" />
+              Close Control (বন্ধ করুন)
             </button>
           </div>
         </div>
 
         {/* --- MAIN PAGE WORKSPACE STAGE --- */}
-        <div id="admin-main-stage" className="flex-1 flex flex-col overflow-y-auto no-scrollbar bg-slate-50">
+        <div id="admin-main-stage" className="flex-1 flex flex-col overflow-y-auto no-scrollbar bg-[#FAF5EE]">
           
-          <div className="p-8 flex-1">
+          <div className="p-6 flex-1">
             
             {/* TAB 1: EXECUTIVE SYSTEM COCKPIT (DASHBOARD) */}
             {activeTab === 'dashboard' && (
-              <div className="space-y-8 animate-fade-in text-slate-800">
+              <div className="space-y-6 animate-fade-in text-stone-800">
                 
-                {/* Dashboard title header with vertical green indicator */}
-                <div className="flex items-center justify-between border-b border-slate-200 pb-5">
+                {/* Dashboard title header with vertical crimson indicator */}
+                <div className="flex items-center justify-between border-b border-stone-200 pb-4">
                   <div className="flex items-center gap-3">
-                    <div className="h-8 w-2 bg-[#00796B] rounded"></div>
+                    <div className="h-6 w-1.5 bg-[#9E2A2B] rounded"></div>
                     <div>
-                      <h1 className="text-2xl font-black font-display text-slate-800 tracking-tight">ADMIN DASHBOARD</h1>
-                      <div className="text-[10px] text-slate-400 font-mono font-bold mt-1 uppercase tracking-widest">
-                        STATUS: ACTIVE // PROTOCOL: MANUAL
+                      <h1 className="text-lg font-bold text-stone-800 tracking-tight uppercase">Admin Overview & Stats</h1>
+                      <div className="text-[10px] text-stone-500 font-medium mt-0.5">
+                        এখানে আপনার স্টোরের সামগ্রিক হিসাব-নিকাশ দেখতে পাবেন।
                       </div>
                     </div>
                   </div>
                   
                   <div className="flex items-center gap-3">
-                    <div className="flex items-center gap-2 bg-white border border-slate-200 rounded px-3 py-1.5 text-xs font-mono font-bold shadow-sm">
-                      <span className="h-2.5 w-2.5 rounded bg-emerald-500 inline-block animate-pulse"></span>
-                      <span className="text-slate-600">SYSTEM ONLINE</span>
+                    <div className="flex items-center gap-1.5 bg-white border border-stone-300 rounded px-2.5 py-1 text-[10px] font-bold shadow-xs">
+                      <span className="h-2 w-2 rounded-full bg-emerald-500 inline-block"></span>
+                      <span className="text-stone-600">LIVE FEED</span>
                     </div>
-                    <button className="bg-[#00796B] hover:bg-[#005B52] text-white font-sans font-bold text-xs px-5 py-2.5 rounded shadow-md transition-all active:scale-95 uppercase tracking-wider">
+                    <button className="bg-[#9E2A2B] hover:bg-[#8D2B24] text-white font-sans font-bold text-[10px] px-3 py-1.5 rounded shadow-xs transition-all active:scale-95 uppercase tracking-wider cursor-pointer">
                       Generate Report
                     </button>
                   </div>
@@ -776,74 +898,74 @@ export default function AdminPanel({ onDataChanged, onClose }: AdminPanelProps) 
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                   
                   {/* Card 1: TOTAL REVENUE */}
-                  <div className="bg-white border border-slate-200 rounded-lg p-5 shadow-sm flex flex-col justify-between hover:shadow-md transition-all">
+                  <div className="bg-[#FAF5EE] border-2 border-stone-900 rounded-none p-5 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] flex flex-col justify-between hover:translate-y-[-2px] hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] transition-all">
                     <div className="flex items-start justify-between">
-                      <span className="text-xs text-slate-400 font-bold uppercase tracking-wider">Total Revenue</span>
-                      <span className="text-[#00796B] text-lg font-bold">৳</span>
+                      <span className="text-xs text-stone-700 font-extrabold uppercase tracking-wider">Total Revenue (মোট আয়)</span>
+                      <span className="text-[#9E2A2B] text-lg font-black">৳</span>
                     </div>
-                    <div className="mt-4">
-                      <h3 className="text-2xl font-black text-slate-800 tracking-tight">৳ {(totalRevenue || 5378700).toLocaleString()}</h3>
-                      <p className="text-[10px] text-slate-400 font-bold mt-1 uppercase tracking-wider">Total Sales Amount</p>
+                    <div className="mt-4 border-t border-stone-300 pt-3">
+                      <h3 className="text-2xl font-black text-stone-950 tracking-tight">৳ {(totalRevenue || 5378700).toLocaleString()}</h3>
+                      <p className="text-[10px] text-[#9E2A2B] font-extrabold mt-1 uppercase tracking-wider">Total Sales Ledger</p>
                     </div>
                   </div>
 
                   {/* Card 2: TOTAL ORDERS */}
-                  <div className="bg-white border border-slate-200 rounded-lg p-5 shadow-sm flex flex-col justify-between hover:shadow-md transition-all">
+                  <div className="bg-[#FAF5EE] border-2 border-stone-900 rounded-none p-5 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] flex flex-col justify-between hover:translate-y-[-2px] hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] transition-all">
                     <div className="flex items-start justify-between">
-                      <span className="text-xs text-slate-400 font-bold uppercase tracking-wider">Total Orders</span>
-                      <span className="text-teal-600"><FileSpreadsheet className="h-4.5 w-4.5" /></span>
+                      <span className="text-xs text-stone-700 font-extrabold uppercase tracking-wider">Total Orders (মোট অর্ডার)</span>
+                      <span className="text-[#9E2A2B]"><FileSpreadsheet className="h-4.5 w-4.5" /></span>
                     </div>
-                    <div className="mt-4">
-                      <h3 className="text-2xl font-black text-slate-800 tracking-tight">{orders.length || 13}</h3>
-                      <p className="text-[10px] text-slate-400 font-bold mt-1 uppercase tracking-wider">Orders Placed</p>
+                    <div className="mt-4 border-t border-stone-300 pt-3">
+                      <h3 className="text-2xl font-black text-stone-950 tracking-tight">{orders.length || 13}</h3>
+                      <p className="text-[10px] text-[#9E2A2B] font-extrabold mt-1 uppercase tracking-wider">Validated Tallies</p>
                     </div>
                   </div>
 
                   {/* Card 3: TOTAL CUSTOMERS */}
-                  <div className="bg-white border border-slate-200 rounded-lg p-5 shadow-sm flex flex-col justify-between hover:shadow-md transition-all">
+                  <div className="bg-[#FAF5EE] border-2 border-stone-900 rounded-none p-5 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] flex flex-col justify-between hover:translate-y-[-2px] hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] transition-all">
                     <div className="flex items-start justify-between">
-                      <span className="text-xs text-slate-400 font-bold uppercase tracking-wider">Total Customers</span>
-                      <span className="text-[#00796B]"><Users className="h-4.5 w-4.5" /></span>
+                      <span className="text-xs text-stone-700 font-extrabold uppercase tracking-wider">Total Customers (গ্রাহক)</span>
+                      <span className="text-[#9E2A2B]"><Users className="h-4.5 w-4.5" /></span>
                     </div>
-                    <div className="mt-4">
-                      <h3 className="text-2xl font-black text-slate-800 tracking-tight">{customers.length || 7}</h3>
-                      <p className="text-[10px] text-slate-400 font-bold mt-1 uppercase tracking-wider">Registered Users</p>
+                    <div className="mt-4 border-t border-stone-300 pt-3">
+                      <h3 className="text-2xl font-black text-stone-950 tracking-tight">{customers.length || 7}</h3>
+                      <p className="text-[10px] text-[#9E2A2B] font-extrabold mt-1 uppercase tracking-wider">Registered Leads</p>
                     </div>
                   </div>
 
                   {/* Card 4: TOTAL PRODUCTS */}
-                  <div className="bg-white border border-slate-200 rounded-lg p-5 shadow-sm flex flex-col justify-between hover:shadow-md transition-all">
+                  <div className="bg-[#FAF5EE] border-2 border-stone-900 rounded-none p-5 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] flex flex-col justify-between hover:translate-y-[-2px] hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] transition-all">
                     <div className="flex items-start justify-between">
-                      <span className="text-xs text-slate-400 font-bold uppercase tracking-wider">Total Products</span>
-                      <span className="text-teal-600"><ShoppingBag className="h-4.5 w-4.5" /></span>
+                      <span className="text-xs text-stone-700 font-extrabold uppercase tracking-wider">Total Products (পণ্য তালিকা)</span>
+                      <span className="text-[#9E2A2B]"><ShoppingBag className="h-4.5 w-4.5" /></span>
                     </div>
-                    <div className="mt-4">
-                      <h3 className="text-2xl font-black text-slate-800 tracking-tight">{products.length || 1}</h3>
-                      <p className="text-[10px] text-slate-400 font-bold mt-1 uppercase tracking-wider">Items in Inventory</p>
+                    <div className="mt-4 border-t border-stone-300 pt-3">
+                      <h3 className="text-2xl font-black text-stone-950 tracking-tight">{products.length || 1}</h3>
+                      <p className="text-[10px] text-[#9E2A2B] font-extrabold mt-1 uppercase tracking-wider">In-Store SKU Count</p>
                     </div>
                   </div>
 
                 </div>
 
                 {/* Lower analytics section: Recharts Area chart (2/3) and Recent Orders list (1/3) */}
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 font-sans">
                   
                   {/* Revenue Overview chart module */}
-                  <div className="lg:col-span-2 bg-white rounded-lg border border-slate-200 p-6 shadow-sm flex flex-col justify-between">
-                    <div className="flex items-center justify-between mb-6 border-b border-slate-100 pb-3">
+                  <div className="lg:col-span-2 bg-[#FAF5EE] rounded-none border-2 border-stone-900 p-6 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] flex flex-col justify-between">
+                    <div className="flex items-center justify-between mb-6 border-b-2 border-stone-905 pb-3">
                       <div className="flex items-center gap-2">
-                        <div className="h-4 w-1 bg-[#00796B] rounded"></div>
-                        <h3 className="font-bold text-slate-800 text-xs uppercase tracking-wider">Revenue Overview</h3>
+                        <div className="h-4 w-1.5 bg-[#9E2A2B]"></div>
+                        <h3 className="font-bold text-stone-900 text-xs uppercase tracking-wider">Revenue Graph (আয় পরিমাপক চিত্র)</h3>
                       </div>
                       
-                      <div className="flex items-center gap-1.5 text-xs text-slate-400 font-semibold font-mono">
-                        <span className="h-2.5 w-2.5 rounded bg-[#00BFA5] inline-block"></span>
-                        <span>Sales Graph</span>
+                      <div className="flex items-center gap-1.5 text-xs text-stone-700 font-extrabold font-mono">
+                        <span className="h-2.5 w-2.5 bg-[#9E2A2B] inline-block"></span>
+                        <span>SALES STATS</span>
                       </div>
                     </div>
 
                     {/* Smooth Area AreaChart with Recharts gradient filled */}
-                    <div className="h-72 w-full">
+                    <div className="h-72 w-full bg-[#EFE9DB] p-3 border-2 border-stone-900">
                       <ResponsiveContainer width="100%" height="100%">
                         <AreaChart
                           data={[
@@ -858,30 +980,30 @@ export default function AdminPanel({ onDataChanged, onClose }: AdminPanelProps) 
                         >
                           <defs>
                             <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
-                              <stop offset="5%" stopColor="#00BFA5" stopOpacity={0.25}/>
-                              <stop offset="95%" stopColor="#00BFA5" stopOpacity={0.00}/>
+                              <stop offset="5%" stopColor="#9E2A2B" stopOpacity={0.25}/>
+                              <stop offset="95%" stopColor="#9E2A2B" stopOpacity={0.00}/>
                             </linearGradient>
                           </defs>
-                          <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#ECEFF1" />
+                          <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#CFC8BC" />
                           <XAxis 
                             dataKey="name" 
                             axisLine={false} 
                             tickLine={false} 
-                            tick={{ fill: '#90A4AE', fontSize: 10, fontWeight: '700' }} 
+                            tick={{ fill: '#4E483B', fontSize: 10, fontWeight: '700' }} 
                           />
                           <YAxis 
                             axisLine={false} 
                             tickLine={false} 
-                            tick={{ fill: '#90A4AE', fontSize: 10, fontWeight: '700' }} 
+                            tick={{ fill: '#4E483B', fontSize: 10, fontWeight: '700' }} 
                           />
                           <Tooltip 
-                            contentStyle={{ backgroundColor: '#1A252C', border: 'none', borderRadius: '6px', color: '#FFF', fontSize: '11px' }}
-                            itemStyle={{ color: '#00BFA5', fontWeight: 'bold' }}
+                            contentStyle={{ backgroundColor: '#FAF5EE', border: '2px solid #1c1917', color: '#1c1917', fontSize: '11px', fontWeight: 'bold' }}
+                            itemStyle={{ color: '#9E2A2B', fontWeight: 'bold' }}
                           />
                           <Area 
                             type="monotone" 
                             dataKey="Revenue" 
-                            stroke="#00BFA5" 
+                            stroke="#9E2A2B" 
                             strokeWidth={3} 
                             fillOpacity={1} 
                             fill="url(#colorRevenue)" 
@@ -892,9 +1014,10 @@ export default function AdminPanel({ onDataChanged, onClose }: AdminPanelProps) 
                   </div>
 
                   {/* Recent Orders stack matching list */}
-                  <div className="bg-white rounded-lg border border-slate-200 p-6 shadow-sm flex flex-col justify-between">
-                    <div className="border-b border-slate-100 pb-3 mb-4">
-                      <h3 className="font-bold text-slate-800 text-xs uppercase tracking-wider">Recent Orders</h3>
+                  <div className="bg-[#FAF5EE] rounded-none border-2 border-stone-900 p-6 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] flex flex-col justify-between">
+                    <div className="border-b-2 border-stone-900 pb-3 mb-4 flex items-center justify-between">
+                      <h3 className="font-bold text-stone-950 text-xs uppercase tracking-wider">Recent Orders (সাম্প্রতিক অর্ডার)</h3>
+                      <span className="text-[9px] bg-stone-300 text-stone-900 px-2 py-0.5 border border-stone-900 font-bold">LIVE STAMPS</span>
                     </div>
 
                     <div className="flex-1 overflow-y-auto max-h-[280px] space-y-4 pr-1 scrollbar-thin">
@@ -905,16 +1028,16 @@ export default function AdminPanel({ onDataChanged, onClose }: AdminPanelProps) 
                       ]).map((order, idx) => {
                         const isDelivered = order.status === 'Delivered' || order.status === 'Shipped';
                         return (
-                          <div key={order.id || idx} className="flex items-center justify-between p-3 border border-slate-100 rounded-lg hover:shadow-sm transition-shadow">
+                          <div key={order.id || idx} className="flex items-center justify-between p-3 border-2 border-stone-900 bg-[#EFE9DB] hover:translate-x-1 transition-all">
                             <div>
-                              <div className="font-mono text-xs font-bold text-[#00796B]">#{order.id}</div>
-                              <div className="text-[10px] text-slate-400 font-bold uppercase mt-1 tracking-tight">{order.customerName}</div>
+                              <div className="font-mono text-xs font-black text-[#9E2A2B]">#{order.id}</div>
+                              <div className="text-[10px] text-stone-700 font-extrabold uppercase mt-1 tracking-tight">{order.customerName}</div>
                             </div>
                             <div className="text-right">
-                              <div className="text-xs font-extrabold text-slate-800">৳{order.total.toLocaleString()}</div>
+                              <div className="text-xs font-black text-stone-950">৳{order.total.toLocaleString()}</div>
                               <div className="mt-1">
-                                <span className={`inline-block px-2 py-0.5 rounded text-[8px] font-black tracking-wider uppercase ${
-                                  isDelivered ? 'bg-teal-50 text-teal-700 border border-teal-200' : 'bg-amber-50 text-amber-700 border border-[#EF6C00]/30 animate-pulse'
+                                <span className={`inline-block px-2 py-0.5 border border-stone-950 text-[8px] font-black tracking-wider uppercase ${
+                                  isDelivered ? 'bg-white text-emerald-800' : 'bg-[#FAF5EE] text-[#9E2A2B]'
                                 }`}>
                                   {isDelivered ? 'CONFIRMED' : 'PENDING'}
                                 </span>
@@ -955,431 +1078,335 @@ export default function AdminPanel({ onDataChanged, onClose }: AdminPanelProps) 
 
               {/* Form panel overlay/drawer */}
               {showProductForm && (
-                <form id="product-crud-form" onSubmit={handleProductSubmit} className={`bg-white border rounded-2xl p-6 shadow-md space-y-4 animate-slide-up transition-all duration-300 ${editingProduct ? 'border-amber-400 ring-2 ring-amber-400/20 shadow-lg' : 'border-slate-200'}`}>
-                  <h3 className="font-display font-bold text-slate-800 text-base border-b border-slate-100 pb-2 flex items-center justify-between">
-                    <span>
-                      {editingProduct ? `Modify Product: ${editingProduct.name}` : 'Product Definition Schema'}
+                <form id="product-crud-form" onSubmit={handleProductSubmit} className={`bg-[#FAF5EE] border-2 border-stone-900 p-0 shadow-lg space-y-0 animate-slide-up transition-all duration-300 ${editingProduct ? 'ring-4 ring-[#9E2A2B]/20' : ''}`}>
+                  
+                  {/* Crimson ticket header */}
+                  <div className="bg-[#9E2A2B] text-white px-4 py-2.5 font-display font-bold text-xs uppercase tracking-wider flex items-center justify-between border-b-2 border-stone-950 select-none">
+                    <span className="flex items-center gap-1.5">
+                      <Plus className="h-3.5 w-3.5 text-white" />
+                      {editingProduct ? `MODIFY PRODUCT SCHEMA: ${editingProduct.name}` : 'DEFINE NEW PRODUCT RECORD (নতুন পণ্য বিবরণ)'}
                     </span>
                     {editingProduct && (
-                      <span className="bg-amber-100 text-amber-800 border border-amber-200 text-[10px] font-black px-2.5 py-1 rounded-lg uppercase tracking-wider animate-pulse flex items-center gap-1 select-none">
-                        <span className="h-2 w-2 bg-amber-600 rounded-full inline-block"></span>
-                        EDIT_MODE_ACTIVE (ID: {editingProduct.id})
+                      <span className="bg-[#FAF5EE] text-stone-950 text-[9px] font-black px-2.5 py-0.5 border border-stone-950 uppercase tracking-wider">
+                        EDIT ACTIVE (ID: {editingProduct.id})
                       </span>
                     )}
-                  </h3>
-                  
-                  <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                    <div className="md:col-span-2">
-                      <label className="block text-xs font-semibold text-slate-500 mb-1 uppercase tracking-wider">Product Name (Bengali + English Suggested)</label>
-                      <input
-                        id="form-product-name"
-                        type="text"
-                        required
-                        placeholder="e.g. Rajshahi Fazli Mango (ফজলি আম)"
-                        className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-emerald-500"
-                        value={productFormState.name || ''}
-                        onChange={(e) => setProductFormState({ ...productFormState, name: e.target.value })}
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-xs font-semibold text-slate-500 mb-1 uppercase tracking-wider">Store Category</label>
-                      <select
-                        id="form-product-category"
-                        className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-emerald-500 bg-white"
-                        value={productFormState.category || 'fruits'}
-                        onChange={(e) => setProductFormState({ ...productFormState, category: e.target.value })}
-                      >
-                        {categories.map(c => (
-                          <option key={c.slug} value={c.slug}>{c.name}</option>
-                        ))}
-                      </select>
-                    </div>
-
-                    <div>
-                      <label className="block text-xs font-semibold text-slate-500 mb-1 uppercase tracking-wider">Packaging Unit</label>
-                      <input
-                        id="form-product-unit"
-                        type="text"
-                        required
-                        placeholder="e.g. 1 kg, 1 bunch, 500g"
-                        className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-emerald-500"
-                        value={productFormState.unit || ''}
-                        onChange={(e) => setProductFormState({ ...productFormState, unit: e.target.value })}
-                      />
-                    </div>
                   </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                    <div>
-                      <label className="block text-xs font-semibold text-slate-500 mb-1 uppercase tracking-wider">Selling Price (৳)</label>
-                      <input
-                        id="form-product-price"
-                        type="number"
-                        required
-                        min="1"
-                        placeholder="e.g. 130"
-                        className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-emerald-500"
-                        value={productFormState.price || ''}
-                        onChange={(e) => setProductFormState({ ...productFormState, price: Number(e.target.value) })}
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-xs font-semibold text-slate-500 mb-1 uppercase tracking-wider">Before Discount / Cross-out Price (৳)</label>
-                      <input
-                        id="form-product-origprice"
-                        type="number"
-                        placeholder="e.g. 165"
-                        className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-emerald-500"
-                        value={productFormState.originalPrice || ''}
-                        onChange={(e) => setProductFormState({ ...productFormState, originalPrice: Number(e.target.value) })}
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-xs font-semibold text-slate-500 mb-1 uppercase tracking-wider">Absolute Stock Quantity</label>
-                      <input
-                        id="form-product-stock"
-                        type="number"
-                        required
-                        min="0"
-                        placeholder="e.g. 85"
-                        className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-emerald-500"
-                        value={productFormState.stock !== undefined ? productFormState.stock : 50}
-                        onChange={(e) => setProductFormState({ ...productFormState, stock: Number(e.target.value) })}
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-xs font-semibold text-slate-500 mb-1 uppercase tracking-wider">Delivery Charge (৳)</label>
-                      <input
-                        id="form-product-delivery-fee"
-                        type="number"
-                        min="0"
-                        placeholder="0 or default"
-                        className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-emerald-500"
-                        value={productFormState.deliveryFee !== undefined && productFormState.deliveryFee !== null ? productFormState.deliveryFee : ''}
-                        onChange={(e) => setProductFormState({ ...productFormState, deliveryFee: e.target.value !== '' ? Number(e.target.value) : undefined })}
-                      />
-                    </div>
-                  </div>
-
-                  {/* Affiliate Marketing Integration URL (Optional) */}
-                  <div className="bg-emerald-50/50 p-4 rounded-xl border border-emerald-100/85 space-y-2">
-                    <label className="block text-xs font-black text-[#00796B] uppercase tracking-wider flex items-center gap-1">
-                      <span>🔗 Affiliate / External Purchase URL (Optional)</span>
-                    </label>
-                    <p className="text-[11px] text-slate-500 font-sans">
-                      Enter your affiliate partner link (e.g., AliExpress, Daraz, Amazon) to run affiliate marketing. Clicking the <strong>"BUY NOW"</strong> button will immediately take customers to this link in a new tab. Leave blank for standard on-site cart/checkout.
-                    </p>
-                    <input
-                      id="form-product-affiliate-url"
-                      type="url"
-                      placeholder="e.g. https://click.daraz.com.bd/e/_abc123"
-                      className="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-emerald-500 font-mono"
-                      value={productFormState.affiliateUrl || ''}
-                      onChange={(e) => setProductFormState({ ...productFormState, affiliateUrl: e.target.value })}
-                    />
-                  </div>
-
-                  {/* BEAUTIFUL IMAGE CONTROLLER BLOCK WITH NATIVE RESIZING AND PRESETS */}
-                  <div className="bg-slate-50 p-4 rounded-xl border border-dashed border-slate-300 space-y-4">
-                    <div className="flex items-center justify-between border-b border-slate-200 pb-2">
-                      <span className="text-xs font-black text-[#00796B] uppercase tracking-wider">Product Image & Media Configuration</span>
-                      <span className="text-[10px] text-slate-400 font-bold uppercase">System Auto-Resize Enabled</span>
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-12 gap-5">
-                      
-                      {/* Interactive Drag & Drop Box + Link Input */}
-                      <div className="md:col-span-7 space-y-3">
-                        <div className="text-xs font-bold text-slate-600 mb-1 uppercase tracking-wider">Upload Local Photo or Insert External link</div>
-                        
-                        {/* Drag and Drop trigger box */}
-                        <div 
-                          onClick={() => document.getElementById('product-file-upload-input')?.click()}
-                          className="border-2 border-dashed border-slate-200 hover:border-[#00796B] bg-white rounded-xl p-5 text-center transition-all cursor-pointer group flex flex-col items-center justify-center min-h-[140px]"
-                          onDragOver={(e) => e.preventDefault()}
-                          onDrop={(e) => {
-                            e.preventDefault();
-                            if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-                              const file = e.dataTransfer.files[0];
-                              const reader = new FileReader();
-                              reader.onload = (uploadEvent) => {
-                                if (uploadEvent.target?.result) {
-                                  setProductFormState({ ...productFormState, image: uploadEvent.target.result as string });
-                                }
-                              };
-                              reader.readAsDataURL(file);
-                            }
-                          }}
-                        >
-                          <input 
-                            id="product-file-upload-input"
-                            type="file" 
-                            accept="image/*" 
-                            className="hidden" 
-                            onChange={(e) => {
-                              if (e.target.files && e.target.files[0]) {
-                                const file = e.target.files[0];
-                                const reader = new FileReader();
-                                reader.onload = (uploadEvent) => {
-                                  if (uploadEvent.target?.result) {
-                                    setProductFormState({ ...productFormState, image: uploadEvent.target.result as string });
-                                  }
-                                };
-                                reader.readAsDataURL(file);
-                              }
-                            }}
-                          />
-                          <ImageIcon className="h-8 w-8 text-slate-400 group-hover:text-[#00796B] transition-colors mb-2" />
-                          <span className="text-xs font-bold text-slate-700 group-hover:text-[#00796B]">Drag & drop an image here, or <span className="underline">browse files</span></span>
-                          <span className="text-[10px] text-slate-400 mt-1 font-semibold">Supports JPEG, PNG, WEBP of any size and aspect ratio</span>
-                        </div>
-
-                        {/* Traditional link element */}
-                        <div>
-                          <label className="block text-[10px] font-bold text-slate-500 mb-1 uppercase tracking-wider">Or, paste an internet image link:</label>
-                          <input
-                            id="form-product-image"
-                            type="text"
-                            placeholder="e.g. https://images.unsplash.com/photo-..."
-                            className="w-full border border-slate-200 rounded-lg px-3 py-2 text-xs font-mono focus:outline-none focus:border-[#00796B] bg-white"
-                            value={productFormState.image || ''}
-                            onChange={(e) => setProductFormState({ ...productFormState, image: e.target.value })}
-                          />
-                        </div>
+                  <div className="p-5 space-y-4">
+                    <div className="grid grid-cols-1 md:grid-cols-6 gap-4">
+                      <div className="md:col-span-3">
+                        <label className="block text-xs font-bold text-stone-900 mb-1 uppercase tracking-wider">Product Name (পণ্যের নাম)</label>
+                        <input
+                          id="form-product-name"
+                          type="text"
+                          required
+                          placeholder="e.g. Rajshahi Fazli Mango"
+                          className="w-full"
+                          value={productFormState.name || ''}
+                          onChange={(e) => setProductFormState({ ...productFormState, name: e.target.value })}
+                        />
                       </div>
 
-                      {/* Live preview representing the AUTO RESIZE requirement */}
-                      <div className="md:col-span-5 flex flex-col justify-between">
-                        <div>
-                          <div className="text-xs font-bold text-slate-600 mb-2 uppercase tracking-wider">Live System Auto-Resize Preview</div>
-                          <div className="relative border border-slate-100 bg-white rounded-xl p-3 flex flex-col items-center justify-center min-h-[145px] shadow-sm">
-                            {productFormState.image ? (
-                              <div className="w-full flex flex-col items-center">
-                                {/* Auto sizing preview container */}
-                                <div className="relative w-28 h-28 rounded-lg overflow-hidden border border-slate-200 shadow-sm bg-slate-50">
-                                  <img 
-                                    src={productFormState.image} 
-                                    alt="Resized Preview" 
-                                    className="w-full h-full object-cover object-center"
-                                    referrerPolicy="no-referrer"
-                                  />
-                                  {/* Visual Auto Crop overlays */}
-                                  <div className="absolute inset-0 border-2 border-[#00BFA5]/30 pointer-events-none rounded-lg"></div>
-                                  <div className="absolute bottom-1 right-1 bg-black/60 text-[8px] text-white font-mono px-1 rounded">
-                                    AUTO-FIT
-                                  </div>
-                                </div>
-                                <span className="text-[10px] text-[#00796B] font-bold mt-2 flex items-center gap-1">
-                                  <CheckCircle2 className="h-3.5 w-3.5" /> Automatically Sized & Centered
-                                </span>
-                              </div>
-                            ) : (
-                              <div className="text-center text-slate-400 py-6">
-                                <div className="h-12 w-12 rounded-full border-2 border-dashed border-slate-200 flex items-center justify-center mx-auto mb-2 text-slate-300">?</div>
-                                <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Waiting for product photo</span>
-                              </div>
-                            )}
+                      <div className="md:col-span-1.5 col-span-3">
+                        <label className="block text-xs font-bold text-stone-900 mb-1 uppercase tracking-wider">Category (ক্যাটাগরি)</label>
+                        <select
+                          id="form-product-category"
+                          className="w-full"
+                          value={productFormState.category || 'fruits'}
+                          onChange={(e) => setProductFormState({ ...productFormState, category: e.target.value })}
+                        >
+                          {categories.map(c => (
+                            <option key={c.slug} value={c.slug}>{c.name}</option>
+                          ))}
+                        </select>
+                      </div>
+
+                      <div className="md:col-span-1.5 col-span-3">
+                        <label className="block text-xs font-bold text-stone-900 mb-1 uppercase tracking-wider">Unit (একক)</label>
+                        <input
+                          id="form-product-unit"
+                          type="text"
+                          required
+                          placeholder="e.g. 1 kg"
+                          className="w-full"
+                          value={productFormState.unit || ''}
+                          onChange={(e) => setProductFormState({ ...productFormState, unit: e.target.value })}
+                        />
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-6 gap-4">
+                      {/* Form Inputs segment */}
+                      <div className="md:col-span-4 space-y-4">
+                        <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                          <div>
+                            <label className="block text-xs font-bold text-stone-900 mb-1 uppercase tracking-wider">Selling Price - ৳ (বিক্রয় মূল্য)</label>
+                            <input
+                              id="form-product-price"
+                              type="number"
+                              required
+                              min="1"
+                              className="w-full"
+                              value={productFormState.price || ''}
+                              onChange={(e) => setProductFormState({ ...productFormState, price: Number(e.target.value) })}
+                            />
+                          </div>
+
+                          <div>
+                            <label className="block text-xs font-bold text-stone-900 mb-1 uppercase tracking-wider">Before Discount - ৳ (পূর্বমূল্য)</label>
+                            <input
+                              id="form-product-origprice"
+                              type="number"
+                              className="w-full"
+                              value={productFormState.originalPrice || ''}
+                              onChange={(e) => setProductFormState({ ...productFormState, originalPrice: Number(e.target.value) })}
+                            />
+                          </div>
+
+                          <div>
+                            <label className="block text-xs font-bold text-stone-900 mb-1 uppercase tracking-wider">Stock Density (স্টক পরিমাণ)</label>
+                            <input
+                              id="form-product-stock"
+                              type="number"
+                              required
+                              min="0"
+                              className="w-full"
+                              value={productFormState.stock !== undefined ? productFormState.stock : 50}
+                              onChange={(e) => setProductFormState({ ...productFormState, stock: Number(e.target.value) })}
+                            />
                           </div>
                         </div>
 
-                        <div className="text-[11px] text-slate-500 font-semibold bg-white p-2 rounded border border-slate-100 mt-2">
-                          💡 <strong className="text-slate-800">Auto-Fit Code:</strong> The web grid uses <code className="bg-slate-100 px-1 py-0.5 rounded font-mono text-[10px]">object-cover</code> which means whatever photo dimension, high resolution or square/portrait, is automatically cropped, leveled, and aligned symmetrically inside customer grids.
+                        <div>
+                          <label className="block text-xs font-bold text-stone-900 mb-1 uppercase tracking-wider">Product Photo (পণ্যের ছবি)</label>
+                          <div className="flex gap-2">
+                            <input
+                              id="form-product-image"
+                              type="text"
+                              placeholder="Paste image URL here..."
+                              className="w-full font-mono text-xs"
+                              value={productFormState.image || ''}
+                              onChange={(e) => setProductFormState({ ...productFormState, image: e.target.value })}
+                            />
+                            <button
+                              type="button"
+                              onClick={() => document.getElementById('simple-product-image-upload')?.click()}
+                              className="px-3 bg-stone-300 hover:bg-stone-400 text-stone-900 border-2 border-stone-950 font-bold text-xs uppercase cursor-pointer select-none shrink-0"
+                              title="Upload Local File"
+                            >
+                              Browse
+                            </button>
+                            <input 
+                              id="simple-product-image-upload"
+                              type="file" 
+                              className="hidden" 
+                              accept="image/*"
+                              onChange={(e) => {
+                                if (e.target.files && e.target.files[0]) {
+                                  const file = e.target.files[0];
+                                  const reader = new FileReader();
+                                  reader.onload = (loadEvt) => {
+                                    if (loadEvt.target?.result) {
+                                      setProductFormState({ ...productFormState, image: loadEvt.target.result as string });
+                                    }
+                                  };
+                                  reader.readAsDataURL(file);
+                                }
+                              }}
+                            />
+                          </div>
+                        </div>
+
+                        <div>
+                          <label className="block text-xs font-bold text-stone-900 mb-1 uppercase tracking-wider">Description (সংক্ষিপ্ত বিবরণ)</label>
+                          <input
+                            id="form-product-desc"
+                            type="text"
+                            placeholder="Add brief details or health benefits..."
+                            className="w-full"
+                            value={productFormState.description || ''}
+                            onChange={(e) => setProductFormState({ ...productFormState, description: e.target.value })}
+                          />
                         </div>
                       </div>
 
+                      {/* LIVE PROMINENT PREVIEW SEGMENT */}
+                      <div className="md:col-span-2 flex flex-col justify-between border-2 border-dashed border-stone-850 p-3 bg-[#EFE9DB]">
+                        <span className="block text-[10px] font-extrabold text-stone-900 uppercase tracking-widest mb-1.5 border-b border-stone-400 pb-1">📸 LIVE STAMP PREVIEW</span>
+                        <div className="flex-1 flex items-center justify-center min-h-[120px] bg-[#DCDCDC] border-2 border-stone-950 relative overflow-hidden">
+                          {productFormState.image ? (
+                            <div className="w-full h-full flex flex-col items-center justify-center p-2 relative group">
+                              <img 
+                                src={productFormState.image} 
+                                className="max-h-[140px] max-w-full object-contain filter drop-shadow-md" 
+                                alt="Live Product Preview" 
+                                referrerPolicy="no-referrer"
+                              />
+                               <div className="absolute bottom-1.5 right-1.5 bg-[#9E2A2B] text-white text-[8px] font-black px-1.5 py-0.5 border border-black uppercase tracking-wider">
+                                LIVE IMAGE (ছবির লাইভ প্রিভিউ)
+                              </div>
+                            </div>
+                          ) : (
+                            <div className="text-center p-4 text-stone-700 font-bold flex flex-col items-center">
+                              <ImageIcon className="h-8 w-8 text-stone-850 mb-1" />
+                              <span className="text-[10px]">AWAITING PRODUCT LINK</span>
+                              <span className="text-[8px] text-stone-550 normal-case leading-tight mt-1">(ছবির প্রিভিউ এখানে লাইভ দেখা যাবে)</span>
+                            </div>
+                          )}
+                        </div>
+                      </div>
                     </div>
 
-                    {/* Curated Pre-cropped Premium Presets Picker Carousel */}
-                    <div className="space-y-1.5 pt-1">
-                      <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider">Quick Select Curated Grocery Presets (Auto-Cropped, Instant Loading):</label>
-                      <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-thin">
-                        {[
-                          { name: 'Red Apple', url: 'https://images.unsplash.com/photo-1560806887-1e4cd0b6cbd6?w=450&auto=format&fit=crop&q=80' },
-                          { name: 'Fresh Mango', url: 'https://images.unsplash.com/photo-1553279768-865429fa0078?w=450&auto=format&fit=crop&q=80' },
-                          { name: 'Banana Bundles', url: 'https://images.unsplash.com/photo-1571771894821-ce9b6c11b08e?w=450&auto=format&fit=crop&q=80' },
-                          { name: 'Fresh Vegetables', url: 'https://images.unsplash.com/photo-1566385101042-1a010c129fa6?w=450&auto=format&fit=crop&q=80' },
-                          { name: 'Crimson Tomatoes', url: 'https://images.unsplash.com/photo-1595855759920-86582396756a?w=450&auto=format&fit=crop&q=80' },
-                          { name: 'Golden Potatoes', url: 'https://images.unsplash.com/photo-1518977676601-b53f82aba655?w=450&auto=format&fit=crop&q=80' },
-                          { name: 'Pure Cow Milk', url: 'https://images.unsplash.com/photo-1563636619-e9143da7973b?w=450&auto=format&fit=crop&q=80' },
-                          { name: 'Farm Brown Eggs', url: 'https://images.unsplash.com/photo-1506976785307-8732e854ad03?w=450&auto=format&fit=crop&q=80' },
-                          { name: 'Premium Rice', url: 'https://images.unsplash.com/photo-1586201375761-83865001e31c?w=450&auto=format&fit=crop&q=80' },
-                          { name: 'Beef Cut Ribs', url: 'https://images.unsplash.com/photo-1588166524941-3bf61a9c41db?w=450&auto=format&fit=crop&q=80' },
-                          { name: 'Fresh Water Fish', url: 'https://images.unsplash.com/photo-1534482421-64566f976cfa?w=450&auto=format&fit=crop&q=80' },
-                          { name: 'Wild Organic Honey', url: 'https://images.unsplash.com/photo-1587049352846-4a222e784d38?w=450&auto=format&fit=crop&q=80' }
-                        ].map((preset, idx) => (
-                          <button
-                            type="button"
-                            key={idx}
-                            onClick={() => setProductFormState({ ...productFormState, image: preset.url })}
-                            className={`flex items-center gap-1.5 px-2.5 py-1.5 bg-white border rounded-lg text-[10px] font-bold text-slate-600 shrink-0 hover:border-[#00796B] hover:text-[#00796B] transition-all cursor-pointer shadow-xs ${
-                              productFormState.image === preset.url ? 'border-[#00796B] text-[#00796B] ring-1 ring-teal-600/20 bg-teal-50/20' : 'border-slate-200'
-                            }`}
-                          >
-                            <img src={preset.url} className="h-5 w-5 rounded object-cover" alt="" referrerPolicy="no-referrer" />
-                            {preset.name}
-                          </button>
-                        ))}
+                    {/* Clean display and tag options */}
+                    <div className="bg-[#EFE9DB] p-3 border-2 border-stone-900 font-sans select-none">
+                      <span className="block text-[10px] font-extrabold text-stone-900 uppercase tracking-wider mb-2 border-b border-stone-300 pb-1">Promo & Category Tags (প্রচার এবং ট্যাগসমূহ)</span>
+                      <div className="flex flex-wrap gap-x-5 gap-y-2">
+                        <label className="flex items-center gap-2 cursor-pointer text-xs font-bold text-stone-955 select-none">
+                          <input
+                            type="checkbox"
+                            className="h-4 w-4 rounded-none accent-[#9E2A2B] border-stone-900 cursor-pointer"
+                            checked={!!productFormState.featured}
+                            onChange={(e) => setProductFormState({ ...productFormState, featured: e.target.checked })}
+                          />
+                          Hero Slider
+                        </label>
+
+                        <label className="flex items-center gap-2 cursor-pointer text-xs font-bold text-stone-1955 select-none">
+                          <input
+                            type="checkbox"
+                            className="h-4 w-4 rounded-none accent-[#9E2A2B] border-stone-900 cursor-pointer"
+                            checked={!!productFormState.bestSeller}
+                            onChange={(e) => setProductFormState({ ...productFormState, bestSeller: e.target.checked })}
+                          />
+                          Best Seller
+                        </label>
+
+                        <label className="flex items-center gap-2 cursor-pointer text-xs font-bold text-stone-955 select-none">
+                          <input
+                            type="checkbox"
+                            className="h-4 w-4 rounded-none accent-[#9E2A2B] border-stone-900 cursor-pointer"
+                            checked={!!productFormState.isNewArrival}
+                            onChange={(e) => setProductFormState({ ...productFormState, isNewArrival: e.target.checked })}
+                          />
+                          New Arrival
+                        </label>
+
+                        <label className="flex items-center gap-2 cursor-pointer text-xs font-bold text-stone-955 select-none">
+                          <input
+                            type="checkbox"
+                            className="h-4 w-4 rounded-none accent-[#9E2A2B] border-stone-900 cursor-pointer"
+                            checked={!!productFormState.popular}
+                            onChange={(e) => setProductFormState({ ...productFormState, popular: e.target.checked })}
+                          />
+                          Popular Tag
+                        </label>
+
+                        <label className="flex items-center gap-2 cursor-pointer text-xs font-bold text-red-955 select-none font-bold">
+                          <input
+                            type="checkbox"
+                            className="h-4 w-4 rounded-none accent-[#9E2A2B] border-stone-900 cursor-pointer"
+                            checked={!!productFormState.isFlashSale}
+                            onChange={(e) => setProductFormState({ ...productFormState, isFlashSale: e.target.checked })}
+                          />
+                          ⚡ Flash Sale
+                        </label>
+
+                        <label className="flex items-center gap-2 cursor-pointer text-xs font-bold text-blue-955 select-none font-bold">
+                          <input
+                            type="checkbox"
+                            className="h-4 w-4 rounded-none accent-[#9E2A2B] border-stone-900 cursor-pointer"
+                            checked={!!productFormState.isSpecialOffer}
+                            onChange={(e) => setProductFormState({ ...productFormState, isSpecialOffer: e.target.checked })}
+                          />
+                          🎁 Special Offer
+                        </label>
                       </div>
                     </div>
                   </div>
 
-                  <div>
-                    <label className="block text-xs font-semibold text-slate-500 mb-1 uppercase tracking-wider">Product Description</label>
-                    <textarea
-                      id="form-product-desc"
-                      rows={2}
-                      placeholder="Item detail..."
-                      className="w-full border border-slate-200 rounded-lg p-3 text-sm focus:outline-none focus:border-emerald-500"
-                      value={productFormState.description || ''}
-                      onChange={(e) => setProductFormState({ ...productFormState, description: e.target.value })}
-                    />
-                  </div>
-
-                  {/* Flag Toggles checkboxes */}
-                  <div className="grid grid-cols-2 md:grid-cols-6 gap-4 bg-slate-50 p-3 rounded-lg border border-slate-100">
-                    <label className="flex items-center gap-2 cursor-pointer text-xs font-medium text-slate-705">
-                      <input
-                        type="checkbox"
-                        checked={!!productFormState.featured}
-                        onChange={(e) => setProductFormState({ ...productFormState, featured: e.target.checked })}
-                      />
-                      Hero Slider
-                    </label>
-
-                    <label className="flex items-center gap-2 cursor-pointer text-xs font-medium text-slate-705">
-                      <input
-                        type="checkbox"
-                        checked={!!productFormState.bestSeller}
-                        onChange={(e) => setProductFormState({ ...productFormState, bestSeller: e.target.checked })}
-                      />
-                      Best Seller
-                    </label>
-
-                    <label className="flex items-center gap-2 cursor-pointer text-xs font-medium text-slate-705">
-                      <input
-                        type="checkbox"
-                        checked={!!productFormState.isNewArrival}
-                        onChange={(e) => setProductFormState({ ...productFormState, isNewArrival: e.target.checked })}
-                      />
-                      New Arrival Tag
-                    </label>
-
-                    <label className="flex items-center gap-2 cursor-pointer text-xs font-medium text-slate-705">
-                      <input
-                        type="checkbox"
-                        checked={!!productFormState.popular}
-                        onChange={(e) => setProductFormState({ ...productFormState, popular: e.target.checked })}
-                      />
-                      Popular Demand
-                    </label>
-
-                    {/* FLASH SALE SELECTOR (ফ্ল্যাশ সেল) */}
-                    <label className="flex items-center gap-1.5 cursor-pointer text-[11px] font-black text-orange-600 bg-orange-50 px-2 py-1 rounded border border-orange-200/60 shadow-3xs">
-                      <input
-                        type="checkbox"
-                        checked={!!productFormState.isFlashSale}
-                        onChange={(e) => setProductFormState({ ...productFormState, isFlashSale: e.target.checked })}
-                      />
-                      ⚡ Flash Sale (ফ্ল্যাশ সেল)
-                    </label>
-
-                    {/* SPECIAL OFFER SELECTOR (স্পেশাল অফার) */}
-                    <label className="flex items-center gap-1.5 cursor-pointer text-[11px] font-black text-rose-600 bg-rose-50 px-2 py-1 rounded border border-rose-200/60 shadow-3xs">
-                      <input
-                        type="checkbox"
-                        checked={!!productFormState.isSpecialOffer}
-                        onChange={(e) => setProductFormState({ ...productFormState, isSpecialOffer: e.target.checked })}
-                      />
-                      🎁 Special Offer (স্পেশাল অফার)
-                    </label>
-                  </div>
-
-                  <div className="flex justify-end gap-3 pt-2">
+                  <div className="bg-[#EFE9DB] border-t-2 border-stone-900 p-4 flex justify-end gap-3 font-sans">
                     <button
                       type="button"
                       onClick={() => { setShowProductForm(false); setEditingProduct(null); }}
-                      className="px-4 py-2 border border-slate-200 rounded-lg text-xs font-semibold text-slate-500 hover:bg-slate-50"
+                      className="px-4 py-1.5 border-2 border-stone-900 bg-stone-100 hover:bg-stone-250 text-stone-900 text-xs font-bold uppercase transition-all cursor-pointer select-none"
                     >
-                      Dismiss
+                      Dismiss (বাতিল)
                     </button>
                     <button
                       id="form-submit-crud-btn"
                       type="submit"
-                      className="px-5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-semibold shadow"
+                      className="px-5 py-1.5 bg-[#9E2A2B] text-white border-2 border-stone-955 text-xs font-black uppercase tracking-wider transition-all cursor-pointer shadow hover:bg-red-800 active:scale-95"
                     >
-                      {editingProduct ? 'Update Product Details' : 'Save and Issue to Store'}
+                      {editingProduct ? 'Commit Product Update (সংরক্ষণ করুন)' : 'Issue and Save Item (জারি করুন)'}
                     </button>
                   </div>
                 </form>
               )}
 
               {/* Items Table grid */}
-              <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden text-sm">
+              <div className="bg-[#FAF5EE] rounded-none border-2 border-stone-900 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] overflow-hidden text-sm">
                 <div className="overflow-x-auto">
                   <table className="w-full text-left border-collapse">
                     <thead>
-                      <tr className="bg-slate-50 border-b border-slate-100 text-slate-400 font-semibold text-xs">
-                        <th className="p-4">Item Detail</th>
-                        <th className="p-4">Category</th>
-                        <th className="p-4">Product Price</th>
-                        <th className="p-4 text-center">Packaging Unit</th>
-                        <th className="p-4">Stock density</th>
-                        <th className="p-4 text-center">Telemetry Status</th>
-                        <th className="p-4 text-right">Actions</th>
+                      <tr className="bg-[#9E2A2B] text-white border-b-2 border-stone-950 text-xs font-black uppercase tracking-wider select-none">
+                        <th className="p-4 border-r-2 border-stone-950/25">Item Detail (পণ্য বিবরণ)</th>
+                        <th className="p-4 border-r-2 border-stone-950/25">Category (শ্রেণী)</th>
+                        <th className="p-4 border-r-2 border-stone-950/25">Product Price (মূল্য)</th>
+                        <th className="p-4 border-r-2 border-stone-950/25 text-center">Packaging Unit (একক)</th>
+                        <th className="p-4 border-r-2 border-stone-950/25">Stock density (স্টক)</th>
+                        <th className="p-4 border-r-2 border-stone-950/25 text-center">Telemetry Status (অবস্থা)</th>
+                        <th className="p-4 text-right">Actions (কাজ)</th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-slate-50 text-xs">
+                    <tbody className="divide-y-2 divide-stone-900/30 text-xs font-sans">
                       {products.map(p => {
                         const isLow = p.stock <= 10;
                         const isOut = p.stock === 0;
 
                         return (
-                          <tr key={p.id} className="hover:bg-slate-50/40">
-                            <td className="p-4">
+                          <tr key={p.id} className="hover:bg-[#EFE9DB]/65 bg-[#FAF5EE] text-stone-900 border-b-2 border-stone-900/20 last:border-b-0 transition-colors">
+                            <td className="p-4 border-r-2 border-stone-900/10">
                               <div className="flex items-center gap-3">
-                                <img src={p.image} className="h-10 w-10 rounded-lg object-cover border border-slate-100" alt="" />
+                                <img src={p.image} className="h-10 w-10 border-2 border-stone-950 object-cover bg-stone-300" alt="" referrerPolicy="no-referrer" />
                                 <div>
-                                  <h4 className="font-semibold text-slate-800 font-display">{p.name}</h4>
-                                  <span className="text-[10px] text-slate-400 font-mono">ID: {p.id}</span>
+                                  <h4 className="font-bold text-stone-950 font-display text-xs-important">{p.name}</h4>
+                                  <span className="text-[10px] text-[#9E2A2B] font-black tracking-wider uppercase">ID: {p.id}</span>
                                 </div>
                               </div>
                             </td>
-                            <td className="p-4">
-                              <span className="bg-slate-100 text-slate-600 px-2 py-0.5 rounded-full capitalize text-[10px] font-semibold">{p.category}</span>
+                            <td className="p-4 border-r-2 border-stone-900/10">
+                              <span className="bg-stone-200 text-stone-900 border border-stone-900 px-2 py-0.5 font-bold uppercase text-[9px]">{p.category}</span>
                             </td>
-                            <td className="p-4">
-                              <div className="font-semibold text-slate-800">৳ {p.price}</div>
+                            <td className="p-4 border-r-2 border-stone-900/10 mb-0.5">
+                              <div className="font-bold text-stone-900 text-xs-important">৳ {p.price}</div>
                               {p.originalPrice > p.price && (
-                                <div className="text-[10px] text-slate-400 line-through">৳ {p.originalPrice}</div>
+                                <div className="text-[10px] text-stone-500 line-through">৳ {p.originalPrice}</div>
                               )}
                               {p.deliveryFee !== undefined && p.deliveryFee > 0 && (
-                                <div className="text-[9px] text-amber-700 bg-amber-55/60 border border-amber-200/50 px-1.5 py-0.5 rounded-md font-extrabold inline-block mt-1">🚚 +৳{p.deliveryFee}</div>
+                                <div className="text-[9px] text-[#9E2A2B] bg-red-100 border border-stone-950 px-1.5 py-0.5 font-extrabold inline-block mt-1">🚚 +৳{p.deliveryFee}</div>
                               )}
                               {p.affiliateUrl && (
-                                <div className="text-[9px] text-[#00796B] bg-teal-50 border border-teal-200 px-1.5 py-0.5 rounded-md font-extrabold block w-fit mt-1">🔗 Affiliate Link</div>
+                                <div className="text-[9px] text-white bg-stone-900 border border-stone-950 px-1.5 py-0.5 font-extrabold block w-fit mt-1">🔗 AFFILIATE PORTAL</div>
                               )}
                             </td>
-                            <td className="p-4 text-center text-slate-500 font-medium">
+                            <td className="p-4 text-center text-stone-850 font-bold border-r-2 border-stone-900/10">
                               {p.unit}
                             </td>
-                            <td className="p-4">
+                            <td className="p-4 border-r-2 border-stone-900/10">
                               <div className="flex items-center gap-1.5 font-bold font-mono">
-                                <span className={isOut ? 'text-red-600' : isLow ? 'text-amber-600' : 'text-slate-800'}>
+                                <span className={isOut ? 'text-red-700 bg-red-50 px-1.5 border border-stone-400' : isLow ? 'text-amber-800 bg-yellow-50 px-1.5 border border-stone-400 animate-pulse' : 'text-stone-900'}>
                                   {p.stock} units
                                 </span>
                               </div>
                             </td>
-                            <td className="p-4 text-center">
+                            <td className="p-4 text-center border-r-2 border-stone-900/10">
                               {isOut ? (
-                                <span className="bg-red-100 text-red-700 px-2 py-0.5 rounded-md font-bold text-[10px]">SOLD OUT</span>
+                                <span className="bg-red-200 text-red-900 border border-red-950 px-2 py-0.5 font-black text-[9px] uppercase tracking-wider">SOLD OUT</span>
                               ) : isLow ? (
-                                <span className="bg-amber-100 text-amber-700 px-2 py-0.5 rounded-md font-bold text-[10px] animate-pulse">LOW STOCK</span>
+                                <span className="bg-amber-200 text-amber-900 border border-amber-950 px-2 py-0.5 font-black text-[9px] uppercase tracking-wider animate-pulse">LOW STOCK</span>
                               ) : (
-                                <span className="bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-md font-bold text-[10px]">HEALTHY</span>
+                                <span className="bg-emerald-200 text-emerald-900 border border-emerald-950 px-2 py-0.5 font-black text-[9px] uppercase tracking-wider">HEALTHY</span>
                               )}
                             </td>
                             <td className="p-3 text-right">
@@ -1387,18 +1414,18 @@ export default function AdminPanel({ onDataChanged, onClose }: AdminPanelProps) 
                                 <button
                                   id={`edit-item-btn-${p.id}`}
                                   onClick={() => handleEditProductClick(p)}
-                                  className="p-1.5 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                                  className="p-1 px-2.5 bg-stone-200 hover:bg-stone-300 border border-stone-950 text-stone-900 font-bold text-xs uppercase cursor-pointer select-none"
                                   title="Edit information"
                                 >
-                                  <Edit2 className="h-4 w-4" />
+                                  <Edit2 className="h-3.5 w-3.5" />
                                 </button>
                                 <button
                                   id={`delete-item-btn-${p.id}`}
                                   onClick={() => handleDeleteProductClick(p.id)}
-                                  className="p-1.5 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                                  className="p-1 px-2.5 bg-[#9E2A2B] hover:bg-red-800 border border-stone-955 text-white font-bold text-xs uppercase cursor-pointer select-none"
                                   title="Delete product"
                                 >
-                                  <Trash2 className="h-4 w-4" />
+                                  <Trash2 className="h-3.5 w-3.5" />
                                 </button>
                               </div>
                             </td>
@@ -1421,24 +1448,24 @@ export default function AdminPanel({ onDataChanged, onClose }: AdminPanelProps) 
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                 {/* Categories Table */}
-                <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
-                  <h3 className="font-display font-semibold text-slate-800 pb-3 border-b border-slate-50 mb-4 text-base">Current Store Categories</h3>
+                <div className="bg-[#FAF5EE] border-2 border-stone-900 rounded-none p-6 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+                  <h3 className="font-display font-black text-stone-950 pb-3 border-b-2 border-stone-900 mb-4 text-xs uppercase tracking-wider">Current Store Categories (ক্যাটাগরি সমূহ)</h3>
                   <div className="space-y-4">
                     {categories.map(cat => (
-                      <div key={cat.slug} className="flex items-center justify-between p-3 rounded-xl border border-slate-100 hover:shadow-sm transition-shadow">
+                      <div key={cat.slug} className="flex items-center justify-between p-3 border-2 border-stone-900 bg-[#EFE9DB] hover:translate-x-1 transition-all">
                         <div className="flex items-center gap-3">
-                          <img src={cat.image} className="h-10 w-10 rounded-lg object-cover bg-slate-100" alt="" referee-policy="no-referrer" />
+                          <img src={cat.image} className="h-10 w-10 border-2 border-stone-950 object-cover bg-stone-300" alt="" referrerPolicy="no-referrer" />
                           <div>
-                            <span className="font-semibold text-slate-800 text-sm">{cat.name}</span>
-                            <p className="font-mono text-[10px] text-slate-400">Class: {cat.slug}</p>
+                            <span className="font-bold text-stone-950 text-sm">{cat.name}</span>
+                            <p className="font-mono text-[9px] text-[#9E2A2B] font-extrabold uppercase">Class: {cat.slug}</p>
                           </div>
                         </div>
                         <div className="flex items-center gap-3">
-                          <span className="text-xs text-slate-400 font-semibold">{products.filter(p => p.category === cat.slug).length} items</span>
+                          <span className="text-xs text-stone-800 font-extrabold">{products.filter(p => p.category === cat.slug).length} items</span>
                           <button
                             type="button"
                             onClick={() => handleDeleteCategoryClick(cat.slug)}
-                            className="p-1 px-2 border border-rose-200 text-rose-600 hover:bg-rose-50 rounded-lg transition-colors cursor-pointer"
+                            className="p-1 px-2 border-2 border-stone-950 bg-[#9E2A2B] text-white hover:bg-red-800 font-bold text-xs cursor-pointer"
                             title="Delete category Class Tier"
                           >
                             <Trash2 className="h-3.5 w-3.5" />
@@ -1450,38 +1477,38 @@ export default function AdminPanel({ onDataChanged, onClose }: AdminPanelProps) 
                 </div>
 
                 {/* Add Category Form Container */}
-                <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm space-y-4">
-                  <h3 className="font-display font-semibold text-slate-800 pb-3 border-b border-slate-50 text-base">Add New Category</h3>
+                <div className="bg-[#FAF5EE] border-2 border-stone-900 rounded-none p-6 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] space-y-4">
+                  <h3 className="font-display font-black text-stone-950 pb-3 border-b-2 border-stone-900 text-xs uppercase tracking-wider">Add New Category (নতুন ক্যাটাগরি তৈরি)</h3>
                   <form onSubmit={handleCategorySubmit} className="space-y-4">
                     <div>
-                      <label className="block text-xs font-semibold text-slate-500 mb-1">Category Name *</label>
+                      <label className="block text-xs font-bold text-stone-900 mb-1 uppercase tracking-wider">Category Name *</label>
                       <input
                         type="text"
                         required
                         placeholder="e.g. Organic Ghee & Honey"
                         value={newCatName}
                         onChange={(e) => setNewCatName(e.target.value)}
-                        className="w-full border border-slate-200 rounded-lg px-3 py-2 text-xs focus:border-emerald-500 focus:outline-none"
+                        className="w-full"
                       />
                     </div>
                     <div>
-                      <label className="block text-xs font-semibold text-slate-500 mb-1">Category Slug (Optional)</label>
+                      <label className="block text-xs font-bold text-stone-900 mb-1 uppercase tracking-wider">Category Slug (Optional)</label>
                       <input
                         type="text"
                         placeholder="e.g. ghee-honey"
                         value={newCatSlug}
                         onChange={(e) => setNewCatSlug(e.target.value)}
-                        className="w-full border border-slate-200 rounded-lg px-3 py-2 text-xs font-mono focus:border-emerald-500 focus:outline-none"
+                        className="w-full font-mono text-xs"
                       />
-                      <p className="text-[10px] text-slate-400 mt-1">If empty, will be auto-generated from name.</p>
+                      <p className="text-[10px] text-stone-600 font-bold mt-1">If empty, will be auto-generated from name.</p>
                     </div>
                     <div>
-                      <label className="block text-xs font-semibold text-slate-500 mb-1">Category Image *</label>
+                      <label className="block text-xs font-bold text-stone-900 mb-1 uppercase tracking-wider">Category Image *</label>
                       <div className="space-y-2">
                         {/* Drag and Drop box for Category Image */}
                         <div 
                           onClick={() => document.getElementById('category-file-upload-input')?.click()}
-                          className="border border-dashed border-slate-300 hover:border-[#00796B] bg-slate-50 hover:bg-slate-50/50 rounded-lg p-3 text-center transition-all cursor-pointer flex flex-col items-center justify-center min-h-[90px]"
+                          className="border-2 border-dashed border-stone-800 hover:border-[#9E2A2B] bg-[#EFE9DB] p-4 text-center cursor-pointer flex flex-col items-center justify-center min-h-[90px] select-none"
                         >
                           <input 
                             id="category-file-upload-input"
@@ -1501,9 +1528,9 @@ export default function AdminPanel({ onDataChanged, onClose }: AdminPanelProps) 
                               }
                             }}
                           />
-                          <ImageIcon className="h-5 w-5 text-slate-400 mb-1" />
-                          <span className="text-[11px] font-bold text-slate-700">Upload direct photo or Browse</span>
-                          <span className="text-[9px] text-slate-400">Supports JPEG, PNG, WEBP</span>
+                          <ImageIcon className="h-5 w-5 text-stone-900 mb-1 animate-pulse" />
+                          <span className="text-xs font-black text-stone-950 uppercase">UPLOAD DIRECT PHOTO</span>
+                          <span className="text-[9px] text-stone-600">(Supports JPEG, PNG, WEBP)</span>
                         </div>
 
                         {/* Image Preview and Link input fallback */}
@@ -1513,12 +1540,12 @@ export default function AdminPanel({ onDataChanged, onClose }: AdminPanelProps) 
                             placeholder="Or paste image URL Link..."
                             value={newCatImage}
                             onChange={(e) => setNewCatImage(e.target.value)}
-                            className="w-full border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs font-mono focus:border-emerald-500 focus:outline-none"
+                            className="w-full text-xs font-mono"
                           />
                           {newCatImage && (
                             <img 
                               src={newCatImage} 
-                              className="h-8 w-8 object-cover rounded border border-slate-200 shadow-sm shrink-0" 
+                              className="h-8 w-8 object-cover border-2 border-stone-950 bg-stone-300 shrink-0" 
                               alt="preview" 
                               referrerPolicy="no-referrer"
                             />
@@ -1528,20 +1555,20 @@ export default function AdminPanel({ onDataChanged, onClose }: AdminPanelProps) 
                     </div>
                     <button
                       type="submit"
-                      className="w-full bg-[#00796B] hover:bg-[#004D40] text-white font-bold py-2.5 rounded-lg text-xs transition-all uppercase tracking-wider cursor-pointer font-sans"
+                      className="w-full bg-[#9E2A2B] text-white border-2 border-stone-955 hover:bg-red-800 font-extrabold py-2 text-xs uppercase tracking-wider cursor-pointer shadow transition-all active:scale-95"
                     >
-                      Create Category
+                      Create Category (ক্যাটাগরি প্রকাশ করুন)
                     </button>
                   </form>
                 </div>
 
                 {/* DB Instructions regarding categories */}
-                <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm space-y-4">
-                  <h3 className="font-display font-semibold text-slate-800 pb-3 border-b border-slate-50 text-base">Class Mutation Guide</h3>
-                  <p className="text-xs text-slate-500 leading-relaxed">
+                <div className="bg-[#FAF5EE] border-2 border-stone-900 rounded-none p-6 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] space-y-4">
+                  <h3 className="font-display font-black text-stone-950 pb-3 border-b-2 border-stone-900 text-xs uppercase tracking-wider">Class Mutation Guide (ডেটাবেইজ নির্দেশিকা)</h3>
+                  <p className="text-xs text-stone-700 leading-relaxed font-bold">
                     Categories in BAZAR are aligned dynamically into product schema arrays in Postgres. When inserting a class, make sure the slug matches precisely during raw API JSON formatting.
                   </p>
-                  <div className="p-4 bg-slate-50 border border-slate-100 rounded-xl font-mono text-xs text-emerald-600 whitespace-pre-wrap select-all">
+                  <div className="p-4 bg-[#EFE9DB] border-2 border-stone-900 font-mono text-xs text-[#9E2A2B] font-bold whitespace-pre-wrap select-all">
 {`-- SQL Seed Insert Statement
 INSERT INTO categories (slug, name, image)
 VALUES ('exotics', 'Exotics (আজব ফল)', 'https://unsplash.com/...');`}
@@ -1576,96 +1603,96 @@ VALUES ('exotics', 'Exotics (আজব ফল)', 'https://unsplash.com/...');`}
                 
                 {/* Visual Section Header with Vertical Teal Accent Bar */}
                 <div className="flex items-center gap-3">
-                  <div className="w-1.5 h-8 bg-[#00796B] rounded-sm"></div>
+                  <div className="w-1.5 h-8 bg-[#9E2A2B]"></div>
                   <div>
-                    <h2 className="font-display font-black text-2xl text-slate-800 tracking-tight uppercase">
-                      ORDER MANAGEMENT
+                    <h2 className="font-display font-black text-2xl text-stone-950 tracking-tight uppercase">
+                      ORDER MANAGEMENT (অর্ডার ব্যবস্থাপনা)
                     </h2>
-                    <p className="text-[10px] text-slate-400 font-mono font-bold tracking-widest uppercase mt-0.5">
+                    <p className="text-[10px] text-stone-600 font-mono font-bold tracking-widest uppercase mt-0.5">
                       MANAGE STORE ORDERS // {filteredOrders.length} TOTAL // STATUS: {orderFilter.toUpperCase()}
                     </p>
                   </div>
                 </div>
 
                 {/* Control Action Filters Bar */}
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-4 rounded-xl border border-slate-100 shadow-sm">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-[#FAF5EE] p-4 border-2 border-stone-900 rounded-none shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
                   <div className="flex flex-wrap items-center gap-2">
                     <button
                       onClick={() => setOrderFilter('All')}
-                      className={`py-2 px-4 rounded text-xs font-bold font-display uppercase tracking-wider transition-all border ${
+                      className={`py-2 px-4 rounded-none text-xs font-bold font-display uppercase tracking-wider transition-all border-2 ${
                         orderFilter === 'All'
-                          ? 'bg-[#00796B] text-white border-[#00796B] shadow-sm shadow-teal-700/10'
-                          : 'border-slate-200 text-slate-600 hover:bg-slate-50'
+                          ? 'bg-[#9E2A2B] text-white border-stone-950 shadow-sm'
+                          : 'border-stone-900 text-stone-800 bg-[#EFE9DB] hover:bg-stone-300'
                       }`}
                     >
-                      ALL ORDERS
+                      ALL ORDERS (সব অর্ডার)
                     </button>
                     <button
                       onClick={() => setOrderFilter('Pending')}
-                      className={`py-2 px-4 rounded text-xs font-bold font-display uppercase tracking-wider transition-all border ${
+                      className={`py-2 px-4 rounded-none text-xs font-bold font-display uppercase tracking-wider transition-all border-2 ${
                         orderFilter === 'Pending'
-                          ? 'bg-[#00796B] text-white border-[#00796B] shadow-sm shadow-teal-700/10'
-                          : 'border-slate-200 text-slate-600 hover:bg-slate-50'
+                          ? 'bg-[#9E2A2B] text-white border-stone-950 shadow-sm'
+                          : 'border-stone-900 text-stone-800 bg-[#EFE9DB] hover:bg-stone-300'
                       }`}
                     >
-                      PENDING
+                      PENDING (অপেক্ষা রত)
                     </button>
                     <button
                       onClick={() => setOrderFilter('Confirmed')}
-                      className={`py-2 px-4 rounded text-xs font-bold font-display uppercase tracking-wider transition-all border ${
+                      className={`py-2 px-4 rounded-none text-xs font-bold font-display uppercase tracking-wider transition-all border-2 ${
                         orderFilter === 'Confirmed'
-                          ? 'bg-[#00796B] text-white border-[#00796B] shadow-sm shadow-teal-700/10'
-                          : 'border-slate-200 text-slate-600 hover:bg-slate-50'
+                          ? 'bg-[#9E2A2B] text-white border-stone-950 shadow-sm'
+                          : 'border-stone-900 text-stone-800 bg-[#EFE9DB] hover:bg-stone-300'
                       }`}
                     >
-                      CONFIRMED
+                      CONFIRMED (নিশ্চিত কৃত)
                     </button>
 
-                    <div className="h-6 w-px bg-slate-200 mx-1 hidden min-[400px]:block"></div>
+                    <div className="h-6 w-px bg-stone-400 mx-1 hidden min-[400px]:block"></div>
 
                     <button
                       onClick={() => {
                         syncLists();
                       }}
-                      className="flex items-center gap-1.5 border border-slate-200 hover:bg-slate-50 text-slate-600 py-2 px-4 rounded font-display font-bold text-xs transition-all uppercase tracking-wider"
+                      className="flex items-center gap-1.5 border-2 border-stone-900 bg-stone-100 hover:bg-stone-200 text-stone-900 py-2 px-4 rounded-none font-display font-bold text-xs transition-all uppercase tracking-wider cursor-pointer"
                     >
-                      <RefreshCw className="h-3.5 w-3.5 text-slate-400" />
-                      REFRESH
+                      <RefreshCw className="h-3.5 w-3.5 text-stone-700 animate-spin" style={{ animationDuration: '3s' }} />
+                      REFRESH (রিফ্রেশ)
                     </button>
                   </div>
 
                   {/* Search query input box */}
                   <div className="relative w-full sm:w-72">
-                    <Search className="absolute left-3 top-3 h-4 w-4 text-slate-400" />
+                    <Search className="absolute left-3 top-3.5 h-4 w-4 text-stone-900 font-bold" />
                     <input
                       type="text"
                       placeholder="SEARCH ORDER ID..."
                       value={orderSearchQuery}
                       onChange={(e) => setOrderSearchQuery(e.target.value)}
-                      className="w-full bg-white border border-slate-200 text-xs pl-9 pr-4 py-2.5 rounded-lg focus:outline-none focus:ring-1 focus:ring-[#00796B] transition-all font-mono font-bold uppercase tracking-wider placeholder-slate-400"
+                      className="w-full bg-white border-2 border-stone-900 text-xs pl-9 pr-4 py-2.5 rounded-none focus:outline-none transition-all font-mono font-bold uppercase tracking-wider placeholder-stone-400"
                     />
                   </div>
                 </div>
 
                 {/* HIGH FIDELITY TEAL TABLE SECTION */}
-                <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden min-w-full">
+                <div className="bg-[#FAF5EE] rounded-none border-2 border-stone-900 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] overflow-hidden min-w-full">
                   <div className="overflow-x-auto">
                     <table className="w-full text-left border-collapse">
                       <thead>
-                        <tr className="bg-[#00796B] text-[#E0F2F1] text-[11px] font-black uppercase tracking-widest border-b border-[#00695C]">
-                          <th className="p-4">ORDER ID</th>
-                          <th className="p-4">CUSTOMER</th>
-                          <th className="p-4">ITEMS</th>
-                          <th className="p-4">AMOUNT</th>
-                          <th className="p-4">STATUS</th>
-                          <th className="p-4 text-center">ACTIONS</th>
+                        <tr className="bg-[#9E2A2B] text-white text-[11px] font-black uppercase tracking-widest border-b-2 border-stone-950">
+                          <th className="p-4 border-r-2 border-stone-950/25">ORDER ID (আইডি)</th>
+                          <th className="p-4 border-r-2 border-stone-950/25">CUSTOMER (গ্রাহক খতিয়ান)</th>
+                          <th className="p-4 border-r-2 border-stone-950/25">ITEMS (পণ্য তালিকা)</th>
+                          <th className="p-4 border-r-2 border-stone-950/25">AMOUNT (মোট মূল্য)</th>
+                          <th className="p-4 border-r-2 border-stone-950/25">STATUS (বর্তমান অবস্থা)</th>
+                          <th className="p-4 text-center">ACTIONS (পদক্ষেপ)</th>
                         </tr>
                       </thead>
-                      <tbody className="divide-y divide-slate-100 text-xs">
+                      <tbody className="divide-y-2 divide-stone-900/30 text-xs text-stone-900">
                         {filteredOrders.length === 0 ? (
                           <tr>
-                            <td colSpan={6} className="p-16 text-center text-slate-400 font-mono font-bold uppercase tracking-widest">
-                              No matching orders found inside database
+                            <td colSpan={6} className="p-16 text-center text-stone-600 font-mono font-bold uppercase tracking-widest bg-[#FAF5EE]">
+                              No matching orders found inside database (কোনো অর্ডার পাওয়া যায়নি)
                             </td>
                           </tr>
                         ) : (
@@ -1674,110 +1701,110 @@ VALUES ('exotics', 'Exotics (আজব ফল)', 'https://unsplash.com/...');`}
                             const formattedDate = rawDate.toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: '2-digit' }) + '.' + rawDate.toTimeString().split(' ')[0].replace(':', '').substring(0, 4);
                             
                             return (
-                              <tr key={order.id} className="hover:bg-slate-50/50 transition-colors">
-                                <td className="p-4 font-mono">
-                                  <div className="font-extrabold text-slate-800 text-sm">
+                              <tr key={order.id} className="hover:bg-[#EFE9DB]/60 bg-[#FAF5EE] border-b-2 border-stone-900/10 last:border-b-0 transition-all">
+                                <td className="p-4 font-mono border-r-2 border-stone-900/10">
+                                  <div className="font-extrabold text-stone-950 text-sm">
                                     #{order.id}
                                   </div>
-                                  <div className="text-[10px] text-slate-400 font-bold mt-1 tracking-wider">
+                                  <div className="text-[10px] text-stone-600 font-bold mt-1 tracking-wider">
                                     {formattedDate}
                                   </div>
                                 </td>
                                 
-                                <td className="p-4">
-                                  <div className="font-extrabold text-slate-800 text-[11px] uppercase">
+                                <td className="p-4 border-r-2 border-stone-900/10">
+                                  <div className="font-extrabold text-stone-950 text-[11px] uppercase">
                                     {order.customerName}
                                   </div>
-                                  <div className="text-[10px] text-slate-400 font-semibold mt-0.5">
+                                  <div className="text-[10px] text-stone-700 font-extrabold mt-0.5 uppercase">
                                     {order.city.toUpperCase()}
                                   </div>
-                                  <div className="text-[10px] text-slate-400 font-mono mt-0.5 font-bold">
+                                  <div className="text-[10px] text-[#9E2A2B] font-mono mt-0.5 font-bold">
                                     {order.phone}
                                   </div>
                                 </td>
-
-                                <td className="p-4 max-w-sm">
+ 
+                                <td className="p-4 max-w-sm border-r-2 border-stone-900/10">
                                   <div className="space-y-1">
                                     {order.items.map((it, idx) => (
-                                      <div key={idx} className="text-[10px] text-[#00695C] font-mono font-bold leading-none truncate max-w-[200px]" title={it.productName}>
+                                      <div key={idx} className="text-[10px] text-stone-850 font-mono font-bold leading-none truncate max-w-[200px]" title={it.productName}>
                                         [{it.quantity}X] {it.productName.toUpperCase()}
                                       </div>
                                     ))}
                                   </div>
                                 </td>
-
-                                <td className="p-4">
-                                  <div className="font-black text-slate-800 text-sm">
+ 
+                                <td className="p-4 border-r-2 border-stone-900/10">
+                                  <div className="font-black text-stone-950 text-sm">
                                     ৳ {order.total.toLocaleString()}
                                   </div>
-                                  <div className="text-[9px] text-[#00796B] font-mono font-extrabold uppercase mt-1.5 tracking-wider bg-teal-50 border border-teal-100 rounded inline-block px-1.5 py-0.5">
+                                  <div className="text-[9px] text-[#9E2A2B] font-mono font-extrabold uppercase mt-1.5 tracking-wider bg-red-100 border border-stone-950 rounded-none inline-block px-1.5 py-0.5">
                                     {order.paymentMethod === 'Cash on Delivery' ? 'COD' : order.paymentMethod.toUpperCase()}
                                   </div>
                                 </td>
-
-                                <td className="p-4">
+ 
+                                <td className="p-4 border-r-2 border-stone-900/10">
                                   <div className="flex items-center gap-1.5 text-[10px] font-black uppercase tracking-wider">
-                                    <span className={`h-2.5 w-2.5 rounded-sm inline-block ${
+                                    <span className={`h-2.5 w-2.5 rounded-none border border-stone-950 inline-block ${
                                       order.status === 'Pending' ? 'bg-amber-500 animate-pulse' :
                                       order.status === 'Processing' ? 'bg-blue-500' :
                                       order.status === 'Shipped' ? 'bg-purple-500' :
                                       order.status === 'Delivered' ? 'bg-emerald-500' : 'bg-rose-500'
                                     }`}></span>
                                     <span className={
-                                      order.status === 'Pending' ? 'text-amber-600' :
-                                      order.status === 'Processing' ? 'text-blue-600' :
-                                      order.status === 'Shipped' ? 'text-purple-600' :
-                                      order.status === 'Delivered' ? 'text-emerald-600' : 'text-rose-600'
+                                      order.status === 'Pending' ? 'text-amber-700' :
+                                      order.status === 'Processing' ? 'text-blue-700' :
+                                      order.status === 'Shipped' ? 'text-purple-700' :
+                                      order.status === 'Delivered' ? 'text-emerald-700' : 'text-rose-700'
                                     }>{order.status}</span>
                                   </div>
                                 </td>
+ 
+                                <td className="p-4 text-center min-w-[185px]">
+                                  <div className="grid grid-cols-3 gap-1.5 w-full max-w-[170px] mx-auto">
+                                     {/* Row 1: Status Dropdown occupying full width */}
+                                     <div className="relative col-span-3 w-full">
 
-                                <td className="p-4 text-center max-w-[200px]">
-                                  <div className="flex flex-col gap-2">
-                                    <div className="flex items-center gap-1.5">
-                                      <div className="relative flex-1">
                                         <select
                                           value={order.status}
                                           onChange={(e) => handleUpdateOrderStatus(order.id, e.target.value as Order['status'], e.target.value === 'Delivered' ? 'Paid' : undefined)}
-                                          className="w-full bg-white border border-slate-200 text-[10px] font-black uppercase tracking-wider px-2.5 py-1.5 rounded-md focus:outline-none focus:ring-1 focus:ring-[#00796B] hover:border-slate-300 transition-all cursor-pointer text-slate-700"
+                                          className="w-full bg-[#FAF5EE] hover:bg-[#EFE9DB] border-2 border-stone-900 text-[10px] font-black uppercase tracking-wider px-2 py-1.5 rounded-none focus:outline-none cursor-pointer text-stone-900 transition-colors"
                                         >
-                                          <option value="Pending">PENDING</option>
-                                          <option value="Processing">PROCESSING</option>
-                                          <option value="Shipped">SHIPPED</option>
-                                          <option value="Delivered">DELIVERED</option>
-                                          <option value="Canceled">CANCELED</option>
+                                          <option value="Pending">⏳ PENDING</option>
+                                          <option value="Processing">⚙️ PROCESSING</option>
+                                          <option value="Shipped">📦 SHIPPED</option>
+                                          <option value="Delivered">✅ DELIVERED</option>
+                                          <option value="Canceled">❌ CANCELED</option>
                                         </select>
                                       </div>
                                       
                                       <button
                                         onClick={() => setEditingOrder(order)}
                                         title="View/Edit Order Parameters"
-                                        className="border border-slate-200 text-slate-500 hover:text-[#00796B] hover:bg-slate-50 p-1.5 rounded transition-colors cursor-pointer bg-white"
+                                        className="border-2 border-stone-900 text-stone-900 hover:bg-stone-200 py-1.5 rounded-none transition-colors cursor-pointer bg-white flex items-center justify-center active:scale-95 font-bold"
                                       >
                                         <FileText className="h-4 w-4" />
                                       </button>
-
+ 
                                       <button
                                         onClick={() => setSelectedReportOrder(order)}
                                         title="Generate Unique Invoice Report & Slip (with QR Code)"
-                                        className="border border-emerald-200 text-emerald-700 hover:bg-emerald-50/80 p-1.5 rounded transition-colors cursor-pointer bg-white"
+                                        className="border-2 border-stone-900 text-[#9E2A2B] hover:bg-red-50 py-1.5 rounded-none transition-colors cursor-pointer bg-white flex items-center justify-center active:scale-95 font-bold"
                                       >
                                         <Printer className="h-4 w-4" />
                                       </button>
-
+ 
                                       <button
                                         onClick={() => handleDeleteOrderClick(order.id)}
                                         title="Delete Order"
-                                        className="border border-rose-200 text-[#C62828] hover:bg-rose-50 p-1.5 rounded transition-colors cursor-pointer bg-white"
+                                        className="border-2 border-stone-900 text-white bg-red-800 hover:bg-red-900 py-1.5 rounded-none transition-colors cursor-pointer flex items-center justify-center active:scale-95 font-bold"
                                       >
                                         <Trash2 className="h-4 w-4" />
                                       </button>
-                                    </div>
 
                                     {order.status === 'Pending' && (
                                       <button
                                         onClick={() => handleConfirmOrder(order.id)}
-                                        className="bg-[#00796B] hover:bg-[#005B52] font-display font-black text-[9px] text-white py-1.5 px-3 rounded uppercase tracking-wider w-full text-center transition-all shadow-sm active:scale-97 cursor-pointer"
+                                        className="col-span-3 bg-[#00796B] hover:bg-[#005B52] border-2 border-stone-850 font-display font-black text-[10px] text-white py-1.5 px-3 rounded-none uppercase tracking-wider w-full text-center transition-all shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:translate-y-[-1px] active:translate-y-[0px] active:shadow-none cursor-pointer mt-1"
                                       >
                                         CONFIRM ORDER
                                       </button>
@@ -2257,34 +2284,34 @@ VALUES ('exotics', 'Exotics (আজব ফল)', 'https://unsplash.com/...');`}
 
           {/* TAB 5: REGISTERED CUSTOMERS */}
           {activeTab === 'customers' && (
-            <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden text-sm animate-fade-in">
+            <div className="bg-[#FAF5EE] rounded-none border-2 border-stone-900 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] overflow-hidden text-sm animate-fade-in">
               <div className="overflow-x-auto">
                 <table className="w-full text-left border-collapse">
                   <thead>
-                    <tr className="bg-slate-50 border-b border-slate-100 text-slate-400 text-xs font-semibold">
-                      <th className="p-4">Customer Name</th>
-                      <th className="p-4">Email Address</th>
-                      <th className="p-4">Mobile Contacts</th>
-                      <th className="p-4">Address Parameters</th>
-                      <th className="p-4">Registration Date</th>
-                      <th className="p-4 text-center">Status</th>
+                    <tr className="bg-[#9E2A2B] text-white border-b-2 border-stone-950 text-xs font-black uppercase tracking-wider select-none">
+                      <th className="p-4 border-r-2 border-stone-950/25">Customer Name (গ্রাহকের নাম)</th>
+                      <th className="p-4 border-r-2 border-stone-950/25">Email Address (ইমেইল)</th>
+                      <th className="p-4 border-r-2 border-stone-950/25">Mobile Contacts (মোবাইল নম্বর)</th>
+                      <th className="p-4 border-r-2 border-stone-950/25">Address Parameters (ঠিকানা)</th>
+                      <th className="p-4 border-r-2 border-stone-950/25">Registration Date (নিবন্ধন)</th>
+                      <th className="p-4 text-center">Status (অবস্থা)</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-slate-50 text-xs">
+                  <tbody className="divide-y-2 divide-stone-900/30 text-xs text-stone-900">
                     {customers.map((c, idx) => (
-                      <tr key={c.id || idx} className="hover:bg-slate-50/40">
-                        <td className="p-4 font-bold text-slate-800 flex items-center gap-2">
-                          <div className="h-7 w-7 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center font-bold text-xs">
+                      <tr key={c.id || idx} className="hover:bg-[#EFE9DB]/60 bg-[#FAF5EE] border-b-2 border-stone-900/10 last:border-b-0 transition-colors">
+                        <td className="p-4 font-bold text-stone-950 flex items-center gap-2 border-r-2 border-stone-900/10">
+                          <div className="h-7 w-7 rounded-none border-2 border-stone-950 bg-[#EFE9DB] text-stone-950 flex items-center justify-center font-black text-xs select-none shadow-[1px_1px_0px_0px_rgba(0,0,0,1)]">
                             {c.name.charAt(0)}
                           </div>
                           {c.name}
                         </td>
-                        <td className="p-4 font-mono text-slate-600">{c.email}</td>
-                        <td className="p-4 font-mono text-slate-600">{c.phone || 'N/A'}</td>
-                        <td className="p-4 text-slate-500 font-sans max-w-xs truncate">{c.address || 'N/A'}, {c.city || ''}</td>
-                        <td className="p-4 text-slate-400">{c.registeredDate ? new Date(c.registeredDate).toLocaleDateString() : 'Existing'}</td>
+                        <td className="p-4 font-mono text-stone-850 border-r-2 border-stone-900/10 font-bold">{c.email}</td>
+                        <td className="p-4 font-mono text-stone-850 border-r-2 border-stone-900/10 font-bold">{c.phone || 'N/A'}</td>
+                        <td className="p-4 text-stone-700 font-sans max-w-xs truncate border-r-2 border-stone-900/10 font-bold">{c.address || 'N/A'}, {c.city || ''}</td>
+                        <td className="p-4 text-stone-600 border-r-2 border-stone-900/10 font-bold">{c.registeredDate ? new Date(c.registeredDate).toLocaleDateString() : 'Existing'}</td>
                         <td className="p-4 text-center">
-                          <span className="bg-emerald-100 text-emerald-800 font-bold px-2 py-0.5 rounded text-[10px]">active</span>
+                          <span className="bg-emerald-100 text-emerald-900 border border-emerald-950 font-black px-2 py-0.5 text-[10px] uppercase select-none">active</span>
                         </td>
                       </tr>
                     ))}
@@ -2296,82 +2323,82 @@ VALUES ('exotics', 'Exotics (আজব ফল)', 'https://unsplash.com/...');`}
 
           {/* TAB 6: COUPONS & DISCOUNTS */}
           {activeTab === 'coupons' && (
-            <div className="space-y-6 animate-fade-in text-sm">
-              <div className="flex justify-between items-center">
-                <p className="text-xs text-slate-500">Configure promotional vouchers code, savings parameters & minimum spend requirements.</p>
+            <div className="space-y-6 animate-fade-in text-sm text-stone-900">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-[#FAF5EE] p-4 border-2 border-stone-900 rounded-none shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+                <p className="text-xs text-stone-750 font-bold">Configure promotional vouchers code, savings parameters & minimum spend requirements.</p>
                 <button
                   id="admin-add-coupon-toggle-btn"
                   onClick={() => setShowCouponForm(!showCouponForm)}
-                  className="bg-emerald-600 text-white px-4 py-2 rounded-xl text-xs font-semibold hover:bg-emerald-700 shadow"
+                  className="bg-[#9E2A2B] hover:bg-red-800 border-2 border-stone-955 text-white px-4 py-2 rounded-none text-xs font-black uppercase cursor-pointer select-none shadow"
                 >
                   {showCouponForm ? 'Dismiss Form' : 'Insert New Promo Code'}
                 </button>
               </div>
 
               {showCouponForm && (
-                <form id="coupon-add-form" onSubmit={handleCouponSubmit} className="bg-white border border-slate-200 rounded-2xl p-5 shadow space-y-4">
-                  <h4 className="font-display font-semibold text-slate-800 text-sm">Create New Promo Rules</h4>
+                <form id="coupon-add-form" onSubmit={handleCouponSubmit} className="bg-[#FAF5EE] border-2 border-stone-900 rounded-none p-5 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] space-y-4">
+                  <h4 className="font-display font-black text-stone-955 text-xs uppercase tracking-wider pb-2 border-b-2 border-stone-900">Create New Promo Rules (নতুন কুপন কোড)</h4>
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div>
-                      <label className="block text-xs font-semibold text-slate-500 mb-1">PROMO CODE (Uppercase recommended)</label>
+                      <label className="block text-xs font-bold text-stone-900 mb-1 uppercase tracking-wider">PROMO CODE *</label>
                       <input
                         id="form-coupon-code"
                         type="text"
                         required
                         placeholder="e.g. EXTRA10"
-                        className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm uppercase font-mono tracking-widest"
+                        className="w-full text-xs uppercase font-mono tracking-widest font-black"
                         value={couponForm.code}
                         onChange={(e) => setCouponForm({ ...couponForm, code: e.target.value.toUpperCase() })}
                       />
                     </div>
                     <div>
-                      <label className="block text-xs font-semibold text-slate-500 mb-1">Savings Percent (%)</label>
+                      <label className="block text-xs font-bold text-stone-900 mb-1 uppercase tracking-wider">Savings Percent (%) *</label>
                       <input
                         id="form-coupon-pct"
                         type="number"
                         required
                         min="1"
                         max="90"
-                        className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm"
+                        className="w-full text-xs font-bold"
                         value={couponForm.discountPercent}
                         onChange={(e) => setCouponForm({ ...couponForm, discountPercent: Number(e.target.value) })}
                       />
                     </div>
                     <div>
-                      <label className="block text-xs font-semibold text-slate-500 mb-1">Min Spend Limit (৳)</label>
+                      <label className="block text-xs font-bold text-stone-900 mb-1 uppercase tracking-wider">Min Spend Limit (৳) *</label>
                       <input
                         id="form-coupon-minspend"
                         type="number"
                         required
                         min="0"
-                        className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm"
+                        className="w-full text-xs font-bold"
                         value={couponForm.minSpend}
                         onChange={(e) => setCouponForm({ ...couponForm, minSpend: Number(e.target.value) })}
                       />
                     </div>
                   </div>
                   <div className="flex justify-end gap-2 pt-2">
-                    <button type="button" onClick={() => setShowCouponForm(false)} className="px-4 py-1.5 border border-slate-200 rounded-lg text-xs">Cancel</button>
-                    <button type="submit" className="px-5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs shadow">Save Voucher</button>
+                    <button type="button" onClick={() => setShowCouponForm(false)} className="px-4 py-1.5 border-2 border-stone-900 rounded-none text-xs font-bold bg-[#EFE9DB] hover:bg-stone-300">Cancel</button>
+                    <button type="submit" className="px-5 py-1.5 bg-[#9E2A2B] hover:bg-red-800 border-2 border-stone-955 text-white font-bold text-xs uppercase tracking-wider">Save Voucher</button>
                   </div>
                 </form>
               )}
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {coupons.map(cp => (
-                  <div key={cp.id} className="bg-white border border-slate-200 rounded-2xl p-6 flex justify-between items-center shadow-sm">
+                  <div key={cp.id} className="bg-[#FAF5EE] border-2 border-stone-900 rounded-none p-6 flex justify-between items-center shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:translate-y-[-2px] hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] transition-all">
                     <div>
-                      <span className="text-[10px] bg-emerald-50 text-emerald-700 border border-emerald-200 px-2 py-0.5 rounded font-mono font-bold tracking-wider">{cp.code}</span>
-                      <h4 className="font-display font-semibold text-slate-800 text-lg mt-2">{cp.discountPercent}% Savings</h4>
-                      <p className="text-xs text-slate-500 mt-1">Requires min purchase value of ৳ {cp.minSpend}</p>
+                      <span className="text-[10px] bg-red-100 text-[#9E2A2B] border-2 border-stone-950 px-2.5 py-1 font-mono font-black tracking-wider uppercase select-none">{cp.code}</span>
+                      <h4 className="font-display font-black text-stone-950 text-xl mt-3">{cp.discountPercent}% Savings</h4>
+                      <p className="text-xs text-stone-700 mt-1 font-extrabold">Requires min purchase value of ৳ {cp.minSpend}</p>
                     </div>
                     <button
                       id={`delete-coupon-btn-${cp.id}`}
                       onClick={() => handleDeleteCouponClick(cp.id)}
-                      className="p-2 text-red-600 hover:bg-red-50 rounded-xl transition-colors"
+                      className="p-1 px-2.5 bg-[#9E2A2B] border-2 border-stone-955 hover:bg-[#8B2324] text-white font-bold text-xs cursor-pointer select-none transition-colors"
                       title="Revoke voucher rules"
                     >
-                      <Trash2 className="h-5 w-5" />
+                      <Trash2 className="h-4 w-4" />
                     </button>
                   </div>
                 ))}
@@ -2408,155 +2435,199 @@ VALUES ('exotics', 'Exotics (আজব ফল)', 'https://unsplash.com/...');`}
               </div>
 
               {showBannerForm && (
-                <form onSubmit={handleBannerSubmit} className={`bg-white border rounded-2xl p-6 shadow-sm space-y-4 max-w-2xl transition-all duration-300 ${editingBanner ? 'border-amber-400 ring-2 ring-amber-400/20 shadow-lg' : 'border-slate-200'}`}>
-                  <h4 className="font-display font-semibold text-slate-700 border-b border-slate-100 pb-2 flex items-center justify-between">
-                    <span>
-                      {editingBanner ? 'Edit Existing Slider Banner' : 'Configure New Home Slider Banner'}
+                <form onSubmit={handleBannerSubmit} className={`bg-[#FAF5EE] border-2 border-stone-900 p-0 shadow-lg space-y-0 transition-all duration-300 ${editingBanner ? 'ring-4 ring-[#9E2A2B]/20' : ''}`}>
+                  <div className="bg-[#9E2A2B] text-white px-4 py-2.5 font-display font-bold text-xs uppercase tracking-wider flex items-center justify-between border-b-2 border-stone-950 select-none">
+                    <span className="flex items-center gap-1.5">
+                      <Plus className="h-3.5 w-3.5 text-white" />
+                      {editingBanner ? 'EDIT EXISTING SLIDER BANNER (স্লাইডার ব্যানার সংশোধন)' : 'CONFIGURE NEW HOME SLIDER BANNER (নতুন স্লাইড ব্যানার এন্ট্রি)'}
                     </span>
                     {editingBanner && (
-                      <span className="bg-amber-100 text-amber-800 border border-amber-200 text-[10px] font-black px-2.5 py-1 rounded-lg uppercase tracking-wider animate-pulse flex items-center gap-1 select-none">
-                        <span className="h-2 w-2 bg-amber-600 rounded-full inline-block"></span>
-                        EDIT_MODE_ACTIVE (ID: {editingBanner.id})
+                      <span className="bg-[#FAF5EE] text-stone-950 text-[9px] font-black px-2.5 py-0.5 border border-stone-950 uppercase tracking-wider">
+                        EDIT ID: {editingBanner.id}
                       </span>
                     )}
-                  </h4>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-xs font-semibold text-slate-500 mb-1">Banner Heading / Title</label>
-                      <input
-                        type="text"
-                        required
-                        placeholder="e.g. 100% Organic, Fresh Farms"
-                        className="w-full border border-slate-200 rounded-lg px-3 py-2 border-slate-200 focus:border-emerald-500 focus:outline-none"
-                        value={bannerForm.title}
-                        onChange={(e) => setBannerForm({ ...bannerForm, title: e.target.value })}
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-xs font-semibold text-slate-500 mb-1">Badge Tag / Text</label>
-                      <input
-                        type="text"
-                        placeholder="e.g. SPECIAL PROMOTION"
-                        className="w-full border border-slate-200 rounded-lg px-3 py-2 border-slate-200 focus:border-emerald-500 focus:outline-none font-sans font-bold text-slate-700"
-                        value={bannerForm.badge}
-                        onChange={(e) => setBannerForm({ ...bannerForm, badge: e.target.value })}
-                      />
-                    </div>
-                    <div className="md:col-span-2">
-                      <label className="block text-xs font-semibold text-slate-500 mb-1">Description / Subtitle</label>
-                      <input
-                        type="text"
-                        placeholder="e.g. Healthy vegetables & fruits directly to your doorstep with super safety protocols."
-                        className="w-full border border-slate-200 rounded-lg px-3 py-2 border-slate-200 focus:border-emerald-500 focus:outline-none"
-                        value={bannerForm.subtitle}
-                        onChange={(e) => setBannerForm({ ...bannerForm, subtitle: e.target.value })}
-                      />
-                    </div>
-                    <div className="md:col-span-2">
-                      <label className="block text-xs font-semibold text-slate-500 mb-1">Banner Image *</label>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        {/* Drag and Drop box for Banner Image */}
-                        <div 
-                          onClick={() => document.getElementById('banner-file-upload-input')?.click()}
-                          className="border border-dashed border-slate-300 hover:border-[#00796B] bg-slate-50 hover:bg-slate-50/55 rounded-lg p-3 text-center transition-all cursor-pointer flex flex-col items-center justify-center min-h-[90px]"
-                        >
-                          <input 
-                            id="banner-file-upload-input"
-                            type="file" 
-                            accept="image/*" 
-                            className="hidden" 
-                            onChange={(e) => {
-                              if (e.target.files && e.target.files[0]) {
-                                const file = e.target.files[0];
-                                const reader = new FileReader();
-                                reader.onload = (uploadEvent) => {
-                                  if (uploadEvent.target?.result) {
-                                    setBannerForm({ ...bannerForm, image: uploadEvent.target.result as string });
-                                  }
-                                };
-                                reader.readAsDataURL(file);
-                              }
-                            }}
-                          />
-                          <ImageIcon className="h-5 w-5 text-slate-400 mb-1" />
-                          <span className="text-[11px] font-bold text-slate-700">Upload direct slide photo or Browse</span>
-                          <span className="text-[9px] text-slate-400 font-normal">Landscape format recommended</span>
-                        </div>
+                  </div>
 
-                        <div className="space-y-1.5 flex flex-col justify-between">
-                          <div>
-                            <span className="text-[10px] text-slate-400 uppercase tracking-widest block mb-1">Image Link address fallback</span>
-                            <input
-                              type="text"
-                              required
-                              placeholder="Or paste direct image URL address..."
-                              className="w-full border border-slate-200 rounded-lg px-2.5 py-1.5 font-mono text-xs focus:border-emerald-500 focus:outline-none"
-                              value={bannerForm.image}
-                              onChange={(e) => setBannerForm({ ...bannerForm, image: e.target.value })}
+                  <div className="p-5 space-y-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-xs font-bold text-stone-900 mb-1 uppercase tracking-wider">Banner Heading / Title (প্রধান শিরোনাম)</label>
+                        <input
+                          type="text"
+                          required
+                          placeholder="e.g. 100% Organic, Fresh Farms"
+                          className="w-full"
+                          value={bannerForm.title}
+                          onChange={(e) => setBannerForm({ ...bannerForm, title: e.target.value })}
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-bold text-stone-900 mb-1 uppercase tracking-wider">Badge Tag / Badge Text (ছোট ব্যাজ লেখা)</label>
+                        <input
+                          type="text"
+                          placeholder="e.g. SPECIAL PROMOTION"
+                          className="w-full font-bold"
+                          value={bannerForm.badge}
+                          onChange={(e) => setBannerForm({ ...bannerForm, badge: e.target.value })}
+                        />
+                      </div>
+                      <div className="md:col-span-2">
+                        <label className="block text-xs font-bold text-stone-900 mb-1 uppercase tracking-wider">Description Subtitle (উপ-শিরোনাম বা অফার বর্ণনা)</label>
+                        <input
+                          type="text"
+                          placeholder="e.g. Healthy vegetables & fruits directly to your doorstep with super safety protocols."
+                          className="w-full"
+                          value={bannerForm.subtitle}
+                          onChange={(e) => setBannerForm({ ...bannerForm, subtitle: e.target.value })}
+                        />
+                      </div>
+
+                      {/* DRAG-UPLOAD & URL INPUT FOR BANNER */}
+                      <div className="md:col-span-2">
+                        <label className="block text-xs font-bold text-stone-900 mb-1 uppercase tracking-wider">Banner Image Asset (ব্যানার চিত্র ফাইল/লিঙ্ক)</label>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <div 
+                            onClick={() => document.getElementById('banner-file-upload-input')?.click()}
+                            className="border-2 border-dashed border-stone-800 hover:border-[#9E2A2B] bg-[#EFE9DB] p-4 text-center cursor-pointer flex flex-col items-center justify-center min-h-[100px] select-none"
+                          >
+                            <input 
+                              id="banner-file-upload-input"
+                              type="file" 
+                              accept="image/*" 
+                              className="hidden" 
+                              onChange={(e) => {
+                                if (e.target.files && e.target.files[0]) {
+                                  const file = e.target.files[0];
+                                  const reader = new FileReader();
+                                  reader.onload = (uploadEvent) => {
+                                    if (uploadEvent.target?.result) {
+                                      setBannerForm({ ...bannerForm, image: uploadEvent.target.result as string });
+                                    }
+                                  };
+                                  reader.readAsDataURL(file);
+                                }
+                              }}
                             />
+                            <ImageIcon className="h-6 w-6 text-stone-900 mb-1" />
+                            <span className="text-xs font-black text-stone-950 uppercase">BROWSE LOCAL BANNER</span>
+                            <span className="text-[9px] text-stone-600 normal-case leading-tight mt-1">(মোবাইল ও কম্পিউটারের ছবি আপলোড করুন)</span>
                           </div>
-                          {bannerForm.image && (
-                            <div className="flex items-center gap-2 border border-slate-100 bg-slate-50 p-1 rounded-lg">
-                              <img 
-                                src={bannerForm.image} 
-                                className="h-8 w-14 object-cover rounded border bg-white shrink-0" 
-                                alt="Slide preview" 
-                                referrerPolicy="no-referrer"
+
+                          <div className="flex flex-col justify-between space-y-2">
+                            <div>
+                              <span className="text-[10px] text-stone-900 font-extrabold uppercase tracking-wider block mb-1">Image Web Address URL (ছবির বিকল্প ওয়েব লিঙ্ক)</span>
+                              <input
+                                type="text"
+                                required
+                                placeholder="Or paste background link directly..."
+                                className="w-full text-xs font-mono"
+                                value={bannerForm.image}
+                                onChange={(e) => setBannerForm({ ...bannerForm, image: e.target.value })}
                               />
-                              <div className="text-[9px] text-[#00796B] font-bold">Auto-Fit Banner Scaled!</div>
+                            </div>
+                            {bannerForm.image && (
+                              <div className="flex items-center gap-2 border border-stone-300 bg-[#EFE9DB] p-1.5 border">
+                                <img 
+                                  src={bannerForm.image} 
+                                  className="h-7 w-12 object-cover border bg-white border-stone-950 shrink-0" 
+                                  alt="Slide preview" 
+                                  referrerPolicy="no-referrer"
+                                />
+                                <div className="text-[10px] text-emerald-800 font-extrabold uppercase">✓ Asset uploaded!</div>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* GRADIENT PARAMETER AND PRESET SELECTOR */}
+                      <div className="md:col-span-2">
+                        <label className="block text-xs font-bold text-stone-900 mb-1 uppercase tracking-wider">Tailwind CSS Gradient Theme (ব্যাকগ্রাউন্ড থিম কোড)</label>
+                        <input
+                          type="text"
+                          required
+                          placeholder="from-emerald-700 via-green-800 to-teal-900"
+                          className="w-full font-mono text-xs"
+                          value={bannerForm.bgGradient}
+                          onChange={(e) => setBannerForm({ ...bannerForm, bgGradient: e.target.value })}
+                        />
+                      </div>
+                    </div>
+
+                    <div>
+                      <span className="block text-[10px] font-extrabold text-stone-900 uppercase tracking-wider mb-2 border-b border-stone-300 pb-1">Or choose a professional high-visibility preset:</span>
+                      <div className="flex flex-wrap gap-2">
+                        {[
+                          { label: 'Emerald Forest (সবুজ বনানী)', value: 'from-emerald-700 via-green-800 to-teal-900' },
+                          { label: 'Deep Ocean Blue (গভীর নীল সাগর)', value: 'from-blue-700 via-cyan-800 to-emerald-900' },
+                          { label: 'Amber Harvest Sunset (রঙিন সোনালী)', value: 'from-amber-600 via-amber-700 to-emerald-800' },
+                          { label: 'Crimson Royal (রাজকীয় লাল)', value: 'from-rose-700 via-red-800 to-orange-850' },
+                        ].map((p, idx) => (
+                          <button
+                            key={idx}
+                            type="button"
+                            onClick={() => setBannerForm({ ...bannerForm, bgGradient: p.value })}
+                            className={`px-3 py-1.5 text-xs text-white bg-gradient-to-r ${p.value} border-2 ${bannerForm.bgGradient === p.value ? 'border-yellow-400 scale-102 ring-2 ring-yellow-400/35' : 'border-stone-950'} hover:scale-102 transition-all cursor-pointer font-bold`}
+                          >
+                            {p.label}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* DYNAMIC REALTIME IMMERSIVE PREVIEW CARD */}
+                    <div className="p-3 border-2 border-stone-8d0 bg-[#DCDCDC]">
+                      <span className="block text-[10px] font-extrabold text-stone-900 uppercase tracking-widest mb-2 border-b border-stone-400 pb-1">📢 BANNER PREVIEW ACCORDING TO USER CLIENT VIEW (স্লাইডারের লাইভ ভিউ প্রিভিউ)</span>
+                      
+                      <div className={`rounded-xl overflow-hidden shadow-md bg-gradient-to-r ${bannerForm.bgGradient || 'from-stone-700 to-stone-900'} text-white min-h-[140px] flex md:flex-row flex-col justify-between items-center p-6 border-2 border-stone-950`}>
+                        <div className="space-y-1.5 text-left md:w-3/5 w-full">
+                          {bannerForm.badge && (
+                            <span className="inline-block bg-white/20 text-[9px] font-black uppercase tracking-widest px-2.5 py-0.5 rounded-full text-white">
+                              {bannerForm.badge}
+                            </span>
+                          )}
+                          <h4 className="font-display font-black text-lg leading-tight text-white drop-shadow">
+                            {bannerForm.title || "AMIDST FARMS FRESH PRODUCE"}
+                          </h4>
+                          <p className="text-xs text-stone-100 font-medium leading-snug">
+                            {bannerForm.subtitle || "Describe details of this premium campaign here. Best-in-class pricing guaranteed."}
+                          </p>
+                        </div>
+                        <div className="shrink-0 md:w-2/5 w-full flex justify-center mt-3 md:mt-0">
+                          {bannerForm.image ? (
+                            <img 
+                              src={bannerForm.image} 
+                              className="max-h-[90px] max-w-full object-contain rounded-lg filter drop-shadow-lg" 
+                              alt="Live Banner Visual preview" 
+                              referrerPolicy="no-referrer"
+                            />
+                          ) : (
+                            <div className="h-[90px] w-[140px] border-2 border-dashed border-white/40 bg-white/10 flex flex-col items-center justify-center text-center text-white p-2">
+                              <ImageIcon className="h-6 w-6 text-white mb-1 opacity-70 animate-bounce" />
+                              <span className="text-[10px] font-bold">IMAGE PLACEHOLDER</span>
                             </div>
                           )}
                         </div>
                       </div>
                     </div>
-                    <div>
-                      <label className="block text-xs font-semibold text-slate-500 mb-1">Background Gradient Class (tailwindcss format)</label>
-                      <input
-                        type="text"
-                        required
-                        placeholder="from-emerald-700 via-green-800 to-teal-900"
-                        className="w-full border border-slate-200 rounded-lg px-3 py-2 border-slate-200 font-mono text-xs focus:border-emerald-500 focus:outline-none"
-                        value={bannerForm.bgGradient}
-                        onChange={(e) => setBannerForm({ ...bannerForm, bgGradient: e.target.value })}
-                      />
-                    </div>
                   </div>
 
-                  <div>
-                    <span className="block text-[11px] font-semibold text-slate-400 mb-2">Or select a stunning color theme preset:</span>
-                    <div className="flex flex-wrap gap-2">
-                      {[
-                        { label: 'Emerald Forest', value: 'from-emerald-700 via-green-800 to-teal-900' },
-                        { label: 'Deep Ocean Blue', value: 'from-blue-700 via-cyan-800 to-emerald-900' },
-                        { label: 'Amber Harvest Sunset', value: 'from-amber-600 via-amber-700 to-emerald-800' },
-                        { label: 'Royal Plum Violet', value: 'from-purple-800 via-indigo-900 to-slate-950' },
-                        { label: 'Crimson Ember', value: 'from-rose-700 via-red-800 to-orange-850' },
-                      ].map((p, idx) => (
-                        <button
-                          key={idx}
-                          type="button"
-                          onClick={() => setBannerForm({ ...bannerForm, bgGradient: p.value })}
-                          className={`px-3 py-1.5 text-xs text-white rounded-lg bg-gradient-to-r ${p.value} border-2 ${bannerForm.bgGradient === p.value ? 'border-amber-400 scale-102 ring-2 ring-amber-400/30' : 'border-transparent'} hover:scale-102 transition-all cursor-pointer font-medium`}
-                        >
-                          {p.label}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-
-                  <div className="pt-2 flex justify-end gap-2">
+                  <div className="bg-[#EFE9DB] border-t-2 border-stone-900 p-4 flex justify-end gap-3">
                     <button
                       type="button"
                       onClick={() => {
                         setShowBannerForm(false);
                         setEditingBanner(null);
                       }}
-                      className="px-4 py-1.5 border border-slate-200 hover:bg-slate-50 rounded-lg text-xs"
+                      className="px-4 py-1.5 border-2 border-stone-900 bg-stone-100 hover:bg-stone-250 text-stone-904 text-xs font-bold uppercase transition-all cursor-pointer select-none"
                     >
-                      Discard
+                      Discard (বাতিল)
                     </button>
-                    <button type="submit" className="px-5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-semibold shadow">
-                      {editingBanner ? 'Update Slider' : 'Save New Slider'}
+                    <button 
+                      type="submit" 
+                      className="px-5 py-1.5 bg-[#9E2A2B] text-white border-2 border-stone-955 text-xs font-black uppercase tracking-wider transition-all cursor-pointer shadow hover:bg-red-800 active:scale-95"
+                    >
+                      {editingBanner ? 'Update Slide Details (সংরক্ষণ করুন)' : 'Save and Publish Slide (প্রকাশ করুন)'}
                     </button>
                   </div>
                 </form>
@@ -2564,42 +2635,42 @@ VALUES ('exotics', 'Exotics (আজব ফল)', 'https://unsplash.com/...');`}
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {banners.map(b => (
-                  <div key={b.id} className={`rounded-3xl overflow-hidden shadow-sm flex flex-col justify-between border border-slate-200 bg-gradient-to-r ${b.bgGradient} text-white`}>
-                    <div className="p-6 md:p-8 flex justify-between items-start gap-4">
-                      <div className="space-y-2 max-w-lg">
-                        <span className="inline-block bg-white/20 px-2 py-0.5 rounded-full text-[9px] font-extrabold uppercase tracking-wider text-white">
-                          {b.badge}
-                        </span>
-                        <h4 className="font-display font-black text-xl leading-snug">{b.title}</h4>
-                        <p className="text-xs text-slate-100/90 leading-normal max-w-sm">{b.subtitle}</p>
-                        <code className="block bg-black/25 text-[10px] py-1 px-2 rounded mt-2 font-mono overflow-x-auto no-scrollbar whitespace-nowrap">
+                  <div key={b.id} className={`rounded-none overflow-hidden border-2 border-stone-900 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:translate-y-[-2px] hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] transition-all flex flex-col justify-between bg-gradient-to-r ${b.bgGradient} text-white`}>
+                    <div className="p-5 flex justify-between items-start gap-4">
+                      <div className="space-y-1 max-w-lg text-left">
+                        {b.badge && (
+                          <span className="inline-block bg-white/20 px-2.5 py-0.5 rounded-none text-[8px] font-black uppercase tracking-widest text-white border border-white/30 select-none">
+                            {b.badge}
+                          </span>
+                        )}
+                        <h4 className="font-display font-black text-base leading-tight drop-shadow">{b.title}</h4>
+                        <p className="text-[11px] text-stone-100 font-medium leading-snug">{b.subtitle}</p>
+                        <code className="block bg-black/20 text-[9px] py-1 px-2 font-mono overflow-x-auto no-scrollbar whitespace-nowrap border border-white/10 mt-1 select-all">
                           Gradient: {b.bgGradient}
                         </code>
                       </div>
 
-                      <div className="w-20 h-20 rounded-xl overflow-hidden border border-white/20 shadow shrink-0">
-                        <img src={b.image} className="w-full h-full object-cover" alt="" />
+                      <div className="w-16 h-16 rounded-none overflow-hidden border-2 border-white bg-white/10 shadow shrink-0">
+                        <img src={b.image} className="w-full h-full object-cover" alt="" referrerPolicy="no-referrer" />
                       </div>
                     </div>
 
-                    <div className="bg-black/10 border-t border-white/10 px-6 py-3 flex justify-between items-center text-xs">
-                      <span className="text-white/60 font-mono text-[11px] font-bold">Slide Ref ID: {b.id}</span>
-                      <div className="flex gap-1 animate-fade-in">
+                    <div className="bg-black/30 border-t-2 border-stone-900 px-5 py-2.5 flex justify-between items-center text-xs">
+                      <span className="text-white/80 font-mono text-[10px] font-bold">Slide Ref ID: {b.id}</span>
+                      <div className="flex gap-1.5 animate-fade-in">
                         <button
                           type="button"
                           onClick={() => handleEditBannerClick(b)}
-                          className="p-1 px-2.5 bg-white/11 hover:bg-white/20 active:bg-white/30 rounded-lg transition-all flex items-center gap-1 font-bold text-[11px] cursor-pointer"
+                          className="px-2.5 py-1 bg-white text-stone-900 border border-stone-950 font-bold text-[10px] uppercase tracking-wider cursor-pointer transition-all active:scale-95"
                         >
-                          <Edit2 className="h-3 w-3" />
-                          Edit Slide
+                          EDIT
                         </button>
                         <button
                           type="button"
                           onClick={() => handleDeleteBannerClick(b.id)}
-                          className="p-1 px-2.5 bg-red-650/45 hover:bg-red-600 hover:text-white rounded-lg transition-all flex items-center gap-1 font-bold text-[11px] cursor-pointer whitespace-nowrap"
+                          className="px-2.5 py-1 bg-[#9E2A2B] text-white border border-stone-955 font-bold text-[10px] uppercase tracking-wider cursor-pointer hover:bg-red-800 transition-all active:scale-95"
                         >
-                          <Trash2 className="h-3 w-3" />
-                          Remove Slide
+                          REMOVE
                         </button>
                       </div>
                     </div>
@@ -2611,20 +2682,20 @@ VALUES ('exotics', 'Exotics (আজব ফল)', 'https://unsplash.com/...');`}
 
           {/* TAB 7: STORE GLOBAL CONFIGURATIONS */}
           {activeTab === 'settings' && (
-            <div className="flex flex-col xl:flex-row gap-6 animate-fade-in text-slate-800">
+            <div className="flex flex-col md:flex-row gap-6 animate-fade-in text-stone-900">
               
               {/* LEFT CONTROL PANEL SUB-SIDEBAR (SYSTEM_CORE_CONFIG) */}
-              <div className="w-full xl:w-72 bg-white rounded-3xl border border-slate-200 p-5 shrink-0 flex flex-col justify-between shadow-sm">
+              <div className="w-full md:w-64 lg:w-72 bg-[#FAF5EE] rounded-none border-2 border-stone-900 p-5 shrink-0 flex flex-col justify-between shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] md:sticky md:top-4 self-start">
                 <div>
-                  <div className="border-b border-slate-100 pb-4 mb-4 select-none">
-                    <span className="text-[9px] text-[#00796B] font-black uppercase tracking-widest block mb-0.5">Global Ecosystem / Sectors</span>
-                    <h3 className="font-display font-black text-slate-800 text-sm tracking-tight flex items-center gap-2">
-                      <span className="h-2.5 w-2.5 rounded-full bg-[#00796B] animate-pulse"></span>
+                  <div className="border-b-2 border-stone-900 pb-4 mb-4 select-none">
+                    <span className="text-[9px] text-[#9E2A2B] font-black uppercase tracking-widest block mb-0.5">Global Ecosystem / Sectors</span>
+                    <h3 className="font-display font-black text-stone-950 text-xs tracking-tight flex items-center gap-2">
+                      <span className="h-2.5 w-2.5 bg-[#9E2A2B] animate-pulse"></span>
                       SYSTEM_CORE_CONFIG
                     </h3>
                   </div>
 
-                  <nav className="space-y-1">
+                  <nav className="space-y-1.5">
                     {[
                       { id: 'general', label: 'GENERAL SETTINGS', icon: Settings, desc: 'Site names, descriptions, and links' },
                       { id: 'sms_gmail', label: 'SMS & GMAIL', icon: Bell, desc: 'Gateway providers, SMTP parameters' },
@@ -2640,16 +2711,16 @@ VALUES ('exotics', 'Exotics (আজব ফল)', 'https://unsplash.com/...');`}
                           key={item.id}
                           type="button"
                           onClick={() => setSettingsSubTab(item.id as any)}
-                          className={`w-full text-left px-4 py-3 rounded-2xl flex items-start gap-3 transition-colors cursor-pointer group ${
+                          className={`w-full text-left px-3.5 py-3 rounded-none flex items-start gap-3 transition-all border-2 cursor-pointer group ${
                             active 
-                              ? 'bg-[#00796B] text-white' 
-                              : 'hover:bg-slate-50 text-slate-600'
+                              ? 'bg-[#9E2A2B] text-white border-stone-950 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]' 
+                              : 'hover:bg-[#EFE9DB] text-stone-800 bg-[#FAF5EE] border-transparent'
                           }`}
                         >
-                          <Icon className={`h-4 w-4 shrink-0 mt-0.5 ${active ? 'text-amber-300' : 'text-slate-400 group-hover:text-[#00796B]'}`} />
+                          <Icon className={`h-4 w-4 shrink-0 mt-0.5 ${active ? 'text-amber-300 animate-pulse' : 'text-stone-700'}`} />
                           <div>
-                            <div className="text-xs font-black uppercase tracking-wider">{item.label}</div>
-                            <div className={`text-[10px] ${active ? 'text-teal-100' : 'text-slate-400'}`}>{item.desc}</div>
+                            <div className="text-[11px] font-black uppercase tracking-wider">{item.label}</div>
+                            <div className={`text-[9px] mt-0.5 font-bold ${active ? 'text-red-100' : 'text-stone-605'}`}>{item.desc}</div>
                           </div>
                         </button>
                       );
@@ -2657,86 +2728,86 @@ VALUES ('exotics', 'Exotics (আজব ফল)', 'https://unsplash.com/...');`}
                   </nav>
                 </div>
 
-                <div className="mt-6 pt-4 border-t border-slate-100 text-[10px] text-slate-400 font-medium">
-                  <div>Status: <span className="text-emerald-600 font-bold">● ONLINE</span></div>
-                  <div>Client Version: <span className="font-mono">v1.2.9-beta</span></div>
-                  <div className="mt-2 text-slate-300">BAZAR DHAKA Ecosystem Controller</div>
+                <div className="mt-6 pt-4 border-t-2 border-stone-900 text-[10px] text-stone-700 font-bold">
+                  <div>Status: <span className="text-[#9E2A2B] font-black">● DIRECT ONLINE</span></div>
+                  <div>Client Version: <span className="font-mono text-[9px]">v1.2.9-beta</span></div>
+                  <div className="mt-2 text-stone-500">BAZAR DHAKA Ecosystem Controller</div>
                 </div>
               </div>
 
 
               {/* RIGHT PARAMETERIZATION VIEWPORT */}
-              <form id="store-settings-form" onSubmit={handleSettingsSubmit} className="flex-1 bg-white border border-slate-200 rounded-3xl p-6 lg:p-8 shadow-sm space-y-6">
+              <form id="store-settings-form" onSubmit={handleSettingsSubmit} className="flex-1 bg-[#FAF5EE] border-2 border-stone-900 rounded-none p-6 lg:p-8 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] space-y-6">
                 
                 {/* ----------------- SUB TAB 1: GENERAL SETTINGS ----------------- */}
                 {settingsSubTab === 'general' && (
-                  <div className="space-y-6 animate-fade-in text-slate-700">
-                    <div>
-                      <h4 className="font-display font-bold text-slate-800 text-sm uppercase tracking-wider mb-1">GENERAL CONTROLS</h4>
-                      <p className="text-xs text-slate-400">Configure visual branding references, SEO catalogs and multilingual welcome blocks.</p>
+                  <div className="space-y-6 animate-fade-in text-stone-900">
+                    <div className="pb-3 border-b-2 border-stone-900">
+                      <h4 className="font-display font-black text-stone-955 text-xs uppercase tracking-wider">GENERAL CONTROLS (সাধারণ সেটিংস)</h4>
+                      <p className="text-[10px] text-stone-600 font-bold">Configure visual branding references, SEO catalogs and multilingual welcome blocks.</p>
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
-                        <label className="block text-xs font-semibold text-slate-500 mb-1">SITE NAME</label>
+                        <label className="block text-xs font-bold text-stone-900 mb-1 uppercase tracking-wider">SITE NAME</label>
                         <input
                           type="text"
                           required
-                          className="w-full border border-slate-200 rounded-lg px-3 py-2 text-xs focus:border-[#00796B] focus:outline-none"
+                          className="w-full text-xs font-bold"
                           value={settingsForm.storeName}
                           onChange={(e) => setSettingsForm({ ...settingsForm, storeName: e.target.value })}
                         />
                       </div>
                       <div>
-                        <label className="block text-xs font-semibold text-slate-500 mb-1">PRIMARY SUPPORT HELPLINE</label>
+                        <label className="block text-xs font-bold text-stone-900 mb-1 uppercase tracking-wider">PRIMARY SUPPORT HELPLINE</label>
                         <input
                           type="text"
                           required
-                          className="w-full border border-slate-200 rounded-lg px-3 py-2 text-xs font-mono focus:border-[#00796B] focus:outline-none"
+                          className="w-full font-mono text-xs font-bold"
                           value={settingsForm.phone}
                           onChange={(e) => setSettingsForm({ ...settingsForm, phone: e.target.value })}
                         />
-                        <span className="text-[10px] text-slate-400">Office support helpline, accessible worldwide</span>
+                        <span className="text-[10px] text-stone-600 font-bold block mt-1">Office support helpline, accessible worldwide</span>
                       </div>
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
-                        <label className="block text-xs font-semibold text-slate-500 mb-1">SITE DESCRIPTION (ENGLISH)</label>
+                        <label className="block text-xs font-bold text-stone-900 mb-1 uppercase tracking-wider">SITE DESCRIPTION (ENGLISH)</label>
                         <textarea
                           rows={2}
-                          className="w-full border border-slate-200 rounded-lg p-3 text-xs focus:border-[#00796B] focus:outline-none"
+                          className="w-full"
                           value={settingsForm.siteDescEnglish || ''}
                           onChange={(e) => setSettingsForm({ ...settingsForm, siteDescEnglish: e.target.value })}
                         />
                       </div>
                       <div>
-                        <label className="block text-xs font-semibold text-slate-500 mb-1">SITE DESCRIPTION (BENGALI)</label>
+                        <label className="block text-xs font-bold text-stone-900 mb-1 uppercase tracking-wider">SITE DESCRIPTION (BENGALI)</label>
                         <textarea
                           rows={2}
-                          className="w-full border border-slate-200 rounded-lg p-3 text-xs focus:border-[#00796B] focus:outline-none"
+                          className="w-full font-sans"
                           value={settingsForm.siteDescBengali || ''}
                           onChange={(e) => setSettingsForm({ ...settingsForm, siteDescBengali: e.target.value })}
                         />
                       </div>
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 border-t border-slate-100 pt-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 border-t-2 border-stone-900 pt-4">
                       <div>
-                        <label className="block text-xs font-semibold text-slate-500 mb-1">CONTACT PHONE 2 (SECONDARY)</label>
+                        <label className="block text-xs font-bold text-stone-900 mb-1 uppercase tracking-wider">CONTACT PHONE 2 (SECONDARY)</label>
                         <input
                           type="text"
-                          className="w-full border border-slate-200 rounded-lg px-3 py-2 text-xs font-mono focus:border-[#00796B] focus:outline-none"
+                          className="w-full font-mono text-xs font-bold"
                           value={settingsForm.phone2 || ''}
                           onChange={(e) => setSettingsForm({ ...settingsForm, phone2: e.target.value })}
                         />
                       </div>
                       <div>
-                        <label className="block text-xs font-semibold text-slate-500 mb-1">SUPPORT MAIL</label>
+                        <label className="block text-xs font-bold text-stone-900 mb-1 uppercase tracking-wider">SUPPORT MAIL</label>
                         <input
                           type="email"
                           required
-                          className="w-full border border-slate-200 rounded-lg px-3 py-2 text-xs font-mono focus:border-[#00796B] focus:outline-none"
+                          className="w-full font-mono text-xs font-bold"
                           value={settingsForm.email}
                           onChange={(e) => setSettingsForm({ ...settingsForm, email: e.target.value })}
                         />
@@ -2745,10 +2816,10 @@ VALUES ('exotics', 'Exotics (আজব ফল)', 'https://unsplash.com/...');`}
 
                     <div className="grid grid-cols-1 gap-4">
                       <div>
-                        <label className="block text-xs font-semibold text-slate-500 mb-1">CONTACT ADDRESS</label>
+                        <label className="block text-xs font-bold text-stone-900 mb-1 uppercase tracking-wider">CONTACT ADDRESS</label>
                         <input
                           type="text"
-                          className="w-full border border-slate-200 rounded-lg px-3 py-2 text-xs focus:border-[#00796B] focus:outline-none"
+                          className="w-full text-xs font-bold"
                           value={settingsForm.address}
                           onChange={(e) => setSettingsForm({ ...settingsForm, address: e.target.value })}
                         />
@@ -2962,6 +3033,72 @@ VALUES ('exotics', 'Exotics (আজব ফল)', 'https://unsplash.com/...');`}
                           )}
                         </div>
                         <span className="text-[10px] text-slate-400 mt-1 block">Specify any public web image address to update the tall Special Offer block layout immediately.</span>
+                      </div>
+                    </div>
+
+                    {/* HOMEPAGE SCROLLING NOTICES CONFIGURATION */}
+                    <div className="border-t border-slate-100 pt-6 space-y-4">
+                      <div>
+                        <h5 className="font-display font-bold text-[#00796B] text-xs uppercase tracking-wider mb-0.5">📢 HOMEPAGE SCROLLING NOTICES</h5>
+                        <p className="text-[10px] text-slate-400 font-medium">Control the scrolling marquee notices that show up on top and below the main slider banner.</p>
+                      </div>
+
+                      <div className="bg-slate-50 p-4 rounded-xl border border-slate-200/60 space-y-4">
+                        {/* Top Scroll Notice Controller */}
+                        <div className="space-y-2">
+                          <div className="flex items-center justify-between">
+                            <label className="text-xs font-bold text-slate-700 uppercase tracking-wider flex items-center gap-2">
+                              <span className="h-2 w-2 rounded-full bg-indigo-500"></span>
+                              Slider Top Notice
+                            </label>
+                            <label className="relative inline-flex items-center cursor-pointer">
+                              <input 
+                                type="checkbox" 
+                                className="sr-only peer"
+                                checked={!!settingsForm.enableTopNotice}
+                                onChange={(e) => setSettingsForm({ ...settingsForm, enableTopNotice: e.target.checked })}
+                              />
+                              <div className="w-9 h-5 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-[#00796B]"></div>
+                              <span className="ml-2 text-[10px] font-bold text-slate-500 uppercase">{settingsForm.enableTopNotice ? 'Active' : 'Disabled'}</span>
+                            </label>
+                          </div>
+                          <textarea 
+                            rows={2}
+                            placeholder="Enter Urdu, Bengali, or English Notice text here..."
+                            className="w-full bg-white border border-slate-200 rounded-lg p-2.5 text-xs text-slate-700 focus:border-[#00796B] focus:outline-none"
+                            value={settingsForm.topNoticeText || ''}
+                            onChange={(e) => setSettingsForm({ ...settingsForm, topNoticeText: e.target.value })}
+                            disabled={!settingsForm.enableTopNotice}
+                          />
+                        </div>
+
+                        {/* Bottom Scroll Notice Controller */}
+                        <div className="space-y-2 border-t border-slate-200/50 pt-3">
+                          <div className="flex items-center justify-between">
+                            <label className="text-xs font-bold text-slate-700 uppercase tracking-wider flex items-center gap-2">
+                              <span className="h-2 w-2 rounded-full bg-emerald-500"></span>
+                              Slider Bottom Notice
+                            </label>
+                            <label className="relative inline-flex items-center cursor-pointer">
+                              <input 
+                                type="checkbox" 
+                                className="sr-only peer"
+                                checked={!!settingsForm.enableBottomNotice}
+                                onChange={(e) => setSettingsForm({ ...settingsForm, enableBottomNotice: e.target.checked })}
+                              />
+                              <div className="w-9 h-5 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-[#00796B]"></div>
+                              <span className="ml-2 text-[10px] font-bold text-slate-500 uppercase">{settingsForm.enableBottomNotice ? 'Active' : 'Disabled'}</span>
+                            </label>
+                          </div>
+                          <textarea 
+                            rows={2}
+                            placeholder="Enter notice text that scrolls under the main banner slider..."
+                            className="w-full bg-white border border-slate-200 rounded-lg p-2.5 text-xs text-slate-700 focus:border-[#00796B] focus:outline-none"
+                            value={settingsForm.bottomNoticeText || ''}
+                            onChange={(e) => setSettingsForm({ ...settingsForm, bottomNoticeText: e.target.value })}
+                            disabled={!settingsForm.enableBottomNotice}
+                          />
+                        </div>
                       </div>
                     </div>
 
@@ -3507,7 +3644,7 @@ VALUES ('exotics', 'Exotics (আজব ফল)', 'https://unsplash.com/...');`}
                               }
                             );
                           }}
-                          className="px-5 py-2.5 bg-rose-600 hover:bg-rose-700 text-white rounded-xl text-xs font-bold transition-all cursor-pointer whitespace-nowrap shadow-sm active:scale-97"
+                          className="px-5 py-2.5 bg-rose-600 hover:bg-rose-700 text-white rounded-none border-2 border-stone-900 text-xs font-black uppercase transition-all cursor-pointer whitespace-nowrap shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] active:scale-97"
                         >
                           🔥 ZERO DISK & SEED
                         </button>
@@ -3518,8 +3655,8 @@ VALUES ('exotics', 'Exotics (আজব ফল)', 'https://unsplash.com/...');`}
                 )}
 
                 {/* --- UNIVERSAL FORM FOOTER SUBMIT AREA --- */}
-                <div className="pt-5 border-t border-slate-150 flex items-center justify-between">
-                  <span className="text-[10px] text-slate-400 font-semibold uppercase">
+                <div className="pt-5 border-t-2 border-stone-900 flex flex-col sm:flex-row items-center justify-between gap-4">
+                  <span className="text-[10px] text-stone-605 font-bold uppercase tracking-wider">
                     Pressing save writes active changes to Local Storage
                   </span>
                   <div className="flex gap-2">
@@ -3531,14 +3668,14 @@ VALUES ('exotics', 'Exotics (আজব ফল)', 'https://unsplash.com/...');`}
                         setSocialLinksExpanded(settings.socialLinksExpanded || []);
                         triggerAlert('Reverted', 'Global system config restored to currently persisted database limits.');
                       }}
-                      className="border border-slate-200 hover:bg-slate-50 rounded-xl px-5 py-2.5 text-xs font-bold text-slate-500 cursor-pointer transition-colors"
+                      className="border-2 border-stone-900 bg-stone-100 hover:bg-stone-200 text-stone-900 rounded-none px-4 py-2 text-xs font-bold cursor-pointer transition-all uppercase tracking-wider"
                     >
                       RESET TAB
                     </button>
                     <button
                       id="settings-save-submit-btn"
                       type="submit"
-                      className="bg-[#00796B] hover:bg-[#005B52] active:scale-95 text-white px-6 py-2.5 rounded-xl text-xs font-black tracking-wide shadow-sm transition-all cursor-pointer"
+                      className="bg-[#9E2A2B] hover:bg-red-800 text-white border-2 border-stone-900 px-5 py-2 text-xs font-black uppercase tracking-wider shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:translate-y-[-1px] active:translate-y-[0px] transition-all cursor-pointer"
                     >
                       SAVE SYSTEM_CORE_CONFIG
                     </button>
@@ -3546,6 +3683,171 @@ VALUES ('exotics', 'Exotics (আজব ফল)', 'https://unsplash.com/...');`}
                 </div>
 
               </form>
+
+            </div>
+          )}
+
+          {/* TAB: LIVE NOTICES CONTROLLER */}
+          {activeTab === 'live_notices' && (
+            <div className="space-y-6 animate-fade-in text-stone-800">
+              
+              {/* Custom Header banner mimicking the user's uploaded booking screenshot style (Solid Crimson, compact white text) */}
+              <div className="border-2 border-stone-900 rounded-none overflow-hidden shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] bg-white">
+                <div className="bg-[#9E2A2B] text-white px-4 py-3 font-display font-bold text-xs uppercase tracking-wider flex items-center justify-between border-b-2 border-stone-950 select-none">
+                  <span className="flex items-center gap-1.5">📢 LIVE NOTICE BOARD CONFIGURATION (লাইভ নোটিশ বোর্ড কনফিগারেশন)</span>
+                  <span className="text-[10px] bg-red-800 px-2 py-0.5 border border-red-700 font-mono animate-pulse">SYSTEM LIVE</span>
+                </div>
+
+                <div className="p-4 bg-[#FAF5EE] space-y-4">
+                  <p className="text-[11px] text-stone-700 leading-relaxed font-bold">
+                    এখান থেকে আপনি ওয়েবসাইটের হোম পেজে স্লাইডিং বা ব্যানার নোটিশগুলো সরাসরি চালু বা বন্ধ এবং পরিবর্তন করতে পারবেন। নোটিশ পরিবর্তন করে নিচে <strong>SAVE LIVE NOTICES</strong> বাটনে ক্লিক করুন।
+                  </p>
+
+                  {/* LIVE PREVIEW COCKPIT DIRECTLY IN THE ADMIN WORKSPACE */}
+                  <div className="border-2 border-stone-900 bg-[#EFE9DB] rounded-none p-4 space-y-3.5 shadow-sm">
+                    <span className="text-[10px] font-black text-stone-900 block uppercase tracking-wider border-b border-stone-400 pb-1">🔴 LIVE MARQUEE PREVIEW (লাইভ স্ক্রোলিং প্রিভিউ):</span>
+                    
+                    {/* Top Notice Preview */}
+                    <div className="space-y-1">
+                      <span className="text-[9px] text-teal-950 font-black uppercase bg-teal-200/80 px-2 py-0.5 border border-teal-850 select-none block w-max">TOP PREVIEW (উপরের লাইভ নোটিশ)</span>
+                      <div className="bg-[#00796B] text-white py-2 px-3 rounded-none overflow-hidden flex items-center gap-2 border-2 border-stone-900">
+                        <span className="bg-red-500 text-white font-black text-[8px] uppercase tracking-wide px-1.5 py-0.5 border border-red-700 shrink-0 select-none">NOTICE</span>
+                        <div className="relative w-full overflow-hidden flex items-center">
+                          {settingsForm.enableTopNotice && settingsForm.topNoticeText ? (
+                            <div className="animate-notice-marquee font-sans font-extrabold text-xs tracking-wide">
+                              {settingsForm.topNoticeText}
+                            </div>
+                          ) : (
+                            <span className="text-[10px] italic text-teal-100 font-bold">Top notice is currently paused or inactive. (টপ নোটিশ বন্ধ আছে)</span>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Bottom Notice Preview */}
+                    <div className="space-y-1 pt-2 border-t border-stone-300">
+                      <span className="text-[9px] text-amber-950 font-black uppercase bg-amber-200/80 px-2 py-0.5 border border-amber-850 select-none block w-max">BOTTOM PREVIEW (নিচের লাইভ নোটিশ)</span>
+                      <div className="bg-amber-100 border-2 border-stone-900 text-amber-950 py-2 px-3 rounded-none overflow-hidden flex items-center gap-2">
+                        <span className="bg-amber-600 text-white font-black text-[8px] uppercase tracking-wide px-1.5 py-0.5 border border-amber-700 shrink-0 select-none">ANNOUNCEMENT</span>
+                        <div className="relative w-full overflow-hidden flex items-center">
+                          {settingsForm.enableBottomNotice && settingsForm.bottomNoticeText ? (
+                            <div className="animate-notice-marquee font-black text-xs tracking-wide text-amber-900">
+                              {settingsForm.bottomNoticeText}
+                            </div>
+                          ) : (
+                            <span className="text-[10px] italic text-amber-700 font-bold">Bottom notice is currently paused or inactive. (বটম নোটিশ বন্ধ আছে)</span>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* COCKPIT EDIT FORM IN SCREENSHOT STYLE (Compact regular fonts, robust solid borders) */}
+                  <form onSubmit={(e) => {
+                    e.preventDefault();
+                    const payload: StoreSettings = {
+                      ...settingsForm,
+                      quickLinks,
+                      socialLinksExpanded
+                    };
+                    db.saveSettings(payload);
+                    setSettings(payload);
+                    triggerAlert('Success', 'Live announcements updated successfully!');
+                    onDataChanged();
+                  }} className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-1">
+                    
+                    {/* LEFT PANEL: TOP NOTICE CONTROL */}
+                    <div className="border-2 border-stone-900 rounded-none overflow-hidden bg-white">
+                      <div className="bg-[#9E2A2B] text-white px-3 py-1.5 text-[10px] font-black uppercase tracking-wider border-b-2 border-stone-900 select-none">
+                        1. KEYNOTE SLIDER TOP NOTICE (ব্যানার নোটিশ - উপরে)
+                      </div>
+                      <div className="p-3.5 space-y-3 bg-[#FAF5EE]">
+                        <div className="flex items-center justify-between">
+                          <label className="text-[10px] font-black text-stone-900 uppercase">STATUS (অবস্থা) :</label>
+                          <label className="relative inline-flex items-center cursor-pointer select-none">
+                            <input 
+                              type="checkbox" 
+                              className="sr-only peer"
+                              checked={!!settingsForm.enableTopNotice}
+                              onChange={(e) => setSettingsForm({ ...settingsForm, enableTopNotice: e.target.checked })}
+                            />
+                            <div className="w-9 h-5 bg-stone-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-[#9E2A2B]"></div>
+                            <span className="ml-2 text-[10px] font-black text-stone-750 uppercase">{settingsForm.enableTopNotice ? 'ACTIVE' : 'DISABLED'}</span>
+                          </label>
+                        </div>
+
+                        <div>
+                          <label className="block text-[10px] font-black text-stone-900 mb-1 uppercase">NOTICE TEXT (নোটিশ টেক্সট) :*</label>
+                          <textarea 
+                            rows={3}
+                            placeholder="এখানে উপরে স্ক্রোল করার নোটিশটি লিখুন..."
+                            className="w-full bg-stone-50 border-2 border-stone-900 rounded-none p-2 text-xs text-stone-800 focus:outline-none focus:border-[#9E2A2B] font-sans font-bold"
+                            value={settingsForm.topNoticeText || ''}
+                            onChange={(e) => setSettingsForm({ ...settingsForm, topNoticeText: e.target.value })}
+                            disabled={!settingsForm.enableTopNotice}
+                          />
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* RIGHT PANEL: BOTTOM NOTICE CONTROL */}
+                    <div className="border-2 border-stone-900 rounded-none overflow-hidden bg-white">
+                      <div className="bg-[#9E2A2B] text-white px-3 py-1.5 text-[10px] font-black uppercase tracking-wider border-b-2 border-stone-900 select-none">
+                        2. SLIDER BOTTOM NOTICE (ব্যানার নোটিশ - নিচে)
+                      </div>
+                      <div className="p-3.5 space-y-3 bg-[#FAF5EE]">
+                        <div className="flex items-center justify-between">
+                          <label className="text-[10px] font-black text-stone-900 uppercase">STATUS (অবস্থা) :</label>
+                          <label className="relative inline-flex items-center cursor-pointer select-none">
+                            <input 
+                              type="checkbox" 
+                              className="sr-only peer"
+                              checked={!!settingsForm.enableBottomNotice}
+                              onChange={(e) => setSettingsForm({ ...settingsForm, enableBottomNotice: e.target.checked })}
+                            />
+                            <div className="w-9 h-5 bg-stone-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-[#9E2A2B]"></div>
+                            <span className="ml-2 text-[10px] font-black text-stone-750 uppercase">{settingsForm.enableBottomNotice ? 'ACTIVE' : 'DISABLED'}</span>
+                          </label>
+                        </div>
+
+                        <div>
+                          <label className="block text-[10px] font-black text-stone-900 mb-1 uppercase">NOTICE TEXT (নোটিশ টেক্সট) :*</label>
+                          <textarea 
+                            rows={3}
+                            placeholder="এখানে নিচে স্ক্রোল করার নোটিশটি লিখুন..."
+                            className="w-full bg-stone-50 border-2 border-stone-900 rounded-none p-2 text-xs text-stone-800 focus:outline-none focus:border-[#9E2A2B] font-sans font-bold"
+                            value={settingsForm.bottomNoticeText || ''}
+                            onChange={(e) => setSettingsForm({ ...settingsForm, bottomNoticeText: e.target.value })}
+                            disabled={!settingsForm.enableBottomNotice}
+                          />
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* SUBMIT BUTTON */}
+                    <div className="md:col-span-2 flex justify-end gap-3 pt-2">
+                      <button 
+                        type="button"
+                        onClick={() => {
+                          setSettingsForm({ ...settings });
+                        }}
+                        className="bg-stone-100 border-2 border-stone-900 hover:bg-stone-200 text-stone-800 font-extrabold px-4 py-2 text-[11px] rounded-none uppercase transition-all cursor-pointer"
+                      >
+                        RESET FORM
+                      </button>
+                      <button 
+                        type="submit"
+                        className="bg-[#9E2A2B] hover:bg-red-800 active:scale-95 text-white font-black px-5 py-2 text-[11px] rounded-none transition-all cursor-pointer shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] flex items-center gap-1.5 uppercase tracking-wider border-2 border-stone-950"
+                      >
+                        <Check className="h-3.5 w-3.5" />
+                        SAVE LIVE NOTICES (সংরক্ষণ করুন)
+                      </button>
+                    </div>
+
+                  </form>
+
+                </div>
+              </div>
 
             </div>
           )}
