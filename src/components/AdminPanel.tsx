@@ -71,7 +71,13 @@ export default function AdminPanel({ onDataChanged, onClose }: AdminPanelProps) 
   const [customers, setCustomers] = useState<User[]>(() => db.getUsers());
   const [coupons, setCoupons] = useState<Coupon[]>(() => db.getCoupons());
   const [banners, setBanners] = useState<Banner[]>(() => db.getBanners());
-  const [settings, setSettings] = useState<StoreSettings>(() => db.getSettings());
+  const [settings, setSettings] = useState<StoreSettings>(() => {
+    const s = db.getSettings();
+    if (s && s.storeName && (s.storeName.toUpperCase().includes('E-COMMERCE') || s.storeName.toUpperCase() === 'BAZAR' || s.storeName.toUpperCase() === 'BAZAR DHAKA')) {
+      s.storeName = 'BAZAR THOLE';
+    }
+    return s;
+  });
 
   // Editing state
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
@@ -140,7 +146,11 @@ export default function AdminPanel({ onDataChanged, onClose }: AdminPanelProps) 
     setCustomers(db.getUsers());
     setCoupons(db.getCoupons());
     setBanners(db.getBanners());
-    setSettings(db.getSettings());
+    const s = db.getSettings();
+    if (s && s.storeName && (s.storeName.toUpperCase().includes('E-COMMERCE') || s.storeName.toUpperCase() === 'BAZAR' || s.storeName.toUpperCase() === 'BAZAR DHAKA')) {
+      s.storeName = 'BAZAR THOLE';
+    }
+    setSettings(s);
     onDataChanged();
   };
 
@@ -281,6 +291,7 @@ export default function AdminPanel({ onDataChanged, onClose }: AdminPanelProps) 
     const qrData = `ORDER-REPORT: #${order.id}\nCustomer: ${order.customerName}\nPhone: ${order.phone}\nTotal Amount: ৳${order.total}\nTracking Code: ${order.trackingCode || 'N/A'}\nItems:\n${order.items.map(it => ` - ${it.productName} (${it.quantity}x)`).join('\n')}`;
     const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(qrData)}`;
     
+    const cleanStoreName = 'BAZAR THOLE';
     const reportHtml = `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -317,7 +328,7 @@ export default function AdminPanel({ onDataChanged, onClose }: AdminPanelProps) 
     <div class="invoice-card">
         <div class="header">
             <div class="logo-section">
-                <h1>${settings.storeName.toUpperCase()}</h1>
+                <h1>${cleanStoreName.toUpperCase()}</h1>
                 <p>Official Verification Report & Invoice</p>
             </div>
             <div class="invoice-meta">
@@ -399,20 +410,68 @@ export default function AdminPanel({ onDataChanged, onClose }: AdminPanelProps) 
         </div>
 
         <div class="footer-note">
-            <p>Thank you for purchasing from ${settings.storeName}. All fresh farm greens and grocery products are processed with verified hygienic packaging guidelines. For support, call: ${settings.phone}.</p>
-            <p style="font-family: monospace; font-size: 9px; margin-top: 12px; color: #94a3b8; letter-spacing: 0.5px;">Report Generated Safely via ${settings.storeName} Merchant Analytics - Coded by Shamim.</p>
+            <p>Thank you for purchasing from ${cleanStoreName}. All fresh farm greens and grocery products are processed with verified hygienic packaging guidelines. For support, call: ${settings.phone}.</p>
+            <p style="font-family: monospace; font-size: 9px; margin-top: 12px; color: #94a3b8; letter-spacing: 0.5px;">Report Generated Safely via ${cleanStoreName} Merchant Analytics - Coded by Shamim.</p>
         </div>
     </div>
 </body>
 </html>`;
     
-    const blob = new Blob([reportHtml], { type: 'text/html' });
-    const element = document.createElement('a');
-    element.href = URL.createObjectURL(blob);
-    element.download = `BAZAR_DHAKA_INVOICE_REPORT_${order.id}.html`;
-    document.body.appendChild(element);
-    element.click();
-    document.body.removeChild(element);
+    // Add auto-print script right before body ends to trigger printing as soon as the file is opened
+    const printScript = `
+    <script>
+        window.onload = function() {
+            setTimeout(function() {
+                window.print();
+            }, 500);
+        };
+    </script>
+    `;
+    const finalReportHtml = reportHtml.replace('</body>', `${printScript}</body>`);
+    
+    // 1. HARD FORCE DOWNLOAD (Highly robust, bypasses security restrictions/sandboxing blocks)
+    let downloadSuccess = false;
+    try {
+      const blob = new Blob([finalReportHtml], { type: 'text/html;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `BAZAR_THOLE_INVOICE_REPORT_${order.id}.html`;
+      link.style.display = 'none';
+      document.body.appendChild(link);
+      link.click();
+      setTimeout(() => {
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+      }, 300);
+      downloadSuccess = true;
+    } catch (err) {
+      console.error("Direct HTML download failed:", err);
+    }
+
+    // 2. Optional popup preview window as user convenience helper
+    try {
+      const win = window.open('', '_blank');
+      if (win) {
+        win.document.open();
+        win.document.write(finalReportHtml);
+        win.document.close();
+      }
+    } catch (e) {
+      console.warn("Browser blocked invoice popup, relying on direct file download.");
+    }
+
+    if (downloadSuccess) {
+      triggerAlert(
+        '📥 REPORT DOWNLOADED SUCCESSFULLY',
+        `Official Receipt & Invoice for Order #${order.id} has been saved directly to your device as 'BAZAR_THOLE_INVOICE_REPORT_${order.id}.html'.\n\nDouble-click the downloaded file at any time - it will open instantly in your browser and automatically prompt your native device Printer/Save-to-PDF menu!`
+      );
+    } else {
+      triggerAlert(
+        '📥 DOWNLOAD TRIED',
+        'Could not complete direct file download due to browser security sandbox. Please use the "🖨️ PRINT SLIP" button on the previous screen to save/print.'
+      );
+    }
   };
 
   const handleUpdateOrderDetails = (updated: Order) => {
@@ -522,45 +581,45 @@ export default function AdminPanel({ onDataChanged, onClose }: AdminPanelProps) 
     };
     db.saveSettings(payload);
     setSettingsForm(payload);
-    triggerAlert('Success', 'Bazar website configurations and SYSTEM_CORE_CONFIG updated successfully!');
+    triggerAlert('Success', 'BAZAR THOLE website configurations and SYSTEM_CORE_CONFIG updated successfully!');
     syncLists();
   };
 
   return (
     <div className="fixed inset-0 z-50 flex flex-col bg-[#FAF5EE] text-stone-800 animate-fade-in font-sans">
       
-      {/* --- RED CRIMSON TOPBAR MATCHING SCREENSHOT AESTHETIC --- */}
-      <div className="bg-[#9E2A2B] text-white h-12 w-full px-4 flex items-center justify-between shadow shrink-0 select-none">
+      {/* --- PREMIUM BLACK SYSTEM TOPBAR MATCHING HEADER AESTHETIC --- */}
+      <div className="bg-black text-white py-1.5 w-full px-4 flex items-center justify-between border-b border-neutral-900 shadow-lg shrink-0 select-none">
         
         {/* Left segment: Logo + Menu + Live Indicators */}
-        <div className="flex items-center gap-3">
-          <div className="flex items-center gap-1.5 bg-red-950/40 py-1 px-2.5 rounded border border-red-700/50">
-            <span className="bg-white text-[#9E2A2B] font-bold text-xs px-1.5 py-0.5 rounded shadow animate-pulse">BAZAR</span>
-            <span className="font-bold text-xs tracking-wider text-red-100">ADMIN PANEL</span>
+        <div className="flex items-center gap-3 animate-fade-in">
+          <div className="flex items-center gap-1.5 bg-slate-900/90 py-1 px-2.5 rounded border border-neutral-800">
+            <span className="bg-[#F97316] text-black font-extrabold text-[10px] sm:text-xs px-1.5 py-0.5 rounded shadow animate-pulse">BAZAR THOLE</span>
+            <span className="font-bold text-xs tracking-wider text-emerald-400">ADMIN PANEL</span>
           </div>
           
-          <button className="text-white/80 hover:text-white p-1 rounded hover:bg-white/10 transition-colors">
-            <Menu className="h-5 w-5" />
+          <button className="text-slate-300 hover:text-emerald-400 p-1 rounded hover:bg-neutral-900 transition-colors">
+            <Menu className="h-4 w-4" />
           </button>
 
           <button 
             onClick={onClose}
-            className="flex items-center gap-1 text-[11px] font-bold text-red-100 hover:text-white bg-white/10 hover:bg-white/20 border border-white/15 rounded px-2.5 py-1 transition-all cursor-pointer"
+            className="flex items-center gap-1 text-[11px] font-black text-emerald-400 hover:text-white bg-slate-900/85 hover:bg-slate-950 border border-neutral-800 hover:border-emerald-500/50 rounded-lg px-2.5 py-1 transition-all cursor-pointer"
           >
             <ArrowUpRight className="h-3 w-3" />
             Go to Store (স্টোর দেখুন)
           </button>
         </div>
 
-        {/* Center search input bar */}
-        <div className="relative w-64 md:w-80">
-          <Search className="absolute left-2.5 top-2 h-3.5 w-3.5 text-white/50" />
+        {/* Center search input bar - Highly Unique Premium Interface */}
+        <div className="relative w-64 md:w-80 group flex items-center">
+          <Search className="absolute left-3 h-3 h-3 text-emerald-400 animate-pulse pointer-events-none z-10" />
           <input 
             type="text" 
             placeholder="অর্ডার বা প্রোডাক্ট খুঁজুন..." 
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full bg-red-950/35 text-xs text-white placeholder-red-200/50 pl-8 pr-3 py-1 rounded border border-red-800/40 focus:outline-none focus:bg-red-950/50 transition-all font-sans"
+            className="w-full pl-8 pr-4 py-1 rounded-lg border-2 border-neutral-850 border-neutral-800 text-xs text-white bg-neutral-950 hover:bg-black hover:border-emerald-500/40 focus:bg-black focus:border-[#10B981] focus:ring-4 focus:ring-emerald-500/10 focus:outline-none transition-all placeholder-neutral-500 shadow-md group-hover:shadow-[0_0_12px_rgba(16,185,129,0.06)] font-sans"
           />
         </div>
 
@@ -568,7 +627,7 @@ export default function AdminPanel({ onDataChanged, onClose }: AdminPanelProps) 
         <div className="flex items-center gap-3">
           <button 
             onClick={() => setActiveTab('live_notices')}
-            className="flex items-center gap-1 bg-amber-500 hover:bg-amber-600 text-stone-950 font-extrabold text-[10px] uppercase tracking-wide px-2.5 py-1 rounded transition-all cursor-pointer"
+            className="flex items-center gap-1 bg-amber-500 hover:bg-amber-650 text-stone-950 font-black text-[10px] uppercase tracking-wide px-2.5 py-1 rounded transition-all cursor-pointer shadow-md"
           >
             <Megaphone className="h-3 w-3 animate-bounce" />
             Notices: {settings.enableTopNotice ? '🟢 ON' : '🔴 OFF'}
@@ -578,16 +637,16 @@ export default function AdminPanel({ onDataChanged, onClose }: AdminPanelProps) 
             type="button"
             onClick={() => { setActiveTab('orders'); setShowProductForm(false); }}
             title="View Pending Orders"
-            className="relative cursor-pointer p-1 rounded-full hover:bg-white/10 transition-all border-none bg-transparent flex items-center justify-center"
+            className="relative cursor-pointer p-1 rounded-full hover:bg-neutral-900 transition-all border-none bg-transparent flex items-center justify-center animate-fade-in"
           >
-            <Bell className="h-4 w-4 text-white" />
+            <Bell className="h-4 w-4 text-slate-300 hover:text-emerald-400 transition-colors" />
             <span className="absolute -top-1 -right-1 bg-amber-500 text-stone-950 font-mono text-[8px] font-bold h-3.5 w-3.5 rounded-full flex items-center justify-center">
               {orders.filter(o => o.status === 'Pending').length || 7}
             </span>
           </button>
 
           <div className="flex items-center gap-2">
-            <div className="h-8 w-8 rounded-full bg-red-900 border border-red-700 flex items-center justify-center text-xs text-stone-100 font-bold shadow-sm">
+            <div className="h-7 w-7 rounded-full bg-slate-900 border border-neutral-800 flex items-center justify-center text-xs text-stone-100 font-bold shadow-sm">
               {settings.storeName.charAt(0).toUpperCase() || "B"}
             </div>
             <div className="hidden lg:block text-left text-xs leading-none">
@@ -2098,7 +2157,7 @@ VALUES ('exotics', 'Exotics (আজব ফল)', 'https://unsplash.com/...');`}
                                 📊 ORDER UNIQUE VERIFICATION REPORT
                               </h3>
                               <p className="text-[10px] text-teal-100 font-mono tracking-widest uppercase mt-0.5">
-                                SECURE VERIFICATION REPORT // BAZAR DHAKA
+                                SECURE VERIFICATION REPORT // BAZAR THOLE
                               </p>
                             </div>
                           </div>
@@ -2731,7 +2790,7 @@ VALUES ('exotics', 'Exotics (আজব ফল)', 'https://unsplash.com/...');`}
                 <div className="mt-6 pt-4 border-t-2 border-stone-900 text-[10px] text-stone-700 font-bold">
                   <div>Status: <span className="text-[#9E2A2B] font-black">● DIRECT ONLINE</span></div>
                   <div>Client Version: <span className="font-mono text-[9px]">v1.2.9-beta</span></div>
-                  <div className="mt-2 text-stone-500">BAZAR DHAKA Ecosystem Controller</div>
+                  <div className="mt-2 text-stone-500">BAZAR THOLE Ecosystem Controller</div>
                 </div>
               </div>
 
@@ -4055,27 +4114,38 @@ router.post('/api/orders', async (req, res) => {
 
       {/* CUSTOM DIALOG MODAL (REPLACES BLOCKED WINDOW ACTIONS INSIDE SECURE IFRAME) */}
       {customDialog && customDialog.show && (
-        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-[100] flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl w-full max-w-md overflow-hidden shadow-2xl border border-slate-100 flex flex-col animate-fade-in animate-scale-up select-none">
-            <div className={`p-5 flex items-center gap-3 text-white ${customDialog.type === 'confirm' ? 'bg-[#00796B]' : 'bg-slate-800'}`}>
-              {customDialog.type === 'confirm' ? (
-                <AlertTriangle className="h-5 w-5 text-amber-300 shrink-0" />
-              ) : (
-                <CheckCircle2 className="h-5 w-5 text-emerald-400 shrink-0" />
-              )}
-              <h3 className="font-display font-black text-xs uppercase tracking-wider">
-                {customDialog.title}
-              </h3>
+        <div className="fixed inset-0 bg-stone-900/70 backdrop-blur-xs z-[100] flex items-center justify-center p-4">
+          <div className="bg-[#FAF5EE] rounded-none border-3 border-stone-950 w-full max-w-md overflow-hidden shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] flex flex-col animate-fade-in select-none">
+            
+            {/* Top header strip */}
+            <div className={`p-4 flex items-center justify-between border-b-3 border-stone-950 text-white ${customDialog.type === 'confirm' ? 'bg-[#9E2A2B]' : 'bg-slate-900'}`}>
+              <div className="flex items-center gap-2">
+                {customDialog.type === 'confirm' ? (
+                  <AlertTriangle className="h-4.5 w-4.5 text-amber-300 shrink-0" />
+                ) : (
+                  <CheckCircle2 className="h-4.5 w-4.5 text-emerald-400 shrink-0" />
+                )}
+                <h3 className="font-display font-black text-[10px] sm:text-xs uppercase tracking-widest">
+                  {customDialog.title}
+                </h3>
+              </div>
+              <span className="bg-white/10 text-white border border-white/25 rounded px-2 py-0.5 text-[8px] font-mono font-bold tracking-widest">
+                {customDialog.type === 'confirm' ? 'DECISION' : 'ALHAMDULILLAH ✨'}
+              </span>
             </div>
-            <div className="p-6 text-slate-600 text-xs font-semibold leading-relaxed">
+
+            {/* Message Body */}
+            <div className="p-6 text-stone-900 text-xs sm:text-[13px] font-black leading-relaxed bg-[#FAF5EE]">
               {customDialog.message}
             </div>
-            <div className="p-4 bg-slate-50 border-t border-slate-100 flex items-center justify-end gap-2">
+
+            {/* Action controls */}
+            <div className="p-4 bg-stone-100/80 border-t-2 border-stone-950 flex items-center justify-end gap-2">
               {customDialog.type === 'confirm' && (
                 <button
                   type="button"
                   onClick={() => setCustomDialog(null)}
-                  className="px-4 py-2 border border-slate-200 hover:bg-slate-100 rounded-md text-xs font-bold text-slate-500 cursor-pointer transition-colors"
+                  className="px-4.5 py-2 border-2 border-stone-950 hover:bg-stone-200 bg-white font-black text-[10px] tracking-wider text-stone-900 rounded-none uppercase cursor-pointer transition-all duration-150 active:translate-y-0.5"
                 >
                   CANCEL
                 </button>
@@ -4088,11 +4158,11 @@ router.post('/api/orders', async (req, res) => {
                   }
                   setCustomDialog(null);
                 }}
-                className={`px-5 py-2 rounded-md text-xs font-bold text-white shadow-s cursor-pointer transition-all active:scale-97 ${
-                  customDialog.type === 'confirm' ? 'bg-[#00796B] hover:bg-[#005B52]' : 'bg-slate-800 hover:bg-slate-700'
+                className={`px-5 py-2 border-2 border-stone-950 text-white font-black text-[10px] tracking-wider rounded-none uppercase shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:translate-y-[-1px] active:translate-y-[1px] active:shadow-none cursor-pointer transition-all ${
+                  customDialog.type === 'confirm' ? 'bg-[#9E2A2B] hover:bg-[#801B1C]' : 'bg-slate-900 hover:bg-slate-800'
                 }`}
               >
-                {customDialog.type === 'confirm' ? 'CONFIRM' : 'OK'}
+                {customDialog.type === 'confirm' ? 'CONFIRM ACTION' : 'OK, THANK YOU'}
               </button>
             </div>
           </div>

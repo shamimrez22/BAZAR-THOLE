@@ -59,8 +59,8 @@ export default function Footer({ settings, onNavigate }: FooterProps) {
               </svg>
 
               <div className="flex flex-col justify-center text-left leading-none font-sans">
-                <span className="text-[16px] font-black tracking-wide text-[#F97316] uppercase leading-none">Bazar</span>
-                <span className="text-[13px] font-extrabold tracking-[0.16em] text-white uppercase leading-none mt-0.5">Thole</span>
+                <span className="text-[16px] font-black tracking-wide text-[#F97316] uppercase leading-none">BAZAR</span>
+                <span className="text-[13px] font-extrabold tracking-[0.16em] text-white uppercase leading-none mt-0.5">THOLE</span>
               </div>
             </div>
             

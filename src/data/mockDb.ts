@@ -339,6 +339,11 @@ export const db = {
     if (!stored) return { ...DEFAULT_SETTINGS };
     try {
       const parsed = JSON.parse(stored);
+      // Automatically sanitize and migrate any older/interim branding variants to BAZAR THOLE
+      if (parsed && (!parsed.storeName || parsed.storeName.trim() === '' || parsed.storeName === 'BAZAR' || parsed.storeName === 'Bazar' || parsed.storeName.toUpperCase().includes('E-COMMERCE') || parsed.storeName.toUpperCase() === 'BAZAR DHAKA')) {
+        parsed.storeName = 'BAZAR THOLE';
+        localStorage.setItem(KEYS.SETTINGS, JSON.stringify(parsed));
+      }
       return { ...DEFAULT_SETTINGS, ...parsed };
     } catch {
       return { ...DEFAULT_SETTINGS };

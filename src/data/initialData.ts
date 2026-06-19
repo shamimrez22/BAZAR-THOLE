@@ -388,7 +388,7 @@ export const INITIAL_REVIEWS: Review[] = [
     id: 'r-2',
     productName: 'Rajshahi Fazli Mango (ফজলি আম)',
     customerName: 'Rehana Akhter',
-    feedback: 'The mangoes are highly sweet and pure. No chemical residue smell. Fully satisfied by BAZAR quality assurance.',
+    feedback: 'The mangoes are highly sweet and pure. No chemical residue smell. Fully satisfied by BAZAR THOLE quality assurance.',
     rating: 5,
     date: '2026-06-14',
     avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&q=80&w=150',
@@ -466,7 +466,7 @@ export const DEFAULT_SETTINGS: StoreSettings = {
 
   // Default scrolling notices configurations
   enableTopNotice: true,
-  topNoticeText: '🔥 বিশেষ ছাড়! সকল শাক-সবজি ও ফলমূলে পেয়ে যান ১০% পর্যন্ত ক্যাশব্যাক! বিস্তারিত জানতে পেজটি স্ক্রোল করুন অথবা সাপোর্ট হেল্পলাইনে কল করুন। BAZAR-এ আপনাকে স্বাগতম।',
+  topNoticeText: '🔥 বিশেষ ছাড়! সকল শাক-সবজি ও ফলমূলে পেয়ে যান ১০% পর্যন্ত ক্যাশব্যাক! বিস্তারিত জানতে পেজটি স্ক্রোল করুন অথবা সাপোর্ট হেল্পলাইনে কল করুন। BAZAR THOLE-এ আপনাকে স্বাগতম।',
   enableBottomNotice: true,
-  bottomNoticeText: '📢 ঢাকা সিটির ভিতরে ডেলিভারি চার্জ মাত্র ৫০ টাকা! ৮০০ টাকার উপরে অর্ডারে পাচ্ছেন সম্পূর্ণ ফ্রি ডেলিভারি! নিরাপদ শপিং-এর একমাত্র বিশ্বস্ত বাজার।'
+  bottomNoticeText: '📢 ঢাকা সিটির ভিতরে ডেলিভারি চার্জ মাত্র ৫০ টাকা! ৮০০ টাকার উপরে অর্ডারে পাচ্ছেন সম্পূর্ণ ফ্রি ডেলিভারি! নিরাপদ শপিং-এর একমাত্র বিশ্বস্ত ও নির্ভরযোগ্য প্রতিষ্ঠান BAZAR THOLE।'
 };

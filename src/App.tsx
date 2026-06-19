@@ -26,15 +26,36 @@ export const AdSlotContainer: React.FC<AdSlotProps> = ({ scriptHtml, className }
     containerRef.current.innerHTML = '';
     if (!scriptHtml) return;
 
-    try {
-      const fragment = document.createRange().createContextualFragment(scriptHtml);
-      containerRef.current.appendChild(fragment);
-    } catch (err) {
-      console.error('Error inserting ad script:', err);
-    }
+    // Use a non-blocking macro-task delay to allow critical React render and layout to complete first
+    const timer = setTimeout(() => {
+      try {
+        if (!containerRef.current) return;
+        const fragment = document.createRange().createContextualFragment(scriptHtml);
+        
+        // Ensure any newly injected script elements are asynchronous and don't block mobile internet threads
+        const scripts = fragment.querySelectorAll('script');
+        scripts.forEach((script) => {
+          if (script.src) {
+            script.async = true;
+            script.defer = true;
+          }
+        });
+        
+        containerRef.current.appendChild(fragment);
+      } catch (err) {
+        console.error('Error inserting ad script:', err);
+      }
+    }, 1200);
+
+    return () => clearTimeout(timer);
   }, [scriptHtml]);
 
   return <div ref={containerRef} className={className} />;
+};
+
+export const handleImageError = (e: React.SyntheticEvent<HTMLImageElement, Event>) => {
+  e.currentTarget.onerror = null;
+  e.currentTarget.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100%25' height='100%25' fill='%23f1f5f9'/%3E%3Ctext x='50' y='52' font-family='system-ui, sans-serif' font-size='8' font-weight='600' fill='%2300796B' text-anchor='middle'%3EBAZAR THOLE%3C/text%3E%3C/svg%3E";
 };
 
 export default function App() {
@@ -47,7 +68,13 @@ export default function App() {
   const [coupons, setCoupons] = useState<Coupon[]>([]);
   const [banners, setBanners] = useState<Banner[]>([]);
   const [reviews, setReviews] = useState<Review[]>([]);
-  const [settings, setSettings] = useState<StoreSettings>(() => db.getSettings());
+  const [settings, setSettings] = useState<StoreSettings>(() => {
+    const s = db.getSettings();
+    if (s && s.storeName && (s.storeName.toUpperCase().includes('E-COMMERCE') || s.storeName.toUpperCase() === 'BAZAR' || s.storeName.toUpperCase() === 'BAZAR DHAKA')) {
+      s.storeName = 'BAZAR THOLE';
+    }
+    return s;
+  });
   const [currentUser, setCurrentUser] = useState<ProfileUser | null>(null);
 
   // Home Screen active state slider index
@@ -156,6 +183,26 @@ export default function App() {
     return () => clearInterval(interval);
   }, [banners.length, isSliderHovered]);
 
+  // Home Page Categories Autoplay Loop (Slides items to the left dynamically)
+  useEffect(() => {
+    let scrollInterval: NodeJS.Timeout;
+    if (categories.length > 0) {
+      scrollInterval = setInterval(() => {
+        const el = categoriesContainerRef.current;
+        if (!el) return;
+        const maxScroll = el.scrollWidth - el.clientWidth;
+        if (el.scrollLeft >= maxScroll - 10) {
+          el.scrollTo({ left: 0, behavior: 'smooth' });
+        } else {
+          el.scrollBy({ left: 160, behavior: 'smooth' });
+        }
+      }, 3000);
+    }
+    return () => {
+      if (scrollInterval) clearInterval(scrollInterval);
+    };
+  }, [categories]);
+
   // Flash Sale Live countdown timer logic
   useEffect(() => {
     const countdown = setInterval(() => {
@@ -182,19 +229,36 @@ export default function App() {
       if (existing) existing.remove();
       return;
     }
-    try {
-      let container = document.getElementById('adsterra-global-header-container');
-      if (!container) {
-        container = document.createElement('div');
-        container.id = 'adsterra-global-header-container';
-        document.body.appendChild(container);
+
+    // Delay script injection on a robust timeout so that the entire DOM paints first
+    const safeTimer = setTimeout(() => {
+      try {
+        let container = document.getElementById('adsterra-global-header-container');
+        if (!container) {
+          container = document.createElement('div');
+          container.id = 'adsterra-global-header-container';
+          document.body.appendChild(container);
+        }
+        container.innerHTML = '';
+        
+        const fragment = document.createRange().createContextualFragment(settings.adsterraHeaderScript);
+        
+        // Force asynchronous flag on any script source tags to prevent blocking on network timeouts
+        const scripts = fragment.querySelectorAll('script');
+        scripts.forEach((script) => {
+          if (script.src) {
+            script.async = true;
+            script.defer = true;
+          }
+        });
+        
+        container.appendChild(fragment);
+      } catch (err) {
+        console.error('Failed to inject global header ad script:', err);
       }
-      container.innerHTML = '';
-      const fragment = document.createRange().createContextualFragment(settings.adsterraHeaderScript);
-      container.appendChild(fragment);
-    } catch (err) {
-      console.error('Failed to inject global header ad script:', err);
-    }
+    }, 1800); // 1.8 seconds timeout guarantees absolute client side load complete
+
+    return () => clearTimeout(safeTimer);
   }, [settings.enableAds, settings.adsterraHeaderScript]);
 
   const loadAllDbValues = () => {
@@ -203,7 +267,11 @@ export default function App() {
     setCoupons(db.getCoupons());
     setBanners(db.getBanners());
     setReviews(db.getReviews());
-    setSettings(db.getSettings());
+    const s = db.getSettings();
+    if (s && s.storeName && (s.storeName.toUpperCase().includes('E-COMMERCE') || s.storeName.toUpperCase() === 'BAZAR' || s.storeName.toUpperCase() === 'BAZAR DHAKA')) {
+      s.storeName = 'BAZAR THOLE';
+    }
+    setSettings(s);
   };
 
   const triggerToast = (msg: string) => {
@@ -528,9 +596,29 @@ export default function App() {
       
       {/* Dynamic Toast Alerts banner */}
       {toastMessage && (
-        <div className="fixed top-24 left-1/2 -translate-x-1/2 z-50 bg-slate-900 border border-slate-800 text-white px-5 py-3 rounded-xl text-xs font-semibold shadow-2xl flex items-center gap-2.5 animate-slide-down">
-          <CheckCircle2 className="h-4.5 w-4.5 text-emerald-400 shrink-0" />
-          <span>{toastMessage}</span>
+        <div className="fixed top-24 left-1/2 -translate-x-1/2 z-[100] bg-[#FAF5EE] border-3 border-stone-900 text-stone-900 px-6 py-4 rounded-none shadow-[5px_5px_0px_0px_rgba(158,42,43,1)] flex flex-col gap-1 min-w-[290px] sm:min-w-[350px] max-w-md animate-slide-down">
+          <div className="flex items-center justify-between border-b-2 border-stone-900/10 pb-1.5 mb-1 bg-stone-100/50 -mx-6 -mt-4 px-6 py-1.5 select-none">
+            <span className="bg-[#9E2A2B] text-white font-mono text-[9px] font-black tracking-widest px-2 py-0.5 uppercase">
+              ALHAMDULILLAH ✨
+            </span>
+            <span className="text-[9px] text-[#9E2A2B] font-display font-black tracking-widest uppercase">
+              SYSTEM NOTIFICATION
+            </span>
+          </div>
+          <div className="flex items-start gap-3 pt-1">
+            <div className="bg-[#EFE9DB] border-2 border-stone-950 p-1.5 shrink-0 flex items-center justify-center animate-pulse">
+              <span className="text-base select-none">
+                {toastMessage.includes('🛒') || toastMessage.includes('basket') ? '🛍️' : 
+                 toastMessage.includes('Welcome') || toastMessage.includes('profile') || toastMessage.includes('Account') ? '👤' : 
+                 toastMessage.includes('Logged out') ? '🚪' : 
+                 toastMessage.includes('Coupon') || toastMessage.includes('Voucher') || toastMessage.includes('Promo') ? '🎟️' : 
+                 toastMessage.includes('wishlist') ? '💖' : '✨'}
+              </span>
+            </div>
+            <p className="text-xs font-black font-sans text-stone-900 leading-snug pt-0.5">
+              {toastMessage}
+            </p>
+          </div>
         </div>
       )}
 
@@ -598,7 +686,7 @@ export default function App() {
                     alt="Premium Special Offer Background" 
                     referrerPolicy="no-referrer"
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-black/10 transition-all duration-300"></div>
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-transparent to-transparent transition-all duration-300 animate-fade-in"></div>
                 </div>
 
                 {/* Top lightning badge and discount indicator */}
@@ -672,32 +760,19 @@ export default function App() {
                           alt={slide.title}
                           referrerPolicy="no-referrer"
                         />
-                        <div className="absolute inset-0 bg-gradient-to-r from-black/85 via-black/55 to-transparent"></div>
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"></div>
                       </div>
 
-                      {/* Compact, ultra-unique small glassmorphic overlay card positioned in the corner */}
-                      <div className="absolute bottom-4 left-4 z-10 bg-black/85 backdrop-blur-md border border-white/15 p-4 rounded-2xl max-w-[260px] sm:max-w-[320px] text-left space-y-1.5 shadow-2xl transition-all duration-300 hover:bg-black/90 hover:border-white/25">
-                        <div className="flex items-center gap-1.5">
-                          <span className="bg-orange-600 text-white font-mono text-[8px] font-extrabold px-1.5 py-0.5 rounded tracking-wide uppercase select-none">
-                            {slide.badge}
-                          </span>
-                        </div>
-                        <h2 className="font-display font-black text-[11px] sm:text-xs text-white leading-tight uppercase tracking-wide select-none drop-shadow-sm line-clamp-2">
-                          {slide.title}
-                        </h2>
-                        <p className="text-[10px] text-gray-300 leading-normal font-sans font-medium select-none line-clamp-2 drop-shadow-sm">
-                          {slide.subtitle}
-                        </p>
-                        <div className="pt-1 select-none">
-                          <button
-                            id={`hero-shop-cta-btn-${slide.id}`}
-                            onClick={(e) => { e.stopPropagation(); setActiveTab('shop'); setSelectedCategory('all'); }}
-                            className="bg-orange-600 hover:bg-orange-700 text-white font-black px-2.5 py-1.5 rounded text-[8.5px] uppercase tracking-wider transition-all active:scale-95 flex items-center gap-1 cursor-pointer border border-orange-700/20 shadow-sm"
-                          >
-                            SHOP NOW
-                            <ArrowRight className="h-2.5 w-2.5 text-white" />
-                          </button>
-                        </div>
+                      {/* Corner SHOP NOW button with absolutely zero text, beautifully styled */}
+                      <div className="absolute bottom-5 left-5 z-10 select-none">
+                        <button
+                          id={`hero-shop-cta-btn-${slide.id}`}
+                          onClick={(e) => { e.stopPropagation(); setActiveTab('shop'); setSelectedCategory('all'); }}
+                          className="bg-orange-600 hover:bg-orange-700 hover:scale-105 active:scale-95 text-white font-sans font-black tracking-widest text-[9.5px] sm:text-[10.5px] uppercase px-5 py-2.5 rounded-full shadow-[0_4px_14px_rgba(234,88,12,0.4)] border border-orange-500/20 flex items-center gap-2 cursor-pointer transition-all duration-200"
+                        >
+                          <span>SHOP NOW</span>
+                          <ArrowRight className="h-3.5 w-3.5 text-white" />
+                        </button>
                       </div>
                     </div>
                   ))}
@@ -813,7 +888,14 @@ export default function App() {
                     className="flex-none w-[114px] sm:w-[138px] bg-white border border-gray-200/70 rounded-2xl p-3 sm:p-4 text-center flex flex-col items-center justify-center gap-3 cursor-pointer hover:border-emerald-500 hover:shadow-md group transition-all duration-300 active:scale-95 snap-start"
                   >
                     <div className="h-20 w-20 sm:h-24 sm:w-24 rounded-full overflow-hidden bg-slate-50 border-2 border-emerald-50 relative shrink-0 p-1 group-hover:border-emerald-500 group-hover:bg-emerald-50/50 transition-all duration-300 shadow-sm flex items-center justify-center">
-                      <img src={cat.image} className="h-full w-full object-cover rounded-full group-hover:scale-110 transition-transform duration-500 aspect-square" alt={cat.name} referrerPolicy="no-referrer" />
+                      <img 
+                        src={cat.image} 
+                        className="h-full w-full object-cover rounded-full group-hover:scale-110 transition-transform duration-500 aspect-square" 
+                        alt={cat.name} 
+                        referrerPolicy="no-referrer" 
+                        loading="lazy"
+                        onError={handleImageError}
+                      />
                     </div>
                     <span className="text-xs font-bold text-slate-700 group-hover:text-emerald-700 transition-colors leading-tight line-clamp-1">
                       {cat.name}
@@ -872,6 +954,8 @@ export default function App() {
                           className="w-full h-full object-cover hover:scale-105 transition-transform duration-500" 
                           alt={product.name} 
                           referrerPolicy="no-referrer" 
+                          loading="lazy"
+                          onError={handleImageError}
                         />
                         {isOut && (
                           <div className="absolute inset-0 bg-white/75 backdrop-blur-3xs flex items-center justify-center">
@@ -1128,7 +1212,7 @@ export default function App() {
                       <span>🎁 Special Offer</span>
                       <span className="bg-rose-100 text-rose-600 border border-rose-200 rounded-full px-2.5 py-0.5 text-[8.5px] font-black uppercase tracking-wide">Special Combo</span>
                     </h3>
-                    <p className="text-xs text-slate-400 font-sans">Exclusive discount bundles and special gift hampers directly from BAZAR</p>
+                    <p className="text-xs text-slate-400 font-sans">Exclusive discount bundles and special gift hampers directly from BAZAR THOLE</p>
                   </div>
                   <button 
                     onClick={() => { setSelectedCategory('all'); setActiveTab('shop'); }} 
@@ -1544,7 +1628,7 @@ export default function App() {
                     {/* Header overview details */}
                     <div className="border-b border-gray-100 pb-5 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                       <div>
-                        <span className="text-[10px] text-emerald-600 font-extrabold uppercase tracking-widest block font-sans">🛡️ BAZAR OFFICIAL LOGISTICS DIRECT REPORT</span>
+                        <span className="text-[10px] text-emerald-600 font-extrabold uppercase tracking-widest block font-sans">🛡️ BAZAR THOLE OFFICIAL LOGISTICS DIRECT REPORT</span>
                         <h4 className="font-mono font-black text-xl text-slate-900 mt-1">ORDER ID: #{trackedOrder.id}</h4>
                         <div className="flex flex-wrap items-center gap-2 mt-1">
                           <span className="text-xs text-slate-400 font-mono">Reference Code: {trackedOrder.trackingCode}</span>
@@ -1650,7 +1734,7 @@ export default function App() {
                     {trackedOrder.status === 'Canceled' && (
                       <div className="rounded-2xl bg-rose-50 border border-rose-200 p-4 text-xs text-rose-800 flex items-center gap-2">
                         <AlertTriangle className="h-5 w-5 text-rose-600 shrink-0" />
-                        <span className="font-bold">Notice: This order status was terminated or refunded by BAZAR support system.</span>
+                        <span className="font-bold">Notice: This order status was terminated or refunded by BAZAR THOLE support system.</span>
                       </div>
                     )}
 
@@ -1739,7 +1823,7 @@ export default function App() {
                     {/* Printer and customer local options */}
                     <div className="flex flex-wrap items-center justify-between gap-3 pt-2">
                       <span className="text-[10px] text-slate-400 font-sans tracking-wide">
-                        Verified Securely. Thank you for buying from BAZAR.
+                        Verified Securely. Thank you for buying from BAZAR THOLE.
                       </span>
                       <div className="flex items-center gap-2">
                         {/* Instant Print Button */}
@@ -1751,7 +1835,7 @@ export default function App() {
                               const pageData = `
                                 <html>
                                 <head>
-                                  <title>BAZAR ORDER RECEIPT #${trackedOrder.id}</title>
+                                  <title>BAZAR THOLE ORDER RECEIPT #${trackedOrder.id}</title>
                                   <style>
                                     body { font-family: system-ui, sans-serif; padding: 40px; color: #334155; }
                                     .invoice-box { border: 1px solid #e2e8f0; padding: 30px; border-radius: 16px; max-width: 800px; margin: 0 auto; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1); }
@@ -1845,19 +1929,189 @@ export default function App() {
                         <button
                           type="button"
                           onClick={() => {
-                            const reportContent = `BAZAR OFFICIAL RECEIPT\nOrder Verification Report #${trackedOrder.id}\nDate: ${new Date(trackedOrder.orderDate).toLocaleString()}\nCustomer Name: ${trackedOrder.customerName}\nMobile: ${trackedOrder.phone}\nAddress: ${trackedOrder.address}\n\nITEMS:\n${trackedOrder.items.map((it, i) => `${i + 1}. ${it.productName} (${it.unit}) - Qty: ${it.quantity} x Price: ৳${it.price}`).join('\n')}\n\nSubtotal: ৳${trackedOrder.subtotal}\nDiscount: -৳${trackedOrder.discount}\nDelivery Fee: ৳${trackedOrder.deliveryFee}\nGrand Total: ৳${trackedOrder.total}\n\nTracking Code: ${trackedOrder.trackingCode}\nThank you for shopping at ${settings.storeName}. For support, call: ${settings.phone}`;
-                            const textBlob = new Blob([reportContent], { type: 'text/plain;charset=utf-8' });
-                            const link = document.createElement('a');
-                            link.href = URL.createObjectURL(textBlob);
-                            link.download = `bazar_invoice_report_${trackedOrder.id}.txt`;
-                            document.body.appendChild(link);
-                            link.click();
-                            document.body.removeChild(link);
-                            triggerToast('📥 Plaintext Invoice Sheet Downloaded successfully');
+                            const cleanStoreName = 'BAZAR THOLE';
+                            const qrData = `ORDER-REPORT: #${trackedOrder.id}\nCustomer: ${trackedOrder.customerName}\nPhone: ${trackedOrder.phone}\nTotal Amount: ৳${trackedOrder.total}\nTracking Code: ${trackedOrder.trackingCode || 'N/A'}\nItems:\n${trackedOrder.items.map(it => ` - ${it.productName} (${it.quantity}x)`).join('\n')}`;
+                            const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(qrData)}`;
+                            
+                            const reportHtml = `<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BAZAR_THOLE_INVOICE_REPORT_${trackedOrder.id}</title>
+    <style>
+        body { font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; color: #1e293b; margin: 0; padding: 40px; background-color: #f8fafc; }
+        .invoice-card { max-width: 800px; margin: 0 auto; background: white; border: 1px solid #e2e8f0; padding: 40px; border-radius: 20px; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.05); }
+        .header { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 3px solid #00796B; padding-bottom: 24px; margin-bottom: 32px; }
+        .logo-section h1 { margin: 0; color: #00796B; font-size: 32px; font-weight: 900; letter-spacing: -1px; text-transform: uppercase; }
+        .logo-section p { margin: 6px 0 0; font-size: 11px; text-transform: uppercase; color: #64748b; font-family: monospace; font-weight: bold; letter-spacing: 2px; }
+        .invoice-meta { text-align: right; }
+        .invoice-meta h2 { margin: 0; font-size: 24px; color: #0f172a; font-weight: 850; letter-spacing: -0.5px; }
+        .invoice-meta p { margin: 6px 0 0; font-size: 12px; font-family: monospace; color: #475569; font-weight: bold; }
+        .grid-details { display: grid; grid-template-columns: 1.2fr 0.8fr; gap: 40px; margin-bottom: 32px; }
+        .col h3 { font-size: 11px; text-transform: uppercase; color: #00796B; margin: 0 0 12px; border-bottom: 2px solid #f1f5f9; padding-bottom: 6px; font-weight: 900; letter-spacing: 1px; }
+        .col p { margin: 6px 0; font-size: 13.5px; line-height: 1.6; color: #334155; }
+        .col p strong { color: #0f172a; font-weight: 600; }
+        .qr-section { text-align: center; border: 1px solid #e2e8f0; padding: 20px; border-radius: 16px; background: #f8fafc; display: inline-block; box-shadow: inset 0 2px 4px 0 rgba(0, 0, 0, 0.02); }
+        .qr-section img { display: block; margin: 0 auto 12px; width: 140px; height: 140px; border-radius: 8px; }
+        .qr-section span { font-size: 10px; font-family: monospace; color: #64748b; text-transform: uppercase; font-weight: 800; letter-spacing: 0.5px; }
+        table { width: 100%; border-collapse: collapse; margin-bottom: 32px; }
+        th { background-color: #00796B; color: white; text-align: left; padding: 12px; font-size: 11px; text-transform: uppercase; font-weight: 800; letter-spacing: 1px; }
+        td { padding: 14px 12px; border-bottom: 1px solid #f1f5f9; font-size: 13.5px; color: #334155; }
+        .text-right { text-align: right; }
+        .totals-block { float: right; width: 40%; margin-top: 16px; border-top: 1.5px solid #cbd5e1; padding-top: 15px; }
+        .totals-row { display: flex; justify-content: space-between; font-size: 13.5px; margin-bottom: 8px; color: #475569; }
+        .totals-row.grand { font-size: 18px; font-weight: 900; border-top: 2px solid #00796B; padding-top: 12px; margin-top: 12px; color: #00796B; }
+        .footer-note { clear: both; text-align: center; margin-top: 64px; font-size: 11px; color: #64748b; border-top: 1px dashed #cbd5e1; padding-top: 24px; line-height: 1.6; }
+        @media print {
+            body { background: white; padding: 0; color: black; }
+            .invoice-card { border: none; box-shadow: none; padding: 0; max-width: 100%; }
+            .totals-block { width: 50%; }
+        }
+    </style>
+</head>
+<body>
+    <div class="invoice-card">
+        <div class="header">
+            <div class="logo-section">
+                <h1>${cleanStoreName.toUpperCase()}</h1>
+                <p>Official Verification Report & Invoice</p>
+            </div>
+            <div class="invoice-meta">
+                <h2>INVOICE #${trackedOrder.id}</h2>
+                <p>DATE: ${new Date(trackedOrder.orderDate).toLocaleString('en-US')}</p>
+                <p>TRACKING CODE: ${trackedOrder.trackingCode || 'NOT ASSIGNED'}</p>
+            </div>
+        </div>
+        
+        <div class="grid-details">
+            <div class="col">
+                <h3>SHIPPING & PACKAGING RECIPIENT</h3>
+                <p><strong>Customer Name:</strong> ${trackedOrder.customerName}</p>
+                <p><strong>Contact Phone:</strong> ${trackedOrder.phone}</p>
+                <p><strong>Email Address:</strong> ${trackedOrder.email || 'N/A'}</p>
+                <p><strong>City Region:</strong> ${trackedOrder.city.toUpperCase()}</p>
+                <p><strong>Street Address:</strong> ${trackedOrder.address}</p>
+            </div>
+            <div class="col text-right" style="display: flex; flex-direction: column; align-items: flex-end;">
+                <h3>SECURE VERIFICATION QR</h3>
+                <div class="qr-section">
+                    <img src="${qrCodeUrl}" alt="Order Verification QR Code" />
+                    <span>Scan to Verify Invoice #${trackedOrder.id}</span>
+                </div>
+            </div>
+        </div>
+
+        <h3>ORDERED ITEMS DETAILS</h3>
+        <table>
+            <thead>
+                <tr style="background-color: #00796B; color: white;">
+                    <th style="padding: 12px; text-align: left;">Item Description</th>
+                    <th style="padding: 12px; text-align: right;" class="text-right">Unit Price</th>
+                    <th style="padding: 12px; text-align: right;" class="text-right">Quantity</th>
+                    <th style="padding: 12px; text-align: right;" class="text-right">Subtotal</th>
+                </tr>
+            </thead>
+            <tbody>
+                ${trackedOrder.items.map(item => `
+                    <tr>
+                        <td style="padding: 12px; border-bottom: 1px solid #e2e8f0; text-align: left;">${item.productName} (${item.unit || '1 kg'})</td>
+                        <td style="padding: 12px; border-bottom: 1px solid #e2e8f0; text-align: right;" class="text-right">৳${item.price}</td>
+                        <td style="padding: 12px; border-bottom: 1px solid #e2e8f0; text-align: right;" class="text-right">${item.quantity}</td>
+                        <td style="padding: 12px; border-bottom: 1px solid #e2e8f0; text-align: right;" class="text-right">৳${item.price * item.quantity}</td>
+                    </tr>
+                `).join('')}
+            </tbody>
+        </table>
+
+        <div class="totals-block">
+            <div class="totals-row">
+                <span>Subtotal:</span>
+                <span>৳${trackedOrder.subtotal}</span>
+            </div>
+            <div class="totals-row">
+                <span>Coupon Discount:</span>
+                <span>-৳${trackedOrder.discount}</span>
+            </div>
+            <div class="totals-row">
+                <span>Delivery Charge:</span>
+                <span>৳${trackedOrder.deliveryFee}</span>
+            </div>
+            <div class="totals-row grand">
+                <span>Grand Total:</span>
+                <span>৳${trackedOrder.total}</span>
+            </div>
+            <div class="totals-row" style="margin-top: 12px; font-size: 11px; color: #64748b;">
+                <span>Payment Method:</span>
+                <span>${trackedOrder.paymentMethod}</span>
+            </div>
+            <div class="totals-row" style="font-size: 11px; color: #64748b;">
+                <span>Payment Status:</span>
+                <strong style="color: ${trackedOrder.paymentStatus === 'Paid' ? '#00796B' : '#f59e0b'}">${trackedOrder.paymentStatus}</strong>
+            </div>
+        </div>
+
+        <div class="footer-note">
+            <p>Thank you for purchasing from ${cleanStoreName}. All fresh farm greens and grocery products are processed with verified hygienic packaging guidelines. For support, call: ${settings.phone}.</p>
+            <p style="font-family: monospace; font-size: 9px; margin-top: 12px; color: #94a3b8; letter-spacing: 0.5px;">Report Generated Safely via ${cleanStoreName} Merchant Analytics - Coded by Shamim.</p>
+        </div>
+    </div>
+</body>
+</html>`;
+
+                            // Add auto-print script right before body ends to trigger printing as soon as the file is opened
+                            const printScript = `
+                            <script>
+                                window.onload = function() {
+                                    setTimeout(function() {
+                                        window.print();
+                                    }, 500);
+                                };
+                            </script>
+                            `;
+                            const finalReportHtml = reportHtml.replace('</body>', `${printScript}</body>`);
+                            
+                            // 1. HARD FORCE DOWNLOAD (Highly robust, bypasses security restrictions/sandboxing blocks)
+                            let downloadSuccess = false;
+                            try {
+                              const blob = new Blob([finalReportHtml], { type: 'text/html;charset=utf-8' });
+                              const url = URL.createObjectURL(blob);
+                              const link = document.createElement('a');
+                              link.href = url;
+                              link.download = `BAZAR_THOLE_INVOICE_REPORT_${trackedOrder.id}.html`;
+                              link.style.display = 'none';
+                              document.body.appendChild(link);
+                              link.click();
+                              setTimeout(() => {
+                                document.body.removeChild(link);
+                                URL.revokeObjectURL(url);
+                              }, 300);
+                              downloadSuccess = true;
+                            } catch (err) {
+                              console.error("Direct HTML download failed:", err);
+                            }
+
+                            // 2. Optional popup preview window as user convenience helper
+                            try {
+                              const win = window.open('', '_blank');
+                              if (win) {
+                                win.document.open();
+                                win.document.write(finalReportHtml);
+                                win.document.close();
+                              }
+                            } catch (e) {
+                              console.warn("Browser blocked invoice popup, relying on direct file download.");
+                            }
+
+                            if (downloadSuccess) {
+                              triggerToast(`📥 Invoice saved as 'BAZAR_THOLE_INVOICE_REPORT_${trackedOrder.id}.html'! Open it on your device to print.`);
+                            } else {
+                              triggerToast('⚠️ Please use the "Print Receipt" button above to view print options directly.');
+                            }
                           }}
                           className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-xs flex items-center gap-1 cursor-pointer transition-colors shadow-xs"
                         >
-                          📥 Download Text Report
+                          📥 Save PDF Invoice
                         </button>
                       </div>
                     </div>
@@ -1962,7 +2216,7 @@ export default function App() {
                   <PhoneCall className="h-5 w-5" />
                 </div>
                 <div className="text-left">
-                  <h4 className="font-display font-semibold text-sm text-slate-850">24/7 Bazar Hotline</h4>
+                  <h4 className="font-display font-semibold text-sm text-slate-850">24/7 BAZAR THOLE Hotline</h4>
                   <p className="text-[11px] text-slate-400 mt-1 leading-relaxed">Instantly resolve questions, reschedule timeslots, or customize custom orders on the go.</p>
                 </div>
               </div>
@@ -2416,7 +2670,7 @@ export default function App() {
               </div>
 
               <p className="text-center pt-2 text-slate-400">
-                New to BAZAR organic?{' '}
+                New to BAZAR THOLE organic?{' '}
                 <button type="button" onClick={() => setActiveTab('register')} className="text-emerald-600 text-xs font-bold hover:underline">
                   Create fresh account
                 </button>
@@ -2533,7 +2787,7 @@ export default function App() {
               </div>
 
               <p className="text-center pt-2 text-slate-400">
-                Already registered with BAZAR?{' '}
+                Already registered with BAZAR THOLE?{' '}
                 <button type="button" onClick={() => setActiveTab('login')} className="text-emerald-600 text-xs font-bold hover:underline">
                   Sign In instead
                 </button>
@@ -2885,7 +3139,7 @@ export default function App() {
                   আলহামদুলিল্লাহ! Order Confirmed
                 </h2>
                 <p className="text-xs text-slate-500 font-sans max-w-lg mx-auto leading-relaxed">
-                  Thank you for placing your order with BAZAR. Your order is safely logged and our harvest dispatch riders are already preparing your shipment.
+                  Thank you for placing your order with BAZAR THOLE. Your order is safely logged and our harvest dispatch riders are already preparing your shipment.
                 </p>
               </div>
             </div>
@@ -3024,7 +3278,7 @@ export default function App() {
               {/* Support WhatsApp */}
               <button
                 onClick={() => {
-                  const inquiryMsg = `Hello support! I successfully confirmed my BAZAR order. Tracking ID: ${latestPlacedOrder.trackingCode}. Total billing: ৳${latestPlacedOrder.total}. Please process it as soon as possible!`;
+                  const inquiryMsg = `Hello support! I successfully confirmed my BAZAR THOLE order. Tracking ID: ${latestPlacedOrder.trackingCode}. Total billing: ৳${latestPlacedOrder.total}. Please process it as soon as possible!`;
                   window.open(`https://wa.me/${settings.phone.replace(/[^0-9]/g, '')}?text=${encodeURIComponent(inquiryMsg)}`, '_blank');
                 }}
                 className="w-full sm:w-1/3 bg-[#12a14b] hover:bg-green-700 text-white rounded-xl py-3 text-center cursor-pointer font-bold transition-all text-xs uppercase tracking-wider active:scale-95 flex items-center justify-center gap-1.5 shadow font-sans"
@@ -3271,7 +3525,7 @@ export default function App() {
                       id="detail-whatsapp-order"
                       type="button"
                       onClick={() => {
-                        const whatsappMsg = `Hello BAZAR! I want to order ${detailQuantity}x "${detailProduct.name}" (${detailProduct.unit}). Price: ৳${detailProduct.price * detailQuantity}. Please confirm my order!`;
+                        const whatsappMsg = `Hello BAZAR THOLE! I want to order ${detailQuantity}x "${detailProduct.name}" (${detailProduct.unit}). Price: ৳${detailProduct.price * detailQuantity}. Please confirm my order!`;
                         window.open(`https://wa.me/${settings.phone.replace(/[^0-9]/g, '')}?text=${encodeURIComponent(whatsappMsg)}`, '_blank');
                       }}
                       className="w-full sm:w-1/2 bg-[#12a14b] text-white rounded-xl py-3 px-4 text-[11px] font-bold hover:bg-green-700 transition-all cursor-pointer flex items-center justify-center gap-2 uppercase"
@@ -3324,7 +3578,7 @@ export default function App() {
               <div className="flex items-center justify-between pb-4 border-b border-gray-100">
                 <div className="flex items-center gap-2">
                   <ShoppingCart className="h-5 w-5 text-emerald-600" />
-                  <span className="font-display font-black text-lg text-slate-800 uppercase tracking-tighter">My Bazar Cart</span>
+                  <span className="font-display font-black text-lg text-slate-800 uppercase tracking-tighter">My BAZAR THOLE Cart</span>
                 </div>
                 <button
                   id="cart-drawer-close"
