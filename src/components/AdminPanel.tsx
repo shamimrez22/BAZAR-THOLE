@@ -9,7 +9,14 @@ import { ResponsiveContainer, AreaChart, Area, XAxis, YAxis, Tooltip, CartesianG
 import { Product, Category, Order, User, Coupon, Banner, StoreSettings } from '../types';
 import { db } from '../data/mockDb';
 
-const originalLocalStorage = typeof window !== 'undefined' ? window.localStorage : null;
+let originalLocalStorage: Storage | null = null;
+try {
+  if (typeof window !== 'undefined' && window.localStorage) {
+    originalLocalStorage = window.localStorage;
+  }
+} catch (e) {
+  console.warn('[BT Admin] Cannot access window.localStorage:', e);
+}
 const memoryStorage: Record<string, string> = {};
 
 const localStorage = {

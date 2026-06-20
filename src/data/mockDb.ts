@@ -1,7 +1,14 @@
 import { Product, Category, Order, User, Coupon, Banner, Review, StoreSettings } from '../types';
 import { INITIAL_PRODUCTS, INITIAL_CATEGORIES, INITIAL_COUPONS, INITIAL_BANNERS, INITIAL_REVIEWS, DEFAULT_SETTINGS } from './initialData';
 
-const originalLocalStorage = typeof window !== 'undefined' ? window.localStorage : null;
+let originalLocalStorage: Storage | null = null;
+try {
+  if (typeof window !== 'undefined' && window.localStorage) {
+    originalLocalStorage = window.localStorage;
+  }
+} catch (e) {
+  console.warn('[BT Database] Cannot access window.localStorage:', e);
+}
 
 // Memory storage fallback buffer when localStorage is unavailable (e.g., iOS Safari Private Mode, embedded social app webviews, or restricted cookies)
 const memoryStorage: Record<string, string> = {};
