@@ -80,7 +80,14 @@ export default function App() {
   // Home Screen active state slider index
   const [heroIndex, setHeroIndex] = useState<number>(0);
   const [isSliderHovered, setIsSliderHovered] = useState<boolean>(false);
-  const [timeLeft, setTimeLeft] = useState<{ hours: number; minutes: number; seconds: number }>({ hours: 4, minutes: 45, seconds: 12 });
+  const [timeLeft, setTimeLeft] = useState<{ hours: number; minutes: number; seconds: number }>(() => {
+    const s = db.getSettings();
+    return {
+      hours: s?.specialOfferHours !== undefined ? s.specialOfferHours : 4,
+      minutes: s?.specialOfferMinutes !== undefined ? s.specialOfferMinutes : 45,
+      seconds: 12
+    };
+  });
 
   // Shop filters category selection slug
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
@@ -88,6 +95,7 @@ export default function App() {
   const [priceRange, setPriceRange] = useState<number>(1800);
   const [onlyDiscounted, setOnlyDiscounted] = useState<boolean>(false);
   const [showMoreFilters, setShowMoreFilters] = useState<boolean>(false);
+  const [visibleShopProducts, setVisibleShopProducts] = useState<number>(20);
 
   // Product detailed modal state
   const [detailProduct, setDetailProduct] = useState<Product | null>(null);
@@ -127,8 +135,8 @@ export default function App() {
   const [contactSubmitSuccess, setContactSubmitSuccess] = useState<boolean>(false);
 
   // Login page inputs
-  const [loginEmail, setLoginEmail] = useState<string>('shamimrez22@gmail.com');
-  const [loginPassword, setLoginPassword] = useState<string>('password123');
+  const [loginEmail, setLoginEmail] = useState<string>('');
+  const [loginPassword, setLoginPassword] = useState<string>('');
   const [loginError, setLoginError] = useState<string>('');
 
   // Register page inputs
@@ -167,7 +175,21 @@ export default function App() {
     }
   }, []);
 
-  // Home Page Slider Autoplay Loop
+  // Reset visible products pagination count to protect memory on filter shifts
+  useEffect(() => {
+    setVisibleShopProducts(20);
+  }, [selectedCategory, searchFilter, priceRange, onlyDiscounted, activeTab]);
+
+  // Scroll to top of the page on any tab/page change
+  useEffect(() => {
+    try {
+      window.scrollTo({ top: 0, behavior: 'instant' });
+    } catch (e) {
+      window.scrollTo(0, 0);
+    }
+  }, [activeTab]);
+
+  // Adjust detailed visual selection defaults
   useEffect(() => {
     if (detailProduct) {
       setDetailQuantity(1);
@@ -214,13 +236,17 @@ export default function App() {
         } else if (prev.hours > 0) {
           return { hours: prev.hours - 1, minutes: 59, seconds: 59 };
         } else {
-          // Reset countdown loop back to 6 hours when finished to stay hot & alive
-          return { hours: 5, minutes: 59, seconds: 59 };
+          // Reset countdown loop back to the configured set duration when finished to stay hot & alive
+          return {
+            hours: settings?.specialOfferHours !== undefined ? settings.specialOfferHours : 5,
+            minutes: settings?.specialOfferMinutes !== undefined ? settings.specialOfferMinutes : 59,
+            seconds: 59
+          };
         }
       });
     }, 1000);
     return () => clearInterval(countdown);
-  }, []);
+  }, [settings?.specialOfferHours, settings?.specialOfferMinutes]);
 
   // Adsterra/Global Header and Popunder Script Dynamic Execution Hook
   useEffect(() => {
@@ -272,6 +298,13 @@ export default function App() {
       s.storeName = 'BAZAR THOLE';
     }
     setSettings(s);
+    if (s) {
+      setTimeLeft({
+        hours: s.specialOfferHours !== undefined ? s.specialOfferHours : 4,
+        minutes: s.specialOfferMinutes !== undefined ? s.specialOfferMinutes : 45,
+        seconds: 0
+      });
+    }
   };
 
   const triggerToast = (msg: string) => {
@@ -741,7 +774,7 @@ export default function App() {
               <div 
                 onMouseEnter={() => setIsSliderHovered(true)}
                 onMouseLeave={() => setIsSliderHovered(false)}
-                className="group relative rounded-3xl overflow-hidden h-64 sm:h-80 md:h-[290px] lg:h-[320px] bg-white border border-slate-200/90 cursor-pointer md:col-span-2 lg:col-span-3 min-h-[290px] shadow-sm"
+                className="group relative rounded-3xl overflow-hidden h-[145px] md:h-[290px] lg:h-[320px] bg-white border border-slate-200/90 cursor-pointer md:col-span-2 lg:col-span-3 shadow-sm"
               >
                 <div 
                   className="flex h-full w-full transition-transform duration-700 ease-in-out"
@@ -750,7 +783,7 @@ export default function App() {
                   {banners.map((slide, idx) => (
                     <div 
                       key={slide.id || idx}
-                      className="w-full h-full shrink-0 p-5 sm:p-8 md:p-9 lg:p-10 flex flex-col justify-center text-white relative select-none"
+                      className="w-full h-full shrink-0 p-3.5 sm:p-8 md:p-9 lg:p-10 flex flex-col justify-center text-white relative select-none"
                     >
                       {/* Full Background Image */}
                       <div className="absolute inset-0 z-0">
@@ -764,14 +797,14 @@ export default function App() {
                       </div>
 
                       {/* Corner SHOP NOW button with absolutely zero text, beautifully styled */}
-                      <div className="absolute bottom-5 left-5 z-10 select-none">
+                      <div className="absolute bottom-3.5 left-3.5 sm:bottom-5 sm:left-5 z-10 select-none">
                         <button
                           id={`hero-shop-cta-btn-${slide.id}`}
                           onClick={(e) => { e.stopPropagation(); setActiveTab('shop'); setSelectedCategory('all'); }}
-                          className="bg-orange-600 hover:bg-orange-700 hover:scale-105 active:scale-95 text-white font-sans font-black tracking-widest text-[9.5px] sm:text-[10.5px] uppercase px-5 py-2.5 rounded-full shadow-[0_4px_14px_rgba(234,88,12,0.4)] border border-orange-500/20 flex items-center gap-2 cursor-pointer transition-all duration-200"
+                          className="bg-orange-600 hover:bg-orange-700 hover:scale-105 active:scale-95 text-white font-sans font-black tracking-widest text-[8.5px] sm:text-[10.5px] uppercase px-3.5 py-2 sm:px-5 sm:py-2.5 rounded-full shadow-[0_4px_14px_rgba(234,88,12,0.4)] border border-orange-500/20 flex items-center gap-1.5 sm:gap-2 cursor-pointer transition-all duration-200"
                         >
                           <span>SHOP NOW</span>
-                          <ArrowRight className="h-3.5 w-3.5 text-white" />
+                          <ArrowRight className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-white" />
                         </button>
                       </div>
                     </div>
@@ -807,13 +840,13 @@ export default function App() {
                 )}
 
                 {/* Slide controls Dots */}
-                <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-1.5 z-10">
+                <div className="absolute bottom-3 sm:bottom-4 left-1/2 -translate-x-1/2 flex gap-1.5 z-10">
                   {banners.map((_, idx) => (
                     <button
                       key={idx}
                       type="button"
                       onClick={(e) => { e.stopPropagation(); setHeroIndex(idx); }}
-                      className={`h-2 w-2 md:h-2.5 md:w-2.5 rounded-full transition-all cursor-pointer ${heroIndex === idx ? 'bg-emerald-600 w-5 md:w-6' : 'bg-slate-200 hover:bg-slate-300'}`}
+                      className={`h-1.5 w-1.5 sm:h-2 sm:w-2 md:h-2.5 md:w-2.5 rounded-full transition-all cursor-pointer ${heroIndex === idx ? 'bg-emerald-600 w-4 sm:w-5 md:w-6' : 'bg-slate-200 hover:bg-slate-300'}`}
                       title={`Go to slide ${idx + 1}`}
                     ></button>
                   ))}
@@ -1392,7 +1425,7 @@ export default function App() {
               </div>
 
               {/* Price and On-sale filter controls */}
-              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3.5 w-full md:w-auto justify-end">
+              <div className="hidden md:flex flex-col sm:flex-row items-stretch sm:items-center gap-3.5 w-full md:w-auto justify-end">
                 {/* Price budget slider */}
                 <div className="flex items-center gap-2.5 w-full sm:w-auto">
                   <span className="text-xs font-bold text-slate-500 uppercase tracking-wider whitespace-nowrap shrink-0">Price Limit:</span>
@@ -1426,7 +1459,7 @@ export default function App() {
                     </div>
                   )}
 
-                  <label className="flex items-center gap-1.5 cursor-pointer text-xs font-bold text-slate-700 select-none bg-slate-50 hover:bg-slate-100 px-3 py-2 rounded-xl border border-gray-200 transition-all shadow-3xs">
+                  <label className="hidden lg:flex items-center gap-1.5 cursor-pointer text-xs font-bold text-slate-700 select-none bg-slate-50 hover:bg-slate-100 px-3 py-2 rounded-xl border border-gray-200 transition-all shadow-3xs">
                     <input
                       id="shop-discount-checkbox"
                       type="checkbox"
@@ -1451,7 +1484,7 @@ export default function App() {
                 </div>
               ) : (
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-                    {filteredProducts.map(product => {
+                    {filteredProducts.slice(0, visibleShopProducts).map(product => {
                       const isOut = product.stock === 0 && !product.affiliateUrl;
 
                       return (
@@ -1567,6 +1600,19 @@ export default function App() {
                         </div>
                       );
                     })}
+                  </div>
+                )}
+                {filteredProducts.length > visibleShopProducts && (
+                  <div className="flex flex-col items-center justify-center mt-10 space-y-3 animate-fade-in">
+                    <p className="text-xs text-slate-500 font-sans font-medium">
+                      Showing <strong className="text-emerald-600 font-bold">{Math.min(visibleShopProducts, filteredProducts.length)}</strong> of <strong className="text-slate-800 font-bold">{filteredProducts.length}</strong> items in total
+                    </p>
+                    <button
+                      onClick={() => setVisibleShopProducts(prev => prev + 24)}
+                      className="px-8 py-3 bg-[#F97316] hover:bg-orange-600 text-white text-xs font-black uppercase tracking-widest rounded-2xl transition-all shadow hover:shadow-orange-500/20 cursor-pointer active:scale-95"
+                    >
+                      Show More Products (আরও পণ্য লোড করুন)
+                    </button>
                   </div>
                 )}
               </div>
@@ -2053,7 +2099,7 @@ export default function App() {
 
         <div class="footer-note">
             <p>Thank you for purchasing from ${cleanStoreName}. All fresh farm greens and grocery products are processed with verified hygienic packaging guidelines. For support, call: ${settings.phone}.</p>
-            <p style="font-family: monospace; font-size: 9px; margin-top: 12px; color: #94a3b8; letter-spacing: 0.5px;">Report Generated Safely via ${cleanStoreName} Merchant Analytics - Coded by Shamim.</p>
+            <p style="font-family: monospace; font-size: 9px; margin-top: 12px; color: #94a3b8; letter-spacing: 0.5px;">Report Generated Safely via ${cleanStoreName} Merchant Analytics - Secure Merchant Report.</p>
         </div>
     </div>
 </body>
@@ -2609,51 +2655,51 @@ export default function App() {
 
         {/* VIEW 7: LOGIN PAGE */}
         {activeTab === 'login' && (
-          <div className="max-w-md mx-auto space-y-6 animate-fade-in text-slate-800">
+          <div className="max-w-md mx-auto space-y-6 animate-fade-in text-slate-800 uppercase">
             <div className="text-center space-y-2">
-              <h2 className="font-display font-black text-2.5xl tracking-tight text-gray-900 leading-none">Login Credentials</h2>
-              <p className="text-xs text-slate-400">Access order histories, custom wishlists & secure deliveries instantly</p>
+              <h2 className="font-display font-black text-2.5xl tracking-tight text-gray-900 leading-none">LOGIN CREDENTIALS</h2>
+              <p className="text-xs text-slate-400">ACCESS ORDER HISTORIES, CUSTOM WISHLISTS & SECURE DELIVERIES INSTANTLY</p>
             </div>
 
             <form onSubmit={handleLoginSubmit} className="bg-white border border-gray-100 rounded-3xl p-8 shadow-sm space-y-4 text-xs">
               
               {loginError && (
-                <div className="bg-red-50 text-red-700 p-3 rounded-lg border border-red-150 leading-relaxed font-sans flex items-center gap-1.5 font-medium">
+                <div className="bg-red-50 text-red-700 p-3 rounded-lg border border-red-150 leading-relaxed font-sans flex items-center gap-1.5 font-medium uppercase">
                   <AlertTriangle className="h-4 w-4 shrink-0" />
-                  <span>{loginError}</span>
+                  <span>{loginError.toUpperCase()}</span>
                 </div>
               )}
 
               {/* Account Quickfill coordinates advice */}
               <div className="bg-slate-50 border border-slate-100 rounded-xl p-3.5 space-y-1">
-                <span className="text-[10px] font-bold text-gray-500 uppercase block tracking-wider">Demo / Sandbox Login Credentials</span>
+                <span className="text-[10px] font-bold text-gray-500 block tracking-wider">DEMO / SANDBOX LOGIN CREDENTIALS</span>
                 <p className="text-slate-700 leading-relaxed text-[11px]">
-                  Presaved account: <strong className="font-mono">shamimrez22@gmail.com</strong> <br />
-                  Password: <strong className="font-mono">password123</strong> (or sign up now).
+                  PRESAVED ACCOUNT: <strong className="font-mono">demo@example.com</strong> <br />
+                  PASSWORD: <strong className="font-mono">password123</strong> (OR SIGN UP NOW).
                 </p>
               </div>
 
               <div>
-                <label className="block text-[11px] font-semibold text-slate-500 mb-1 uppercase tracking-wider">Your Registered Email</label>
+                <label className="block text-[11px] font-semibold text-slate-500 mb-1 uppercase tracking-wider">YOUR REGISTERED EMAIL</label>
                 <input
                   id="login-email"
                   type="email"
                   required
-                  placeholder="e.g. shamimrez22@gmail.com"
-                  className="w-full bg-slate-50 border border-gray-200 rounded-lg px-4 py-2.5 text-xs text-slate-700 focus:outline-none focus:border-emerald-500 focus:bg-white font-mono"
+                  placeholder="E.G. DEMO@EXAMPLE.COM"
+                  className="w-full bg-slate-50 border border-gray-200 rounded-lg px-4 py-2.5 text-xs text-slate-700 focus:outline-none focus:border-emerald-500 focus:bg-white font-mono uppercase placeholder:uppercase"
                   value={loginEmail}
                   onChange={(e) => setLoginEmail(e.target.value)}
                 />
               </div>
 
               <div>
-                <label className="block text-[11px] font-semibold text-slate-500 mb-1 uppercase tracking-wider font-sans">Secret Code Password</label>
+                <label className="block text-[11px] font-semibold text-slate-500 mb-1 uppercase tracking-wider font-sans">SECRET CODE PASSWORD</label>
                 <input
                   id="login-password"
                   type="password"
                   required
-                  placeholder="Enter secret code"
-                  className="w-full bg-slate-50 border border-gray-200 rounded-lg px-4 py-2.5 text-xs text-slate-700 focus:outline-none focus:border-emerald-500 focus:bg-white font-mono"
+                  placeholder="ENTER SECRET CODE"
+                  className="w-full bg-slate-50 border border-gray-200 rounded-lg px-4 py-2.5 text-xs text-slate-700 focus:outline-none focus:border-emerald-500 focus:bg-white font-mono uppercase placeholder:uppercase"
                   value={loginPassword}
                   onChange={(e) => setLoginPassword(e.target.value)}
                 />
@@ -2663,16 +2709,16 @@ export default function App() {
                 <button
                   id="login-submit"
                   type="submit"
-                  className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 rounded-xl active:scale-95 transition-all shadow shadow-emerald-600/10 cursor-pointer text-center"
+                  className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 rounded-xl active:scale-95 transition-all shadow shadow-emerald-600/10 cursor-pointer text-center uppercase tracking-wider"
                 >
-                  Verify credentials
+                  VERIFY CREDENTIALS
                 </button>
               </div>
 
               <p className="text-center pt-2 text-slate-400">
-                New to BAZAR THOLE organic?{' '}
-                <button type="button" onClick={() => setActiveTab('register')} className="text-emerald-600 text-xs font-bold hover:underline">
-                  Create fresh account
+                NEW TO BAZAR THOLE ORGANIC?{' '}
+                <button type="button" onClick={() => setActiveTab('register')} className="text-emerald-600 text-xs font-bold hover:underline uppercase">
+                  CREATE FRESH ACCOUNT
                 </button>
               </p>
             </form>
@@ -2701,7 +2747,7 @@ export default function App() {
                   id="reg-name"
                   type="text"
                   required
-                  placeholder="e.g. Shamim Reza"
+                  placeholder="e.g. John Doe"
                   className="w-full bg-slate-50 border border-gray-200 rounded-lg px-4 py-2.5 text-xs focus:outline-none focus:border-emerald-500 focus:bg-white"
                   value={regName}
                   onChange={(e) => setRegName(e.target.value)}
@@ -2714,7 +2760,7 @@ export default function App() {
                   id="reg-email"
                   type="email"
                   required
-                  placeholder="e.g. shamim@gmail.com"
+                  placeholder="e.g. info@example.com"
                   className="w-full bg-slate-50 border border-gray-200 rounded-lg px-4 py-2.5 text-xs font-mono"
                   value={regEmail}
                   onChange={(e) => setRegEmail(e.target.value)}
@@ -2727,7 +2773,7 @@ export default function App() {
                   id="reg-phone"
                   type="text"
                   required
-                  placeholder="e.g. 01712345678"
+                  placeholder="e.g. 01700000000"
                   className="w-full bg-slate-50 border border-gray-200 rounded-lg px-4 py-2.5 text-xs font-mono"
                   value={regPhone}
                   onChange={(e) => setRegPhone(e.target.value)}
@@ -2826,7 +2872,7 @@ export default function App() {
                           id="bill-name"
                           type="text"
                           required
-                          placeholder="e.g. Shamim Reza"
+                          placeholder="e.g. John Doe"
                           className="w-full font-sans"
                           value={billingName}
                           onChange={(e) => setBillingName(e.target.value)}
@@ -2842,7 +2888,7 @@ export default function App() {
                             id="bill-phone"
                             type="text"
                             required
-                            placeholder="e.g. 01712345678"
+                            placeholder="e.g. 01700000000"
                             className="w-full font-mono flex-1"
                             value={billingPhone}
                             onChange={(e) => setBillingPhone(e.target.value)}
@@ -3098,7 +3144,6 @@ export default function App() {
                         </tr>
                       )}
 
-                      {/* Prominent NET FARE row */}
                       <tr className="bg-amber-100 text-stone-950 font-extrabold border-t-2 border-stone-900">
                         <td colSpan={2} className="py-3.5 px-3 border-r border-stone-900 text-right text-[11px] uppercase tracking-wider font-extrabold">
                           NET FARE / PAYABLE AMOUNT (সর্বমোট প্রদেয়):
@@ -3126,41 +3171,94 @@ export default function App() {
 
         {/* VIEW 9.5: ORDER CONFIRMATION / SUCCESS PAGE */}
         {activeTab === 'order-confirmation' && latestPlacedOrder && (
-          <div className="max-w-3xl mx-auto space-y-8 animate-fade-in text-slate-800 py-4 sm:py-8 animate-fade-in">
-            <div className="text-center space-y-4">
-              <div className="inline-flex items-center justify-center h-20 w-20 rounded-full bg-emerald-50 text-emerald-600 border border-emerald-100 shadow-inner animate-bounce">
-                <CheckCircle2 className="h-10 w-10 animate-pulse" />
+          <div className="max-w-3xl mx-auto space-y-10 animate-fade-in text-slate-800 py-6 sm:py-10 relative">
+            
+            {/* Animated celebration background sparks (pure CSS) */}
+            <div className="absolute inset-0 pointer-events-none overflow-hidden z-0">
+              <div className="absolute top-10 left-1/4 w-2 h-2 bg-yellow-400 rounded-full animate-ping" style={{ animationDuration: '3s' }}></div>
+              <div className="absolute top-20 right-1/4 w-3 h-3 bg-[#F97316] rounded-full animate-ping" style={{ animationDuration: '4s' }}></div>
+              <div className="absolute top-40 left-10 w-2.5 h-2.5 bg-emerald-400 rounded-full animate-ping" style={{ animationDuration: '2.5s' }}></div>
+              <div className="absolute top-60 right-12 w-2 h-2 bg-indigo-400 rounded-full animate-ping" style={{ animationDuration: '5s' }}></div>
+            </div>
+
+            <div className="text-center space-y-4 relative z-10">
+              <div className="inline-flex items-center justify-center h-24 w-24 rounded-full bg-emerald-50 text-emerald-600 border-4 border-emerald-500/20 shadow-md animate-bounce">
+                <CheckCircle2 className="h-12 w-12 animate-pulse text-emerald-600" />
               </div>
-              <div className="space-y-1">
-                <span className="text-[10px] bg-emerald-100 text-emerald-800 border border-emerald-200 px-3.5 py-1 rounded-full font-bold uppercase tracking-widest font-sans">
-                  Order Successfully Placed
+              <div className="space-y-2 max-w-xl mx-auto">
+                <span className="text-[10px] bg-emerald-100/90 text-emerald-800 border border-emerald-200 px-4 py-1.5 rounded-full font-black uppercase tracking-widest font-sans inline-block animate-pulse">
+                  ✓ ORDER PLACED & CONFIRMED SUCCESSFULLY
                 </span>
-                <h2 className="font-display font-black text-3xl text-gray-900 leading-tight">
-                  আলহামদুলিল্লাহ! Order Confirmed
+                <h2 className="font-display font-black text-3.5xl sm:text-4xl text-neutral-900 leading-none">
+                  ALHAMDULILLAH! ORDER CONFIRMED
                 </h2>
-                <p className="text-xs text-slate-500 font-sans max-w-lg mx-auto leading-relaxed">
-                  Thank you for placing your order with BAZAR THOLE. Your order is safely logged and our harvest dispatch riders are already preparing your shipment.
+                <p className="text-[12px] text-slate-500 font-medium font-sans leading-relaxed px-4">
+                  আপনার অর্ডারটি সফলভাবে গ্রহণ করা হয়েছে। BAZAR THOLE এর সাথে থাকার জন্য আপনাকে অসংখ্য ধন্যবাদ! Our harvest dispatch team has completed verification and is preparing packaging.
                 </p>
               </div>
             </div>
 
-            {/* Core Billing and Receipt Details Breakdown */}
-            <div className="bg-white border border-slate-100 rounded-3xl p-6 md:p-8 shadow-sm space-y-6">
+            {/* Interactive order flow tracking timeline */}
+            <div className="bg-white border-2 border-stone-900 p-6 rounded-3xl shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] relative z-10">
+              <h3 className="text-xs font-black uppercase tracking-widest text-stone-900 mb-6 flex items-center gap-2">
+                <span>📍</span> DELIVERY LIFECYCLE SEQUENCE (অর্ডারের অগ্রগতি ট্র্যাকিং):
+              </h3>
+              <div className="grid grid-cols-4 gap-2 relative">
+                {/* Connecting bar */}
+                <div className="absolute top-4 left-[12%] right-[12%] h-[3px] bg-stone-200 -z-10">
+                  <div className="h-full bg-emerald-550 w-[25%] animate-pulse"></div>
+                </div>
+                
+                <div className="flex flex-col items-center text-center space-y-2">
+                  <div className="w-8 h-8 rounded-full bg-emerald-600 text-white font-bold text-xs flex items-center justify-center border-2 border-stone-900 shadow">✓</div>
+                  <span className="text-[10px] font-black uppercase tracking-tight text-stone-900">Ordered</span>
+                  <p className="text-[8.5px] text-slate-400 font-sans hidden sm:block font-medium">Logged & Verified</p>
+                </div>
+
+                <div className="flex flex-col items-center text-center space-y-2">
+                  <div className="w-8 h-8 rounded-full bg-emerald-50 text-emerald-700 font-bold text-xs flex items-center justify-center border-2 border-dashed border-emerald-600 animate-pulse">2</div>
+                  <span className="text-[10px] font-black uppercase tracking-tight text-emerald-700">Processing</span>
+                  <p className="text-[8.5px] text-slate-400 font-sans hidden sm:block font-medium">Harvest Packaging</p>
+                </div>
+
+                <div className="flex flex-col items-center text-center space-y-2">
+                  <div className="w-8 h-8 rounded-full bg-stone-100 text-stone-400 font-bold text-xs flex items-center justify-center border-2 border-stone-300">3</div>
+                  <span className="text-[10px] font-black uppercase tracking-tight text-stone-500">On The Way</span>
+                  <p className="text-[8.5px] text-slate-400 font-sans hidden sm:block font-medium">Rider Dispatched</p>
+                </div>
+
+                <div className="flex flex-col items-center text-center space-y-2">
+                  <div className="w-8 h-8 rounded-full bg-stone-100 text-stone-400 font-bold text-xs flex items-center justify-center border-2 border-stone-300">4</div>
+                  <span className="text-[10px] font-black uppercase tracking-tight text-stone-500">Delivered</span>
+                  <p className="text-[8.5px] text-slate-400 font-sans hidden sm:block font-medium">Safe Door Handover</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Core Billing and Receipt Details Breakdown - Cash Memo Theme */}
+            <div className="bg-amber-50/40 border-2 border-stone-900 rounded-3xl p-6 md:p-8 shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] space-y-6 relative overflow-hidden z-10">
               
+              {/* Authenticity Red Ink Stamp overlay */}
+              <div className="absolute top-1/2 left-2/3 -translate-x-1/2 -translate-y-1/2 pointer-events-none select-none opacity-15 rotate-12 scale-125 border-4 border-double border-red-650 text-red-600 font-mono font-black py-2.5 px-5 rounded-xl uppercase text-center shrink-0 min-w-[210px] hidden sm:block">
+                <span className="text-xs tracking-wider block">✓ VERIFIED LOGISTICS</span>
+                <span className="text-lg font-black block mt-0.5">BAZAR THOLE</span>
+                <span className="text-[9px] block">100% SECURE SANDBOX</span>
+              </div>
+
               {/* Receipt Header summary */}
-              <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 pb-5 border-b border-solid border-slate-100">
+              <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 pb-5 border-b-2 border-dashed border-stone-350">
                 <div>
-                  <span className="text-[10px] font-bold text-slate-400 block uppercase tracking-wider">TRACKING CODE</span>
-                  <div className="flex items-center gap-2 mt-1">
-                    <strong className="text-slate-800 font-mono text-base tracking-widest uppercase">
+                  <span className="text-[10px] font-black text-stone-500 block uppercase tracking-widest leading-none">OFFICIAL UNIQUE TRACKING CODE:</span>
+                  <div className="flex items-center gap-2 mt-2">
+                    <strong className="text-stone-900 font-mono text-lg tracking-widest uppercase bg-white border border-stone-300 px-3 py-1 rounded">
                       {latestPlacedOrder.trackingCode}
                     </strong>
                     <button
                       onClick={() => {
                         navigator.clipboard.writeText(latestPlacedOrder.trackingCode);
-                        triggerToast('📋 Tracking Code copied to clipboard!');
+                        triggerToast('📋 Tracking Code copied safely to device!');
                       }}
-                      className="p-1 hover:bg-slate-100 rounded text-slate-400 hover:text-emerald-600 transition-colors cursor-pointer"
+                      className="p-2 bg-white hover:bg-stone-100 border border-stone-350 rounded text-stone-605 text-emerald-600 transition-colors cursor-pointer active:scale-95"
                       title="Copy Code"
                       type="button"
                     >
@@ -3170,35 +3268,39 @@ export default function App() {
                 </div>
                 
                 <div className="text-left sm:text-right">
-                  <span className="text-[10px] font-bold text-slate-400 block uppercase tracking-wider">ORDERED AT</span>
-                  <strong className="text-slate-705 font-sans text-xs mt-1 block">
-                    {new Date(latestPlacedOrder.orderDate).toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short' })}
+                  <span className="text-[10px] font-black text-stone-500 block uppercase tracking-widest leading-none">ORDER RECEIVED ON:</span>
+                  <strong className="text-stone-800 font-sans text-xs mt-2 block font-extrabold uppercase bg-stone-100 py-1.5 px-3 border border-stone-300 rounded inline-block">
+                    📅 {new Date(latestPlacedOrder.orderDate).toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short' })}
                   </strong>
                 </div>
               </div>
 
               {/* Delivery Details Block */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 text-xs border-b border-solid border-slate-100 pb-5">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 text-xs border-b border-solid border-stone-200 pb-5">
                 <div className="space-y-2">
-                  <h4 className="font-display font-black text-slate-900 uppercase tracking-widest">Delivery Recipient</h4>
-                  <p className="font-sans font-medium text-slate-600 space-y-1.5 leading-relaxed">
-                    <span className="block font-black text-slate-800">{latestPlacedOrder.customerName}</span>
-                    <span className="block font-mono text-slate-705">{latestPlacedOrder.phone}</span>
-                    <span className="block">{latestPlacedOrder.address}, {latestPlacedOrder.city}</span>
-                  </p>
+                  <h4 className="font-display font-black text-stone-900 uppercase tracking-widest text-xs flex items-center gap-1.5">
+                    <span>👤</span> Delivery Recipient Info (গ্রাহকের বিবরণ)
+                  </h4>
+                  <div className="font-sans font-medium text-stone-700 p-4 rounded-xl bg-white border border-stone-200 shadow-sm leading-relaxed space-y-1.5">
+                    <p className="block font-black text-stone-900 border-b border-stone-100 pb-1 text-[13px]">{latestPlacedOrder.customerName}</p>
+                    <p className="block font-mono text-stone-800 font-bold text-xs">📞 {latestPlacedOrder.phone}</p>
+                    <p className="text-stone-600 font-sans">🏠 {latestPlacedOrder.address}, {latestPlacedOrder.city}</p>
+                  </div>
                 </div>
 
                 <div className="space-y-2">
-                  <h4 className="font-display font-black text-slate-900 uppercase tracking-widest">Payment Configuration</h4>
-                  <div className="space-y-2">
-                    <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl border bg-slate-50 border-slate-200 font-bold text-slate-705 font-sans">
+                  <h4 className="font-display font-black text-stone-900 uppercase tracking-widest text-xs flex items-center gap-1.5">
+                    <span>💵</span> Payment Configuration (পেমেন্ট স্ট্যাটাস)
+                  </h4>
+                  <div className="p-4 rounded-xl bg-white border border-stone-200 shadow-sm space-y-3">
+                    <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-emerald-50 text-emerald-800 border border-emerald-200 rounded-lg text-xs font-black uppercase tracking-wider font-sans">
                       <span>💳</span>
                       <span>{latestPlacedOrder.paymentMethod}</span>
                     </div>
                     <div>
-                      <span className="text-[10px] font-bold text-slate-450 uppercase tracking-wider block">Gateway Status</span>
-                      <strong className={`text-xs uppercase font-sans ${latestPlacedOrder.paymentStatus === 'Paid' ? 'text-emerald-600' : 'text-amber-500'}`}>
-                        {latestPlacedOrder.paymentStatus === 'Paid' ? '● Paid (Sandbox Secure)' : '● Cash On Delivery Pending'}
+                      <span className="text-[10px] font-bold text-stone-400 uppercase tracking-wider block">Gateway Validation:</span>
+                      <strong className={`text-xs uppercase font-sans font-black tracking-tight ${latestPlacedOrder.paymentStatus === 'Paid' ? 'text-emerald-600' : 'text-amber-600'}`}>
+                        {latestPlacedOrder.paymentStatus === 'Paid' ? '● Paid & Secured via Sandbox' : '● Cash On Delivery Pending Manual Verification'}
                       </strong>
                     </div>
                   </div>
@@ -3206,20 +3308,22 @@ export default function App() {
               </div>
 
               {/* Purchased Products itemized summary list */}
-              <div className="space-y-3.5">
-                <h4 className="font-display font-black text-slate-900 uppercase tracking-widest text-[11px] pb-1">Items Confirmed</h4>
+              <div className="space-y-4">
+                <h4 className="font-display font-black text-stone-900 uppercase tracking-widest text-[11px] flex items-center gap-1.5">
+                  <span>🛍️</span> ITEMISED INVOICE PARTICULARS (ক্রয়কৃত পণ্যের তালিকা)
+                </h4>
                 
-                <div className="divide-y divide-slate-100 border rounded-2xl overflow-hidden shadow-xs bg-slate-50/20">
+                <div className="divide-y divide-stone-200 border-2 border-stone-900 rounded-2xl overflow-hidden shadow-sm bg-white">
                   {latestPlacedOrder.items.map((item, idx) => (
-                    <div key={idx} className="flex items-center justify-between p-4 leading-tight bg-white">
+                    <div key={idx} className="flex items-center justify-between p-4 leading-tight hover:bg-stone-50 transition-colors">
                       <div className="flex items-center gap-3">
-                        <img src={item.image} className="h-11 w-11 rounded-lg object-cover border border-slate-150" alt="" />
+                        <img src={item.image} className="h-12 w-12 rounded-lg object-cover border-2 border-stone-900 shrink-0" alt="" />
                         <div>
-                          <span className="font-black text-slate-800 text-xs block truncate max-w-[200px]">{item.productName}</span>
-                          <span className="text-[10px] text-slate-400 block mt-1 font-sans">Quantity: {item.quantity} x {item.unit}</span>
+                          <span className="font-black text-stone-900 text-xs block truncate max-w-[200px] sm:max-w-md">{item.productName}</span>
+                          <span className="text-[10px] text-stone-500 block mt-1 font-sans font-bold">Quantity: {item.quantity} x {item.unit} (৳{item.price}/{item.unit})</span>
                         </div>
                       </div>
-                      <span className="font-mono font-bold text-slate-700 text-xs">
+                      <span className="font-mono font-black text-stone-900 text-xs text-right shrink-0">
                         ৳ {(item.price * item.quantity).toLocaleString('en-US')}
                       </span>
                     </div>
@@ -3228,29 +3332,31 @@ export default function App() {
               </div>
 
               {/* Financial Computation Panel */}
-              <div className="border-t border-slate-100 pt-5 space-y-2.5 text-slate-500 font-semibold text-xs font-sans">
+              <div className="border-t-2 border-dashed border-stone-350 pt-5 space-y-2.5 text-stone-700 font-semibold text-xs font-sans">
                 <div className="flex justify-between">
-                  <span>Subtotal sum list:</span>
-                  <span className="text-slate-800 font-mono">৳ {latestPlacedOrder.subtotal.toLocaleString('en-US')}</span>
+                  <span className="font-bold">Subtotal Sum (উপমোট পণ্য মূল্য):</span>
+                  <span className="text-stone-900 font-mono font-bold">৳ {latestPlacedOrder.subtotal.toLocaleString('en-US')}</span>
                 </div>
 
                 {latestPlacedOrder.discount > 0 && (
                   <div className="flex justify-between text-red-650">
-                    <span>Voucher Savings:</span>
-                    <span className="font-mono font-bold">- ৳ {latestPlacedOrder.discount.toLocaleString('en-US')}</span>
+                    <span className="font-bold text-red-650">Savings Applied Promo (কুপন ডিসকাউন্ট):</span>
+                    <span className="font-mono font-black text-red-600">- ৳ {latestPlacedOrder.discount.toLocaleString('en-US')}</span>
                   </div>
                 )}
 
                 <div className="flex justify-between">
-                  <span>Shipping & Handling Charge:</span>
-                  <span className="text-slate-800 font-mono">
-                    {latestPlacedOrder.deliveryFee === 0 ? 'FREE' : `৳ ${latestPlacedOrder.deliveryFee}`}
+                  <span className="font-bold">Shipping & Home Delivery Charge (ডেলিভারি চার্জ):</span>
+                  <span className="text-stone-900 font-mono font-bold">
+                    {latestPlacedOrder.deliveryFee === 0 ? 'FREE (ফ্রি ডেলিভারি)' : `৳ ${latestPlacedOrder.deliveryFee}`}
                   </span>
                 </div>
 
-                <div className="border-t border-slate-150 pt-4 flex justify-between font-black text-slate-900 text-base">
-                  <span>GRAND TOTAL AMOUNT:</span>
-                  <span className="text-emerald-600 font-display text-lg">
+                <div className="border-t-2 border-stone-900 pt-4 flex justify-between font-black text-stone-950 text-sm sm:text-base bg-stone-100/60 p-3 rounded-xl border border-stone-300">
+                  <span className="uppercase tracking-wider flex items-center gap-1">
+                    <span>💰</span> NET INVOICED TOTAL (সর্বমোট বিল):
+                  </span>
+                  <span className="text-emerald-705 font-display text-lg sm:text-xl font-black">
                     ৳ {latestPlacedOrder.total.toLocaleString('en-US')}
                   </span>
                 </div>
@@ -3259,7 +3365,7 @@ export default function App() {
             </div>
 
             {/* ACTION CTAs FOR INTERACTIVE NAVIGATION (Track Order Live / Helpline Calls / WhatsApp) */}
-            <div className="flex flex-col sm:flex-row gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-4 gap-3 relative z-10">
               
               {/* Track live */}
               <button
@@ -3269,10 +3375,10 @@ export default function App() {
                   setTrackSearchError(false);
                   setActiveTab('tracking');
                 }}
-                className="w-full sm:w-1/3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl py-3 text-center cursor-pointer font-bold transition-all text-xs uppercase tracking-wider active:scale-95 shadow font-sans"
+                className="w-full bg-[#022B28] hover:bg-neutral-900 text-[#FAF5EE] rounded-2xl py-3.5 text-center cursor-pointer font-black transition-all text-xs uppercase tracking-widest active:scale-95 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-none border border-stone-900 flex items-center justify-center gap-2"
                 type="button"
               >
-                🔍 Track Live Order
+                🔍 Live Delivery status
               </button>
 
               {/* Support WhatsApp */}
@@ -3281,11 +3387,11 @@ export default function App() {
                   const inquiryMsg = `Hello support! I successfully confirmed my BAZAR THOLE order. Tracking ID: ${latestPlacedOrder.trackingCode}. Total billing: ৳${latestPlacedOrder.total}. Please process it as soon as possible!`;
                   window.open(`https://wa.me/${settings.phone.replace(/[^0-9]/g, '')}?text=${encodeURIComponent(inquiryMsg)}`, '_blank');
                 }}
-                className="w-full sm:w-1/3 bg-[#12a14b] hover:bg-green-700 text-white rounded-xl py-3 text-center cursor-pointer font-bold transition-all text-xs uppercase tracking-wider active:scale-95 flex items-center justify-center gap-1.5 shadow font-sans"
+                className="w-full bg-[#12a14b] hover:bg-green-700 text-white rounded-2xl py-3.5 text-center cursor-pointer font-bold transition-all text-xs uppercase tracking-wider active:scale-95 flex items-center justify-center gap-1.5 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-none border border-stone-900"
                 type="button"
               >
                 <span>💬</span>
-                WhatsApp Helpline
+                WhatsApp Confirm
               </button>
 
               {/* Keep shopping */}
@@ -3293,22 +3399,196 @@ export default function App() {
                 onClick={() => {
                   setActiveTab('home');
                 }}
-                className="w-full sm:w-1/3 bg-slate-850 hover:bg-slate-950 text-white rounded-xl py-3 text-center cursor-pointer font-bold transition-all text-xs uppercase tracking-wider active:scale-95 shadow font-sans"
+                className="w-full bg-orange-500 hover:bg-orange-600 text-white rounded-2xl py-3.5 text-center cursor-pointer font-bold transition-all text-xs uppercase tracking-wider active:scale-95 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-none border border-stone-900 animate-wiggle-action"
                 type="button"
               >
-                🏪 Keep Shopping
+                🏪 Continue Shopping
               </button>
 
               {/* Print Invoice button */}
               <button
                 onClick={() => {
-                  window.print();
+                  try {
+                    const cleanStoreName = 'BAZAR THOLE';
+                    const qrData = `ORDER-REPORT: #${latestPlacedOrder.id}\nCustomer: ${latestPlacedOrder.customerName}\nPhone: ${latestPlacedOrder.phone}\nTotal Amount: ৳${latestPlacedOrder.total}\nTracking Code: ${latestPlacedOrder.trackingCode || 'N/A'}\nItems:\n${latestPlacedOrder.items.map(it => ` - ${it.productName} (${it.quantity}x)`).join('\n')}`;
+                    const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(qrData)}`;
+                    
+                    const reportHtml = `<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BAZAR_THOLE_INVOICE_REPORT_${latestPlacedOrder.id}</title>
+    <style>
+        body { font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; color: #1e293b; margin: 0; padding: 40px; background-color: #f8fafc; }
+        .invoice-card { max-width: 800px; margin: 0 auto; background: white; border: 1px solid #e2e8f0; padding: 40px; border-radius: 20px; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.05); }
+        .header { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 3px solid #00796B; padding-bottom: 24px; margin-bottom: 32px; }
+        .logo-section h1 { margin: 0; color: #00796B; font-size: 32px; font-weight: 900; letter-spacing: -1px; text-transform: uppercase; }
+        .logo-section p { margin: 6px 0 0; font-size: 11px; text-transform: uppercase; color: #64748b; font-family: monospace; font-weight: bold; letter-spacing: 2px; }
+        .invoice-meta { text-align: right; }
+        .invoice-meta h2 { margin: 0; font-size: 24px; color: #0f172a; font-weight: 850; letter-spacing: -0.5px; }
+        .invoice-meta p { margin: 6px 0 0; font-size: 12px; font-family: monospace; color: #475569; font-weight: bold; }
+        .grid-details { display: grid; grid-template-columns: 1.2fr 0.8fr; gap: 40px; margin-bottom: 32px; }
+        .col h3 { font-size: 11px; text-transform: uppercase; color: #00796B; margin: 0 0 12px; border-bottom: 2px solid #f1f5f9; padding-bottom: 6px; font-weight: 900; letter-spacing: 1px; }
+        .col p { margin: 6px 0; font-size: 13.5px; line-height: 1.6; color: #334155; }
+        .col p strong { color: #0f172a; font-weight: 600; }
+        .qr-section { text-align: center; border: 1px solid #e2e8f0; padding: 20px; border-radius: 16px; background: #f8fafc; display: inline-block; box-shadow: inset 0 2px 4px 0 rgba(0, 0, 0, 0.02); }
+        .qr-section img { display: block; margin: 0 auto 12px; width: 140px; height: 140px; border-radius: 8px; }
+        .qr-section span { font-size: 10px; font-family: monospace; color: #64748b; text-transform: uppercase; font-weight: 800; letter-spacing: 0.5px; }
+        table { width: 100%; border-collapse: collapse; margin-bottom: 32px; }
+        th { background-color: #00796B; color: white; text-align: left; padding: 12px; font-size: 11px; text-transform: uppercase; font-weight: 800; letter-spacing: 1px; }
+        td { padding: 14px 12px; border-bottom: 1px solid #f1f5f9; font-size: 13.5px; color: #334155; }
+        .text-right { text-align: right; }
+        .totals-block { float: right; width: 40%; margin-top: 16px; border-top: 1.5px solid #cbd5e1; padding-top: 15px; }
+        .totals-row { display: flex; justify-content: space-between; font-size: 13.5px; margin-bottom: 8px; color: #475569; }
+        .totals-row.grand { font-size: 18px; font-weight: 900; border-top: 2px solid #00796B; padding-top: 12px; margin-top: 12px; color: #00796B; }
+        .footer-note { clear: both; text-align: center; margin-top: 64px; font-size: 11px; color: #64748b; border-top: 1px dashed #cbd5e1; padding-top: 24px; line-height: 1.6; }
+        @media print {
+            body { background: white; padding: 0; color: black; }
+            .invoice-card { border: none; box-shadow: none; padding: 0; max-width: 100%; }
+            .totals-block { width: 50%; }
+        }
+    </style>
+</head>
+<body>
+    <div class="invoice-card">
+        <div class="header">
+            <div class="logo-section">
+                <h1>${cleanStoreName.toUpperCase()}</h1>
+                <p>Official Verification Report & Invoice</p>
+            </div>
+            <div class="invoice-meta">
+                <h2>INVOICE #${latestPlacedOrder.id}</h2>
+                <p>DATE: ${new Date(latestPlacedOrder.orderDate).toLocaleString('en-US')}</p>
+                <p>TRACKING CODE: ${latestPlacedOrder.trackingCode || 'NOT ASSIGNED'}</p>
+            </div>
+        </div>
+        
+        <div class="grid-details">
+            <div class="col">
+                <h3>SHIPPING & PACKAGING RECIPIENT</h3>
+                <p><strong>Customer Name:</strong> ${latestPlacedOrder.customerName}</p>
+                <p><strong>Contact Phone:</strong> ${latestPlacedOrder.phone}</p>
+                <p><strong>Email Address:</strong> ${latestPlacedOrder.email || 'N/A'}</p>
+                <p><strong>City Region:</strong> ${latestPlacedOrder.city.toUpperCase()}</p>
+                <p><strong>Street Address:</strong> ${latestPlacedOrder.address}</p>
+            </div>
+            <div class="col text-right" style="display: flex; flex-direction: column; align-items: flex-end;">
+                <h3>SECURE VERIFICATION QR</h3>
+                <div class="qr-section">
+                    <img src="${qrCodeUrl}" alt="Order Verification QR Code" />
+                    <span>Scan to Verify Invoice #${latestPlacedOrder.id}</span>
+                </div>
+            </div>
+        </div>
+
+        <h3>ORDERED ITEMS DETAILS</h3>
+        <table>
+            <thead>
+                <tr style="background-color: #00796B; color: white;">
+                    <th style="padding: 12px; text-align: left;">Item Description</th>
+                    <th style="padding: 12px; text-align: right;" class="text-right">Unit Price</th>
+                    <th style="padding: 12px; text-align: right;" class="text-right">Quantity</th>
+                    <th style="padding: 12px; text-align: right;" class="text-right">Subtotal</th>
+                </tr>
+            </thead>
+            <tbody>
+                ${latestPlacedOrder.items.map(item => `
+                    <tr>
+                        <td style="padding: 12px; border-bottom: 1px solid #e2e8f0; text-align: left;">${item.productName} (${item.unit || '1 kg'})</td>
+                        <td style="padding: 12px; border-bottom: 1px solid #e2e8f0; text-align: right;" class="text-right">৳${item.price}</td>
+                        <td style="padding: 12px; border-bottom: 1px solid #e2e8f0; text-align: right;" class="text-right">${item.quantity}</td>
+                        <td style="padding: 12px; border-bottom: 1px solid #e2e8f0; text-align: right;" class="text-right">৳${item.price * item.quantity}</td>
+                    </tr>
+                `).join('')}
+            </tbody>
+        </table>
+
+        <div class="totals-block">
+            <div class="totals-row">
+                <span>Subtotal:</span>
+                <span>৳${latestPlacedOrder.subtotal}</span>
+            </div>
+            <div class="totals-row">
+                <span>Coupon Discount:</span>
+                <span>-৳${latestPlacedOrder.discount}</span>
+            </div>
+            <div class="totals-row">
+                <span>Delivery Charge:</span>
+                <span>৳${latestPlacedOrder.deliveryFee}</span>
+            </div>
+            <div class="totals-row grand">
+                <span>Grand Total:</span>
+                <span>৳${latestPlacedOrder.total}</span>
+            </div>
+            <div class="totals-row" style="margin-top: 12px; font-size: 11px; color: #64748b;">
+                <span>Payment Method:</span>
+                <span>${latestPlacedOrder.paymentMethod}</span>
+            </div>
+            <div class="totals-row" style="font-size: 11px; color: #64748b;">
+                <span>Payment Status-</span>
+                <strong style="color: ${latestPlacedOrder.paymentStatus === 'Paid' ? '#00796B' : '#f59e0b'}">${latestPlacedOrder.paymentStatus}</strong>
+            </div>
+        </div>
+
+        <div class="footer-note">
+            <p>Thank you for purchasing from ${cleanStoreName}. All fresh farm greens and grocery products are processed with verified hygienic packaging guidelines. For support, call: ${settings.phone}.</p>
+            <p style="font-family: monospace; font-size: 9px; margin-top: 12px; color: #94a3b8; letter-spacing: 0.5px;">Report Generated Safely via ${cleanStoreName} Merchant Analytics - Secure Merchant Report.</p>
+        </div>
+    </div>
+</body>
+</html>`;
+
+                    // Add auto-print script right before body ends to trigger printing as soon as the file is opened
+                    const printScript = `
+                    <script>
+                        window.onload = function() {
+                            setTimeout(function() {
+                                window.print();
+                            }, 500);
+                        };
+                    </script>
+                    `;
+                    const finalReportHtml = reportHtml.replace('</body>', `${printScript}</body>`);
+                    
+                    // Direct HTML download bypasses iframe sandboxing blocks perfectly
+                    const blob = new Blob([finalReportHtml], { type: 'text/html;charset=utf-8' });
+                    const url = URL.createObjectURL(blob);
+                    const link = document.createElement('a');
+                    link.href = url;
+                    link.download = `BAZAR_THOLE_INVOICE_REPORT_${latestPlacedOrder.id}.html`;
+                    link.style.display = 'none';
+                    document.body.appendChild(link);
+                    link.click();
+                    setTimeout(() => {
+                      document.body.removeChild(link);
+                      URL.revokeObjectURL(url);
+                    }, 300);
+
+                    // Also try to open the print window for premium desktop experience if allowed by modern browsers
+                    try {
+                      const win = window.open('', '_blank');
+                      if (win) {
+                        win.document.open();
+                        win.document.write(finalReportHtml);
+                        win.document.close();
+                      }
+                    } catch (e) {
+                      console.warn("Popup blocked, fallback download triggered successfully.");
+                    }
+
+                    triggerToast(`📥 Invoice downloaded successfully as 'BAZAR_THOLE_INVOICE_REPORT_${latestPlacedOrder.id}.html'! Open this file to print or save to PDF!`);
+                  } catch (err) {
+                    console.error("Print generation error:", err);
+                    triggerToast("⚠️ Print error. Falling back to native printer menu...");
+                    window.print();
+                  }
                 }}
-                className="px-4 py-3 bg-slate-100 hover:bg-slate-200 text-slate-600 hover:text-slate-800 rounded-xl transition-all cursor-pointer font-bold text-xs font-sans"
+                className="w-full bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-2xl py-3.5 text-center cursor-pointer font-bold transition-all text-xs uppercase tracking-wider active:scale-95 border border-stone-300 flex items-center justify-center gap-1"
                 title="Print Receipt Invoice"
                 type="button"
               >
-                🖨️ Print
+                <span>🖨️</span> PDF Invoice Print
               </button>
 
             </div>
@@ -3351,29 +3631,10 @@ export default function App() {
             <div className="grid grid-cols-1 md:grid-cols-12 gap-0">
               
               {/* LEFT & CENTER IMAGE GALLERY COLUMN (5/12 cols) */}
-              <div className="md:col-span-5 bg-slate-50 p-6 flex flex-col md:flex-row gap-4 items-center justify-center border-r border-slate-100">
+              <div className="md:col-span-5 bg-slate-50 p-6 flex items-center justify-center border-r border-slate-100">
                 
-                {/* Thumbnails Stack (Left side on desktop, bottom or top on mobile) */}
-                <div className="flex md:flex-col gap-2 order-2 md:order-1 overflow-x-auto no-scrollbar md:h-[300px]">
-                  {[
-                    { id: 0, title: 'Main View', styles: 'h-14 w-14 border-2 rounded-xl overflow-hidden cursor-pointer bg-white transition-all hover:scale-105' },
-                    { id: 1, title: 'Details', styles: 'h-14 w-14 border-2 rounded-xl overflow-hidden cursor-pointer bg-white transition-all hover:scale-105 contrast-110 saturate-105' },
-                    { id: 2, title: 'Review', styles: 'h-14 w-14 border-2 rounded-xl overflow-hidden cursor-pointer bg-white transition-all hover:scale-105 brightness-95' },
-                    { id: 3, title: 'Packaging', styles: 'h-14 w-14 border-2 rounded-xl overflow-hidden cursor-pointer bg-white transition-all hover:scale-105 sepia-[15%]' }
-                  ].map((thumb) => (
-                    <div
-                      key={thumb.id}
-                      className={`${thumb.styles} ${
-                        thumb.id === 0 ? 'border-orange-500 ring-2 ring-orange-200 shadow-sm' : 'border-slate-200 opacity-70 hover:opacity-100'
-                      }`}
-                    >
-                      <img src={detailProduct.image} className="w-full h-full object-cover" alt="" />
-                    </div>
-                  ))}
-                </div>
-
                 {/* Main Selected Image Container */}
-                <div className="flex-1 bg-white border border-slate-200 rounded-2xl p-4 shadow-sm flex items-center justify-center order-1 md:order-2 relative w-full aspect-square max-w-[280px] md:max-w-none">
+                <div className="bg-white border border-slate-200 rounded-2xl p-4 shadow-sm flex items-center justify-center relative w-full aspect-square max-w-[280px] md:max-w-none">
                   <img src={detailProduct.image} className="w-full h-full object-contain rounded-xl" alt="" />
                   {detailProduct.discountPercent > 0 && (
                     <span className="absolute top-3 left-3 bg-red-500 text-white font-extrabold text-[10px] px-2.5 py-1 rounded-lg uppercase tracking-wider shadow">

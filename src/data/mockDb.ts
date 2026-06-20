@@ -28,9 +28,9 @@ export const initDb = () => {
       {
         id: 'ord-101',
         trackingCode: 'BZR-98745',
-        customerName: 'Shamim Reza',
-        email: 'shamimrez22@gmail.com',
-        phone: '01712-345678',
+        customerName: 'Demo Customer',
+        email: 'demo@example.com',
+        phone: '01700-000000',
         address: 'Appt 4B, Road 4, Sector 11, Uttara',
         city: 'Dhaka',
         items: [
@@ -95,9 +95,9 @@ export const initDb = () => {
     const defaultUsers: User[] = [
       {
         id: 'usr-1',
-        email: 'shamimrez22@gmail.com',
-        name: 'Shamim Reza',
-        phone: '01712-345678',
+        email: 'demo@example.com',
+        name: 'Demo Customer',
+        phone: '01700-000000',
         address: 'Appt 4B, Road 4, Sector 11, Uttara',
         city: 'Dhaka',
         registeredDate: '2026-06-01T12:00:00Z',
@@ -245,7 +245,23 @@ export const db = {
   // USERS
   getUsers(): User[] {
     initDb();
-    return JSON.parse(localStorage.getItem(KEYS.USERS) || '[]');
+    const users: User[] = JSON.parse(localStorage.getItem(KEYS.USERS) || '[]');
+    // Guarantee demo@example.com exists in list for seamless user testing
+    const hasDemo = users.some(u => u.email.toLowerCase() === 'demo@example.com');
+    if (!hasDemo) {
+      users.push({
+        id: 'usr-demo-custom',
+        email: 'demo@example.com',
+        name: 'Demo Customer',
+        phone: '01700-000000',
+        address: 'Appt 4B, Road 4, Sector 11, Uttara',
+        city: 'Dhaka',
+        registeredDate: new Date().toISOString(),
+        status: 'Active'
+      });
+      localStorage.setItem(KEYS.USERS, JSON.stringify(users));
+    }
+    return users;
   },
   saveUser(user: User): User[] {
     const users = this.getUsers();

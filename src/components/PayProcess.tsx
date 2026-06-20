@@ -168,8 +168,8 @@ export default function PayProcess({ method, amount, onSuccess, onCancel, settin
                 COD
               </div>
               <div>
-                <h4 className="font-bold leading-tight font-display text-lg">Cash on Delivery</h4>
-                <p className="text-xs text-emerald-100 font-sans">Pay after verifying the box</p>
+                <h4 className="font-bold leading-tight font-display text-lg uppercase">CASH ON DELIVERY</h4>
+                <p className="text-xs text-emerald-100 font-sans uppercase">PAY AFTER VERIFYING THE BOX</p>
               </div>
             </div>
             <button id="cod-close-btn" onClick={onCancel} className="rounded-full p-1.5 hover:bg-black/10 transition-colors">
@@ -369,16 +369,16 @@ export default function PayProcess({ method, amount, onSuccess, onCancel, settin
 
               {/* Cash On Delivery Screen */}
               {method === 'Cash on Delivery' && (
-                <div className="space-y-4">
+                <div className="space-y-4 uppercase">
                   <div className="flex flex-col items-center justify-center p-4 text-center">
                     <CheckCircle2 className="h-12 w-12 text-emerald-500" />
-                    <h4 className="font-bold text-slate-800 mt-2">Ready to Place Cash Order</h4>
-                    <p className="text-xs text-slate-500 mt-1 max-w-sm">
-                      Our dispatch rider will arrive with raw organic packaging at your specified address. Verify product freshness and pay in currency or local bKash QR afterwards.
+                    <h4 className="font-bold text-slate-800 mt-2 uppercase">READY TO PLACE CASH ORDER</h4>
+                    <p className="text-xs text-slate-500 mt-1 max-w-sm uppercase">
+                      OUR DISPATCH RIDER WILL ARRIVE WITH RAW ORGANIC PACKAGING AT YOUR SPECIFIED ADDRESS. VERIFY PRODUCT FRESHNESS AND PAY IN CURRENCY OR LOCAL BKASH QR AFTERWARDS.
                     </p>
                   </div>
-                  <div className="rounded-lg bg-emerald-50 p-3 text-xs text-emerald-800 text-center">
-                    Enjoy FREE delivery on orders exceeding ৳ 800!
+                  <div className="rounded-lg bg-emerald-50 p-3 text-xs text-emerald-800 text-center uppercase font-bold">
+                    ENJOY FREE DELIVERY ON ORDERS EXCEEDING ৳ 800!
                   </div>
                 </div>
               )}
@@ -419,20 +419,20 @@ export default function PayProcess({ method, amount, onSuccess, onCancel, settin
                     {method !== 'Cash on Delivery' && (
                       <button
                         onClick={() => { setStep(1); setPinVal(''); setError(''); }}
-                        className="w-1/3 rounded-xl border border-slate-200 py-3 text-sm font-semibold text-slate-500 hover:bg-slate-50 active:scale-95 transition-all"
+                        className="w-1/3 rounded-xl border border-slate-200 py-3 text-sm font-semibold text-slate-500 hover:bg-slate-50 active:scale-95 transition-all uppercase"
                       >
-                        Back
+                        BACK
                       </button>
                     )}
                     <button
                       id="payment-submit-btn"
                       onClick={handleNextStep}
-                      className="w-full rounded-xl py-3 text-sm font-semibold text-white shadow-md active:scale-95 transition-all text-center"
+                      className="w-full rounded-xl py-3 text-sm font-semibold text-white shadow-md active:scale-95 transition-all text-center uppercase"
                       style={{
                         backgroundColor: method === 'bKash' ? '#e11e5f' : method === 'Nagad' ? '#ea580c' : method === 'SSLCommerz' ? '#10b981' : '#16a34a'
                       }}
                     >
-                      {method === 'Cash on Delivery' ? 'Confirm and Place Order' : 'Submit Security PIN'}
+                      {method === 'Cash on Delivery' ? 'CONFIRM AND PLACE ORDER' : 'SUBMIT SECURITY PIN'}
                     </button>
                   </>
                 )}

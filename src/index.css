@@ -22,8 +22,9 @@
   }
 }
 
-*, *::before, *::after {
+*, *::before, *::after, *::placeholder, input, textarea, select, option {
   border-radius: 0px !important;
+  text-transform: uppercase !important;
 }
 
 

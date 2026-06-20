@@ -153,6 +153,8 @@ export interface StoreSettings {
   specialOfferTitle?: string;
   specialOfferDesc?: string;
   specialOfferImage?: string;
+  specialOfferHours?: number;
+  specialOfferMinutes?: number;
 
   // Homepage Scrolling Notices
   enableTopNotice?: boolean;

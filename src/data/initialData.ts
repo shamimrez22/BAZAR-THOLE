@@ -447,22 +447,24 @@ export const DEFAULT_SETTINGS: StoreSettings = {
   vatTaxPercent: 5,
   enableSSLCommerz: true,
   enableBkashNagad: true,
-  bkashNumber: '01712345678',
-  nagadNumber: '01812345678',
+  bkashNumber: '01700000000',
+  nagadNumber: '01800000000',
   bkashInstruction: 'Please Send Money to our personal bKash wallet number. After payment, type the TxnID below.',
   nagadInstruction: 'Please Send Money to our personal Nagad wallet number. After payment, type the TxnID below.',
   minOrderValue: 200,
 
   // Security & Admin 
-  adminUsername: 'SHAMIM',
+  adminUsername: 'ADMIN',
   adminPassword: '123',
-  recoveryEmail: 'shamimrez22@gmail.com',
-  recoveryPhone: '01712-345678',
+  recoveryEmail: 'admin@example.com',
+  recoveryPhone: '01700000000',
 
   // Special Offer default configuration
   specialOfferTitle: 'Special Offer',
   specialOfferDesc: 'Tap to apply coupon discount!',
   specialOfferImage: 'https://images.unsplash.com/photo-1619566636858-adf3ef46400b?auto=format&fit=crop&q=80&w=600',
+  specialOfferHours: 4,
+  specialOfferMinutes: 45,
 
   // Default scrolling notices configurations
   enableTopNotice: true,

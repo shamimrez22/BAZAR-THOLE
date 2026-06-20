@@ -15,7 +15,15 @@ interface AdminPanelProps {
 }
 
 export default function AdminPanel({ onDataChanged, onClose }: AdminPanelProps) {
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(() => {
+    return localStorage.getItem('bt_admin_logged') === 'true';
+  });
+  const [adminUsername, setAdminUsername] = useState('');
+  const [adminPassword, setAdminPassword] = useState('');
+  const [authError, setAuthError] = useState('');
+
   const [activeTab, setActiveTab] = useState<'dashboard' | 'products' | 'categories' | 'orders' | 'customers' | 'coupons' | 'banners' | 'settings' | 'developer' | 'live_notices'>('dashboard');
+  const [isRefreshingOrders, setIsRefreshingOrders] = useState(false);
 
   // Custom visual confirm & alert state for secure sandboxed iframe execution
   const [customDialog, setCustomDialog] = useState<{
@@ -66,6 +74,7 @@ export default function AdminPanel({ onDataChanged, onClose }: AdminPanelProps) 
 
   // Local state pulled directly from mock DB
   const [products, setProducts] = useState<Product[]>(() => db.getProducts());
+  const [visibleProductsCount, setVisibleProductsCount] = useState<number>(25);
   const [categories, setCategories] = useState<Category[]>(() => db.getCategories());
   const [orders, setOrders] = useState<Order[]>(() => db.getOrders());
   const [customers, setCustomers] = useState<User[]>(() => db.getUsers());
@@ -411,7 +420,7 @@ export default function AdminPanel({ onDataChanged, onClose }: AdminPanelProps) 
 
         <div class="footer-note">
             <p>Thank you for purchasing from ${cleanStoreName}. All fresh farm greens and grocery products are processed with verified hygienic packaging guidelines. For support, call: ${settings.phone}.</p>
-            <p style="font-family: monospace; font-size: 9px; margin-top: 12px; color: #94a3b8; letter-spacing: 0.5px;">Report Generated Safely via ${cleanStoreName} Merchant Analytics - Coded by Shamim.</p>
+            <p style="font-family: monospace; font-size: 9px; margin-top: 12px; color: #94a3b8; letter-spacing: 0.5px;">Report Generated Safely via ${cleanStoreName} Merchant Analytics - Secure Merchant Report.</p>
         </div>
     </div>
 </body>
@@ -585,6 +594,90 @@ export default function AdminPanel({ onDataChanged, onClose }: AdminPanelProps) 
     syncLists();
   };
 
+  if (!isAuthenticated) {
+    return (
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-stone-950/80 backdrop-blur-md p-4 font-sans animate-fade-in">
+        <div className="w-full max-w-md bg-[#FAF5EE] border-4 border-stone-900 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] p-6 md:p-8 relative">
+          
+          <div className="text-center space-y-2 mb-6">
+            <div className="inline-block bg-[#F97316] text-black font-black text-xs sm:text-sm px-3 py-1 border-2 border-stone-950 uppercase tracking-widest shadow">
+              BAZAR THOLE COCKPIT
+            </div>
+            <h2 className="text-xl md:text-2xl font-black text-stone-900 uppercase tracking-tight">ADMIN CONTROL LOGIN</h2>
+            <p className="text-[11px] text-stone-500 font-bold uppercase">(বাজার থোলে এডমিন লগইন প্যানেল)</p>
+          </div>
+
+          <form onSubmit={(e) => {
+            e.preventDefault();
+            if (adminUsername.trim().toUpperCase() === 'SHAMIM' && adminPassword === '321') {
+              setIsAuthenticated(true);
+              localStorage.setItem('bt_admin_logged', 'true');
+              setAuthError('');
+            } else {
+              setAuthError('ভুল ইউজারনেম অথবা পাসওয়ার্ড! আবার টাইপ করুন। (Invalid username or password)');
+            }
+          }} className="space-y-4">
+            
+            <div>
+              <label className="block text-xs font-black uppercase tracking-wider text-stone-700 mb-1">
+                USERNAME (ইউজারনেম):
+              </label>
+              <input
+                type="text"
+                placeholder="Enter admin username (e.g. SHAMIM)"
+                autoFocus
+                required
+                className="w-full border-2 border-stone-900 bg-white rounded-lg px-4 py-3 text-xs font-bold focus:bg-stone-50 focus:outline-none"
+                value={adminUsername}
+                onChange={(e) => setAdminUsername(e.target.value)}
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-black uppercase tracking-wider text-stone-700 mb-1">
+                PASSWORD (পাসওয়ার্ড):
+              </label>
+              <input
+                type="password"
+                placeholder="Enter secure password (e.g. 321)"
+                required
+                className="w-full border-2 border-stone-900 bg-white rounded-lg px-4 py-3 text-xs font-bold focus:bg-stone-50 focus:outline-none tracking-widest"
+                value={adminPassword}
+                onChange={(e) => setAdminPassword(e.target.value)}
+              />
+            </div>
+
+            {authError && (
+              <div className="bg-red-50 border-2 border-red-700/80 p-3 text-red-700 text-xs font-bold leading-relaxed rounded-lg">
+                ⚠️ {authError}
+              </div>
+            )}
+
+            <div className="pt-2 flex flex-col sm:flex-row gap-3">
+              <button
+                type="button"
+                onClick={onClose}
+                className="flex-1 text-center border-2 border-stone-900 bg-stone-100 hover:bg-stone-200 text-stone-800 rounded-lg py-3 text-xs font-black uppercase tracking-wider transition-all cursor-pointer shadow active:scale-95"
+              >
+                Close (বন্ধ করুন)
+              </button>
+              <button
+                type="submit"
+                className="flex-1 text-center border-2 border-stone-950 bg-[#9E2A2B] hover:bg-red-800 text-white rounded-lg py-3 text-xs font-black uppercase tracking-wider transition-all cursor-pointer shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] active:scale-95 active:translate-y-0.5"
+              >
+                Enter Panel (প্রবেশ করুন)
+              </button>
+            </div>
+          </form>
+
+          <div className="mt-6 pt-4 border-t border-stone-300 text-center text-[10px] text-stone-400 font-bold uppercase select-none">
+            BAZAR THOLE SYSTEM CONCURRENT COCKPIT • SECURED SENSITIVE SPACE
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="fixed inset-0 z-50 flex flex-col bg-[#FAF5EE] text-stone-800 animate-fade-in font-sans">
       
@@ -613,13 +706,12 @@ export default function AdminPanel({ onDataChanged, onClose }: AdminPanelProps) 
 
         {/* Center search input bar - Highly Unique Premium Interface */}
         <div className="relative w-64 md:w-80 group flex items-center">
-          <Search className="absolute left-3 h-3 h-3 text-emerald-400 animate-pulse pointer-events-none z-10" />
           <input 
             type="text" 
             placeholder="অর্ডার বা প্রোডাক্ট খুঁজুন..." 
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-8 pr-4 py-1 rounded-lg border-2 border-neutral-850 border-neutral-800 text-xs text-white bg-neutral-950 hover:bg-black hover:border-emerald-500/40 focus:bg-black focus:border-[#10B981] focus:ring-4 focus:ring-emerald-500/10 focus:outline-none transition-all placeholder-neutral-500 shadow-md group-hover:shadow-[0_0_12px_rgba(16,185,129,0.06)] font-sans"
+            className="w-full pl-3.5 pr-4 py-1 rounded-lg border-2 border-neutral-850 border-neutral-800 text-xs text-white bg-neutral-950 hover:bg-black hover:border-emerald-500/40 focus:bg-black focus:border-[#10B981] focus:ring-4 focus:ring-emerald-500/10 focus:outline-none transition-all placeholder-neutral-500 shadow-md group-hover:shadow-[0_0_12px_rgba(16,185,129,0.06)] font-sans"
           />
         </div>
 
@@ -661,7 +753,7 @@ export default function AdminPanel({ onDataChanged, onClose }: AdminPanelProps) 
       <div className="flex-1 flex overflow-hidden">
         
         {/* --- RETRO TICKET-STYLE SIDEBAR PANEL (CREAM BEIGE WITH DARK BORDER - EXACT MATCH) --- */}
-        <div className="w-64 bg-[#FAF5EE] border-r-2 border-stone-900 flex flex-col justify-between shrink-0 select-none">
+        <div className="hidden md:flex w-64 bg-[#FAF5EE] border-r-2 border-stone-900 flex-col justify-between shrink-0 select-none animate-slide-right">
           
           <div className="flex-1 overflow-y-auto no-scrollbar flex flex-col">
             {/* Admin Badge - Sticky header at top of scroll panel */}
@@ -910,12 +1002,23 @@ export default function AdminPanel({ onDataChanged, onClose }: AdminPanelProps) 
           </div>
 
           {/* Session log out button matching original design */}
-          <div className="p-4 border-t-2 border-stone-900 bg-[#EFE9DB] font-sans">
+          <div className="p-4 border-t-2 border-stone-900 bg-[#EFE9DB] font-sans flex flex-col gap-2">
             <button
-              onClick={onClose}
-              className="w-full text-center border-2 border-stone-950 bg-[#9E2A2B] text-white rounded-none py-2 text-xs font-black uppercase tracking-wider flex items-center justify-center gap-2 transition-all cursor-pointer shadow active:scale-95"
+              onClick={() => {
+                localStorage.removeItem('bt_admin_logged');
+                setIsAuthenticated(false);
+              }}
+              className="w-full text-center border-2 border-stone-950 bg-stone-850 hover:bg-stone-900 text-white rounded-none py-2 text-xs font-black uppercase tracking-wider flex items-center justify-center gap-2 transition-all cursor-pointer shadow active:scale-95"
             >
               <LogOut className="h-4 w-4 text-white shrink-0" />
+              LOGOUT SHAMIM (লগ আউট)
+            </button>
+            
+            <button
+              onClick={onClose}
+              className="w-full text-center border-2 border-stone-950 bg-[#9E2A2B] hover:bg-red-800 text-white rounded-none py-2 text-xs font-black uppercase tracking-wider flex items-center justify-center gap-2 transition-all cursor-pointer shadow active:scale-95"
+            >
+              <ArrowUpRight className="h-4 w-4 text-white shrink-0" />
               Close Control (বন্ধ করুন)
             </button>
           </div>
@@ -923,6 +1026,46 @@ export default function AdminPanel({ onDataChanged, onClose }: AdminPanelProps) 
 
         {/* --- MAIN PAGE WORKSPACE STAGE --- */}
         <div id="admin-main-stage" className="flex-1 flex flex-col overflow-y-auto no-scrollbar bg-[#FAF5EE]">
+          
+          {/* Mobile dropdown navigation menu (visible only on small screens < md) */}
+          <div className="block md:hidden bg-[#EFE9DB] border-b-2 border-stone-900 p-3 sticky top-0 z-20 shadow-sm animate-fade-in">
+            <label className="block text-[10px] font-black uppercase tracking-wider text-stone-605 text-stone-600 mb-1.5 leading-none">
+              Control Screen Navigation (অপশন নির্বাচন করুন):
+            </label>
+            <div className="relative">
+              <select
+                value={activeTab === 'products' && showProductForm ? 'add_product' : activeTab}
+                onChange={(e) => {
+                  const val = e.target.value;
+                  if (val === 'add_product') {
+                    setActiveTab('products');
+                    setEditingProduct(null);
+                    setProductFormState({
+                      id: '', name: '', category: 'fruits', image: '', unit: '1 kg', price: 0, originalPrice: 0, 
+                      discountPercent: 0, stock: 50, description: '', rating: 4.5, featured: false, bestSeller: false, isNewArrival: true, popular: false,
+                      isFlashSale: false, isSpecialOffer: false, deliveryFee: undefined, affiliateUrl: ''
+                    });
+                    setShowProductForm(true);
+                  } else {
+                    setActiveTab(val);
+                    setShowProductForm(false);
+                  }
+                }}
+                className="w-full bg-white border-2 border-stone-950 text-stone-900 font-extrabold text-xs px-3.5 py-2 rounded-none focus:outline-none focus:border-[#9E2A2B] transition-all cursor-pointer shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] uppercase tracking-wider"
+              >
+                <option value="dashboard">📊 Dashboard (ড্যাশবোর্ড)</option>
+                <option value="products">🛍️ Products (পণ্য তালিকা)</option>
+                <option value="add_product">➕ Add Product (পণ্য যোগ করুন)</option>
+                <option value="orders">📋 All Orders (সব অর্ডার)</option>
+                <option value="customers">👥 Customers (গ্রাহক তালিকা)</option>
+                <option value="banners">🖼️ Slider Banners (স্লাইড ব্যানার)</option>
+                <option value="categories">🗂️ Categories (ক্যাটাগরি)</option>
+                <option value="coupons">🎟️ Coupons (কুপন ডিসকাউন্ট)</option>
+                <option value="live_notices">📢 Live Notices (লাইভ নোটিশ)</option>
+                <option value="settings">⚙️ Control Center (নিয়ন্ত্রণ কেন্দ্র)</option>
+              </select>
+            </div>
+          </div>
           
           <div className="p-6 flex-1">
             
@@ -1419,7 +1562,7 @@ export default function AdminPanel({ onDataChanged, onClose }: AdminPanelProps) 
                       </tr>
                     </thead>
                     <tbody className="divide-y-2 divide-stone-900/30 text-xs font-sans">
-                      {products.map(p => {
+                      {products.slice(0, visibleProductsCount).map(p => {
                         const isLow = p.stock <= 10;
                         const isOut = p.stock === 0;
 
@@ -1493,6 +1636,19 @@ export default function AdminPanel({ onDataChanged, onClose }: AdminPanelProps) 
                       })}
                     </tbody>
                   </table>
+                  {products.length > visibleProductsCount && (
+                    <div className="bg-[#EFE9DB] p-4 text-center border-t-2 border-stone-900 flex flex-col sm:flex-row justify-between items-center gap-2 text-xs font-mono">
+                      <span className="text-stone-750 font-bold">
+                        SHOWING {Math.min(visibleProductsCount, products.length)} OF {products.length} PRODUCTS REGISTERED
+                      </span>
+                      <button
+                        onClick={() => setVisibleProductsCount(prev => prev + 25)}
+                        className="px-4 py-1.5 bg-stone-900 text-[#FAF5EE] hover:bg-stone-800 font-display font-black text-[10px] uppercase tracking-wider transition-all cursor-pointer rounded-none"
+                      >
+                        LOAD NEXT 25 ITEMS (আরও পণ্য দেখুন)
+                      </button>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
@@ -1710,25 +1866,33 @@ VALUES ('exotics', 'Exotics (আজব ফল)', 'https://unsplash.com/...');`}
                     <div className="h-6 w-px bg-stone-400 mx-1 hidden min-[400px]:block"></div>
 
                     <button
+                      disabled={isRefreshingOrders}
                       onClick={() => {
-                        syncLists();
+                        setIsRefreshingOrders(true);
+                        setTimeout(() => {
+                          syncLists();
+                          setIsRefreshingOrders(false);
+                          triggerAlert(
+                            '🔄 DATA SYNCHRONIZED (ডাটা সিঙ্ক সম্পন্ন)',
+                            'The database has been fully scanned and recompiled! All orders, customer records, coupon registries, and product stock levels have been successfully refreshed to the latest local and cloud state.'
+                          );
+                        }, 750);
                       }}
-                      className="flex items-center gap-1.5 border-2 border-stone-900 bg-stone-100 hover:bg-stone-200 text-stone-900 py-2 px-4 rounded-none font-display font-bold text-xs transition-all uppercase tracking-wider cursor-pointer"
+                      className="flex items-center gap-1.5 border-2 border-stone-900 bg-stone-100 hover:bg-stone-205 hover:bg-emerald-50 text-stone-900 py-2 px-4 rounded-none font-display font-bold text-xs transition-all uppercase tracking-wider cursor-pointer"
                     >
-                      <RefreshCw className="h-3.5 w-3.5 text-stone-700 animate-spin" style={{ animationDuration: '3s' }} />
-                      REFRESH (রিফ্রেশ)
+                      <RefreshCw className={`h-3.5 w-3.5 text-emerald-600 ${isRefreshingOrders ? 'animate-spin' : ''}`} style={isRefreshingOrders ? { animationDuration: '0.6s' } : undefined} />
+                      {isRefreshingOrders ? 'REFRESHING...' : 'REFRESH (রিফ্রেশ)'}
                     </button>
                   </div>
 
                   {/* Search query input box */}
                   <div className="relative w-full sm:w-72">
-                    <Search className="absolute left-3 top-3.5 h-4 w-4 text-stone-900 font-bold" />
                     <input
                       type="text"
                       placeholder="SEARCH ORDER ID..."
                       value={orderSearchQuery}
                       onChange={(e) => setOrderSearchQuery(e.target.value)}
-                      className="w-full bg-white border-2 border-stone-900 text-xs pl-9 pr-4 py-2.5 rounded-none focus:outline-none transition-all font-mono font-bold uppercase tracking-wider placeholder-stone-400"
+                      className="w-full bg-white border-2 border-stone-900 text-xs pl-3.5 pr-4 py-2.5 rounded-none focus:outline-none transition-all font-mono font-bold uppercase tracking-wider placeholder-stone-400"
                     />
                   </div>
                 </div>
@@ -3067,18 +3231,85 @@ VALUES ('exotics', 'Exotics (আজব ফল)', 'https://unsplash.com/...');`}
                         </div>
                       </div>
 
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                          <label className="block text-xs font-semibold text-slate-500 mb-1">COUNTDOWN SPECIAL TIMER HOUR (ঘণ্টা)</label>
+                          <input
+                            type="number"
+                            min="0"
+                            max="999"
+                            placeholder="e.g. 4"
+                            className="w-full border border-slate-200 rounded-lg px-3 py-2 text-xs focus:border-[#00796B] focus:outline-none font-sans"
+                            value={settingsForm.specialOfferHours === undefined ? '' : settingsForm.specialOfferHours}
+                            onChange={(e) => {
+                              const val = e.target.value === '' ? 0 : parseInt(e.target.value);
+                              setSettingsForm({ ...settingsForm, specialOfferHours: isNaN(val) ? 0 : val });
+                            }}
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-xs font-semibold text-slate-500 mb-1">COUNTDOWN SPECIAL TIMER MINUTE (মিনিট)</label>
+                          <input
+                            type="number"
+                            min="0"
+                            max="59"
+                            placeholder="e.g. 45"
+                            className="w-full border border-slate-200 rounded-lg px-3 py-2 text-xs focus:border-[#00796B] focus:outline-none font-sans"
+                            value={settingsForm.specialOfferMinutes === undefined ? '' : settingsForm.specialOfferMinutes}
+                            onChange={(e) => {
+                              const val = e.target.value === '' ? 0 : parseInt(e.target.value);
+                              setSettingsForm({ ...settingsForm, specialOfferMinutes: isNaN(val) ? 0 : val });
+                            }}
+                          />
+                        </div>
+                      </div>
+
                       <div>
-                        <label className="block text-xs font-semibold text-slate-500 mb-1">BANNER BACKGROUND IMAGE URL</label>
+                        <label className="block text-xs font-bold text-slate-705 text-stone-900 mb-1">SPECIAL OFFER BACKGROUND IMAGE (স্পেশাল অফারের ছবি)</label>
+                        
+                        {/* Direct File Upload Zone */}
+                        <div className="bg-stone-50 border-2 border-dashed border-stone-300 hover:border-[#00796B] p-4 rounded-xl text-center mb-3 transition-all relative">
+                          <input
+                            type="file"
+                            accept="image/*"
+                            id="special-offer-image-file"
+                            className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
+                            onChange={(e) => {
+                              const file = e.target.files?.[0];
+                              if (file) {
+                                const reader = new FileReader();
+                                reader.onloadend = () => {
+                                  if (typeof reader.result === 'string') {
+                                    setSettingsForm({ ...settingsForm, specialOfferImage: reader.result });
+                                  }
+                                };
+                                reader.readAsDataURL(file);
+                              }
+                            }}
+                          />
+                          <div className="flex flex-col items-center justify-center gap-1.5 pointer-events-none">
+                            <ImageIcon className="h-7 w-7 text-[#00796B] animate-pulse" />
+                            <span className="text-xs font-bold text-stone-800">মোবাইল বা গ্যাজেট গ্যালারি থেকে সরাসরি ছবি আপলোড করুন</span>
+                            <span className="text-[10px] text-stone-500">এখানে ক্লিক বা টাচ করে আপনার ছবি সিলেক্ট করুন (JPG, PNG, WEBP)</span>
+                          </div>
+                        </div>
+
+                        {/* Traditional URL Paste field with base64 visual fallback */}
                         <div className="flex gap-3 items-center">
                           <input
                             type="text"
-                            placeholder="Paste image URL here"
-                            className="flex-1 border border-slate-200 rounded-lg px-3 py-2 text-xs font-mono focus:border-[#00796B] focus:outline-none"
-                            value={settingsForm.specialOfferImage || ''}
-                            onChange={(e) => setSettingsForm({ ...settingsForm, specialOfferImage: e.target.value })}
+                            placeholder="অথবা এখানে পিকচারের লিঙ্ক পেস্ট করতে পারেন (Paste Image URL)..."
+                            className="flex-1 border border-stone-300 rounded-lg px-3 py-2 text-xs font-sans focus:border-[#00796B] focus:outline-none"
+                            value={settingsForm.specialOfferImage?.startsWith('data:') ? 'Uploaded Direct Image (সরাসরি আপলোড করা ছবি)' : settingsForm.specialOfferImage || ''}
+                            onChange={(e) => {
+                              const v = e.target.value;
+                              if (!v.includes('Uploaded Direct Image')) {
+                                setSettingsForm({ ...settingsForm, specialOfferImage: v });
+                              }
+                            }}
                           />
                           {settingsForm.specialOfferImage && (
-                            <div className="h-10 w-10 border rounded-lg overflow-hidden shrink-0 bg-slate-50">
+                            <div className="h-12 w-12 border-2 border-stone-300 rounded-lg overflow-hidden shrink-0 bg-stone-100 flex items-center justify-center shadow-sm">
                               <img 
                                 src={settingsForm.specialOfferImage} 
                                 className="h-full w-full object-cover" 
@@ -3091,7 +3322,7 @@ VALUES ('exotics', 'Exotics (আজব ফল)', 'https://unsplash.com/...');`}
                             </div>
                           )}
                         </div>
-                        <span className="text-[10px] text-slate-400 mt-1 block">Specify any public web image address to update the tall Special Offer block layout immediately.</span>
+                        <span className="text-[10px] text-stone-500 mt-1 block font-medium">পছন্দসই অফারের জন্য ছবি সেট করার জন্য যেকোনো একটি উপায় নির্বাচন করুন।</span>
                       </div>
                     </div>
 
@@ -3442,7 +3673,7 @@ VALUES ('exotics', 'Exotics (আজব ফল)', 'https://unsplash.com/...');`}
                           type="text"
                           required
                           className="w-full border border-slate-200 rounded-lg px-3 py-2 text-xs focus:ring-1 focus:ring-[#00796B]"
-                          value={settingsForm.adminUsername || 'SHAMIM'}
+                          value={settingsForm.adminUsername || 'ADMIN'}
                           onChange={(e) => setSettingsForm({ ...settingsForm, adminUsername: e.target.value })}
                         />
                       </div>
@@ -3465,7 +3696,7 @@ VALUES ('exotics', 'Exotics (আজব ফল)', 'https://unsplash.com/...');`}
                           type="email"
                           required
                           className="w-full border border-slate-200 rounded-lg px-3 py-2 text-xs font-mono focus:ring-1 focus:ring-[#00796B]"
-                          value={settingsForm.recoveryEmail || 'shamimrez22@gmail.com'}
+                          value={settingsForm.recoveryEmail || 'demo@example.com'}
                           onChange={(e) => setSettingsForm({ ...settingsForm, recoveryEmail: e.target.value })}
                         />
                       </div>
@@ -3475,7 +3706,7 @@ VALUES ('exotics', 'Exotics (আজব ফল)', 'https://unsplash.com/...');`}
                           type="text"
                           required
                           className="w-full border border-slate-200 rounded-lg px-3 py-2 text-xs font-mono focus:ring-1 focus:ring-[#00796B]"
-                          value={settingsForm.recoveryPhone || '01712-345678'}
+                          value={settingsForm.recoveryPhone || '01700-000000'}
                           onChange={(e) => setSettingsForm({ ...settingsForm, recoveryPhone: e.target.value })}
                         />
                       </div>

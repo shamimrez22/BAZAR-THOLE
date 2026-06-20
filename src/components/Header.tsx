@@ -73,11 +73,11 @@ export default function Header({
         
         {/* Left Side: Brand Logo & Nav Links */}
         <div className="flex items-center gap-6 shrink-0">
-          {/* Mobile hamburger menu button */}
+          {/* Mobile hamburger menu button - hidden because navigation is now inline like desktop */}
           <button
             id="mobile-menu-toggle-btn"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="lg:hidden p-1.5 text-slate-300 hover:text-emerald-400 hover:bg-neutral-900 rounded-lg transition-colors cursor-pointer"
+            className="hidden p-1.5 text-white hover:text-emerald-400 hover:bg-neutral-900 rounded-lg transition-colors cursor-pointer"
             title="Toggle Menu"
           >
             {mobileMenuOpen ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
@@ -96,29 +96,25 @@ export default function Header({
               title="Click to open Admin Panel"
             >
               <svg className="w-8 h-8 shrink-0 hover:rotate-6 transition-transform" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-                {/* Outer Orange Shopping Bag Shape conforming to the uploaded image */}
-                <path d="
-                  M 30 35 
-                  C 30 18, 70 18, 70 35 
-                  C 75 35, 80 38, 80 43 
-                  L 78 78 
-                  C 77 84, 72 88, 66 88 
-                  L 24 88 
-                  C 18 88, 13 84, 12 78 
-                  L 10 43 
-                  C 10 38, 15 35, 20 35
-                  L 22 35
-                " stroke="#F97316" strokeWidth="8.5" strokeLinecap="round" strokeLinejoin="round" fill="none" />
-                
-                {/* Inside Cart */}
-                <path d="M 23 58 H 32 L 38 78 M 32 64 H 74 L 78 58 H 32" stroke="#1E293B" strokeWidth="5" strokeLinecap="round" strokeLinejoin="round" fill="none" />
-                <circle cx="43" cy="83" r="5.5" fill="#1E293B" />
-                <circle cx="67" cy="83" r="5.5" fill="#1E293B" />
-                
-                {/* Cargo Boxes inside Cart */}
-                <rect x="36" y="50" width="8" height="13" rx="1.5" fill="#84CC16" />
-                <rect x="47" y="44" width="8" height="19" rx="1.5" fill="#F97316" />
-                <rect x="58" y="49" width="8" height="14" rx="1.5" fill="#EF4444" />
+                {/* Modern Sleek Handle */}
+                <path d="M 35 32 C 35 12, 65 12, 65 32" stroke="#F97316" strokeWidth="6.5" strokeLinecap="round" fill="none" />
+                {/* Premium Bag Pouch Shadow / Backdrop */}
+                <path d="M 22 32 H 78 L 74 80 C 73 85, 68 88, 50 88 C 32 88, 27 85, 26 80 Z" fill="url(#bagGrad)" />
+                {/* Highlights / Contrast Overlay */}
+                <path d="M 50 32 H 78 L 74 80 C 73 85, 68 88, 50 88 Z" fill="#FFFFFF" fillOpacity="0.08" />
+                {/* Symmetrical Geometric Gold/White Organic Emblem (Double Leaf + Star of Quality) */}
+                <path d="M 50 42 C 58 42, 62 48, 62 56 C 62 64, 50 66, 50 66 C 50 66, 38 64, 38 56 C 38 48, 42 42, 50 42 Z" fill="#FBBF24" />
+                <path d="M 50 42 C 50 42, 44 48, 44 56 C 44 62, 50 66, 50 66 Z" fill="#F59E0B" />
+                <path d="M 50 30 L 52 34 L 56 35 L 53 36 L 50 40 L 47 36 L 44 35 L 48 34 Z" fill="#FFFFFF" />
+                {/* Rivets */}
+                <circle cx="35" cy="32" r="3.5" fill="#E2E8F0" />
+                <circle cx="65" cy="32" r="3.5" fill="#E2E8F0" />
+                <defs>
+                  <radialGradient id="bagGrad" cx="50%" cy="40%" r="60%">
+                    <stop offset="0%" stopColor="#10B981" />
+                    <stop offset="100%" stopColor="#047857" />
+                  </radialGradient>
+                </defs>
               </svg>
             </div>
 
@@ -134,17 +130,17 @@ export default function Header({
             </div>
           </div>
 
-          {/* Inline Navigation Menu (Desktop only - unified here!) */}
-          <nav className="hidden lg:flex items-center gap-4 border-l border-neutral-80 pl-4 shrink-0">
+          {/* Inline Navigation Menu (Now visible on both mobile and desktop - looks exactly like desktop!) */}
+          <nav className="flex items-center gap-0.5 sm:gap-1 border-l border-neutral-800 pl-1.5 md:pl-3 shrink-0 overflow-x-auto no-scrollbar">
             {navItems.map((item) => (
               <button
                 key={item.value}
                 id={`header-nav-${item.value}`}
                 onClick={() => { onNavigate(item.value); onSearch(''); setSearchTerm(''); }}
-                className={`text-xs font-bold uppercase tracking-wider transition-all py-1 px-2.5 rounded-lg hover:bg-slate-900 hover:text-emerald-400 ${
+                className={`text-[9.5px] sm:text-xs font-bold uppercase tracking-wider transition-all py-1.5 px-1.5 sm:px-2.5 rounded-lg hover:bg-slate-900 hover:text-emerald-400 ${
                   activeTab === item.value 
                     ? 'text-emerald-400 font-extrabold bg-slate-900/80' 
-                    : 'text-slate-300 hover:text-white'
+                    : 'text-white hover:text-emerald-305 hover:text-emerald-300'
                 }`}
               >
                 {item.label}
@@ -154,38 +150,26 @@ export default function Header({
         </div>
 
         {/* Center: Search Box (Highly Unique Premium Interface with Neon Glow Ring) */}
-        <form onSubmit={handleSearchSubmit} className="hidden md:flex flex-1 max-w-sm items-center relative mx-2">
-          <div className="relative w-full flex items-center group">
-            {/* Left Glowing Search Icon */}
-            <div className="absolute left-3 text-emerald-400 group-hover:text-emerald-300 flex items-center pointer-events-none transition-colors z-10">
-              <Search className="h-3.5 w-3.5 animate-pulse" />
-            </div>
-            
-            {/* Input - obsidian dark background with emerald cyber neon border */}
-            <input
-              id="header-search-input"
-              type="text"
-              placeholder="Search Bazar Thole..."
-              className="w-full pl-8.5 pr-20 py-1 rounded-lg border-2 border-neutral-850 border-neutral-800 text-xs text-white bg-neutral-950 hover:bg-black hover:border-emerald-500/50 focus:bg-black focus:border-[#10B981] focus:ring-4 focus:ring-emerald-500/10 focus:outline-none transition-all placeholder-neutral-500 shadow-md group-hover:shadow-[0_0_12px_rgba(16,185,129,0.06)] font-medium"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-            />
-            
-            {/* Unique Hotkey Badge */}
-            <div className="absolute right-14 hidden lg:flex items-center pointer-events-none z-10 transition-opacity group-focus-within:opacity-0">
-              <span className="font-mono text-[8px] text-neutral-550 text-neutral-500 bg-neutral-900 border border-neutral-800 px-1 py-0.2 rounded select-none">/</span>
-            </div>
-            
-            {/* Styled Unique Pill Search Action Button */}
-            <button
-              id="header-search-submit"
-              type="submit"
-              className="absolute right-1 text-slate-950 bg-gradient-to-r from-emerald-400 to-teal-400 hover:brightness-110 hover:scale-[1.03] active:scale-[0.97] px-2.5 py-0.5 rounded transition-all font-black text-[9px] uppercase tracking-wider flex items-center justify-center cursor-pointer shadow-md"
-              title="Search Now"
-            >
-              <span>GO</span>
-            </button>
-          </div>
+        <form onSubmit={handleSearchSubmit} className="hidden md:flex flex-1 max-w-xl items-center gap-2 mx-2">
+          {/* Input - obsidian dark background with subtle neutral/white border */}
+          <input
+            id="header-search-input"
+            type="text"
+            placeholder="Search Bazar Thole..."
+            className="flex-1 h-12 pl-4 pr-4 rounded-lg border-2 border-neutral-800 text-xs text-white bg-neutral-950 hover:bg-black hover:border-neutral-700 focus:bg-black focus:border-white focus:ring-4 focus:ring-white/10 transition-all placeholder-neutral-400 shadow-md font-bold uppercase tracking-wider"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
+          
+          {/* Styled Unique Search Action Button - Beautifully styled outside the field */}
+          <button
+            id="header-search-submit"
+            type="submit"
+            className="h-12 px-5 text-black bg-white hover:bg-neutral-200 hover:scale-[1.03] active:scale-[0.97] rounded-lg border-2 border-white transition-all flex items-center justify-center cursor-pointer shadow-md"
+            title="Search Now"
+          >
+            <Search className="h-4 w-4 stroke-[3.5]" />
+          </button>
         </form>
 
         {/* Right Side: Action Utilities */}
@@ -193,8 +177,8 @@ export default function Header({
           {/* Quick Order Tracking Icon for desktop */}
           <button
             onClick={() => onNavigate('tracking')}
-            className={`hidden sm:flex p-2 rounded-xl text-slate-355 text-slate-300 hover:text-emerald-400 hover:bg-slate-900 transition-colors cursor-pointer ${
-              activeTab === 'tracking' ? 'text-emerald-450 bg-slate-900' : ''
+            className={`hidden sm:flex p-2 rounded-xl text-white hover:text-emerald-400 hover:bg-slate-900 transition-colors cursor-pointer ${
+              activeTab === 'tracking' ? 'text-emerald-400 bg-slate-900' : ''
             }`}
             title="Order Tracking"
           >
@@ -205,7 +189,7 @@ export default function Header({
           <button
             id="header-wishlist-view"
             onClick={() => onNavigate('account')}
-            className="relative p-2 rounded-xl text-slate-355 text-slate-300 hover:text-emerald-400 hover:bg-slate-900 transition-colors cursor-pointer"
+            className="relative p-2 rounded-xl text-white hover:text-emerald-400 hover:bg-slate-900 transition-colors cursor-pointer"
             title="My Wishlist"
           >
             <Heart className={`h-5 w-5 ${wishlist.length > 0 ? 'text-red-500 fill-red-500' : ''}`} />
@@ -216,19 +200,19 @@ export default function Header({
             )}
           </button>
 
-          {/* User Profile dropdown or Login indicator */}
+          {/* User Profile dropdown or Login indicator - with highly illuminated white/light text */}
           {currentUser ? (
             <div className="flex items-center gap-1">
               <button
                 id="header-profile-btn"
                 onClick={() => onNavigate('account')}
-                className="flex items-center gap-1.5 p-1 rounded-full border border-neutral-850 border-neutral-800 hover:border-emerald-500 hover:bg-slate-900 transition-all text-left max-w-[120px] truncate"
+                className="flex items-center gap-1.5 p-1 rounded-full border border-neutral-800 hover:border-emerald-500 hover:bg-slate-900 transition-all text-left max-w-[120px] truncate"
                 title={`${currentUser.name}'s Profile`}
               >
                 <div className="h-6 w-6 rounded-full bg-slate-900 text-emerald-400 flex items-center justify-center font-bold text-xs shrink-0 font-sans border border-neutral-800">
                   {currentUser.name.charAt(0).toUpperCase()}
                 </div>
-                <span className="hidden lg:block text-xs font-bold text-slate-300 truncate pr-1">
+                <span className="hidden lg:block text-xs font-bold text-white truncate pr-1">
                   {currentUser.name.split(' ')[0]}
                 </span>
               </button>
@@ -244,9 +228,9 @@ export default function Header({
             <button
               id="header-login-btn"
               onClick={() => onNavigate('login')}
-              className="flex items-center gap-1 px-3 py-1.5 text-xs font-bold text-slate-300 hover:text-white border border-neutral-805 border-neutral-800 bg-slate-900 hover:bg-slate-800 rounded-xl transition-all cursor-pointer shadow-xs"
+              className="flex items-center gap-1 px-3 py-1.5 text-xs font-bold text-white hover:text-emerald-400 border border-neutral-800 bg-slate-900 hover:bg-slate-800 rounded-xl transition-all cursor-pointer shadow-xs"
             >
-              <User className="h-3.5 w-3.5" />
+              <User className="h-3.5 w-3.5 text-white" />
               <span className="hidden sm:inline">Login</span>
             </button>
           )}
@@ -271,27 +255,24 @@ export default function Header({
       </div>
 
       {/* Mobile-only Search Bar & Fast Nav (Always in one top bar structure) */}
-      <div className="block md:hidden px-4 pb-1.5 pt-0.5 border-t border-neutral-900 bg-black">
+      <div className="block md:hidden px-4 pb-2 pt-1 border-t border-neutral-900 bg-black">
         <form onSubmit={handleSearchSubmit} className="flex items-center relative gap-2">
           <div className="relative w-full">
             <input
               id="mobile-search-input"
               type="text"
               placeholder="Search Bazar Thole..."
-              className="w-full pl-8 pr-4 py-1 rounded-lg border border-neutral-800 text-xs text-white bg-slate-900/90 focus:bg-black focus:border-[#10B981] focus:ring-2 focus:ring-emerald-500/15 focus:outline-none transition-all placeholder-slate-500 shadow-inner font-medium"
+              className="w-full h-11 pl-3 pr-4 rounded-lg border border-neutral-800 text-xs text-white bg-slate-900/90 focus:bg-black focus:border-white focus:ring-2 focus:ring-white/10 transition-all placeholder-slate-400 shadow-inner font-bold uppercase tracking-wider"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
-            <div className="absolute left-2.5 top-1/2 -translate-y-1/2 text-emerald-400 pointer-events-none flex items-center">
-              <Search className="h-3 w-3 animate-pulse" />
-            </div>
           </div>
           <button
             type="submit"
-            className="text-slate-950 bg-gradient-to-r from-emerald-400 to-teal-400 p-1 px-3-xs px-2.5 rounded hover:opacity-90 active:scale-[0.96] transition-all font-bold text-[9px] uppercase tracking-wider cursor-pointer whitespace-nowrap"
+            className="h-11 px-4 text-black bg-white rounded-lg border border-white hover:bg-neutral-200 active:scale-[0.96] transition-all flex items-center justify-center cursor-pointer whitespace-nowrap"
             title="Search"
           >
-            GO
+            <Search className="h-4 w-4 stroke-[3.5]" />
           </button>
         </form>
       </div>
@@ -299,31 +280,32 @@ export default function Header({
       {/* Mobile Drawer Overlay Slider Menu */}
       {mobileMenuOpen && (
         <div className="lg:hidden fixed inset-0 z-50 flex animate-fade-in bg-black/60 backdrop-blur-xs">
-          <div className="w-80 bg-white h-full p-6 space-y-6 flex flex-col justify-between shadow-2xl animate-slide-right">
+          <div className="w-44 bg-neutral-950 border border-neutral-900 h-auto max-h-[70vh] rounded-2xl p-3.5 space-y-4 flex flex-col justify-between shadow-2xl animate-slide-right text-white absolute top-14 left-2">
             <div>
-              <div className="flex items-center justify-between pb-4 border-b border-gray-150">
-                <span className="font-display font-black text-emerald-600 text-lg">
-                  BAZAR THOLE
+              <div className="flex items-center justify-between pb-2 border-b border-neutral-900">
+                <span className="font-display font-black text-emerald-400 text-xs tracking-wide flex items-center gap-1">
+                  <span className="bg-[#F97316] text-black text-[8px] font-black px-1 rounded leading-none shrink-0">BZR</span>
+                  <span>THOLE</span>
                 </span>
                 <button
                   id="mobile-menu-close"
                   onClick={() => setMobileMenuOpen(false)}
-                  className="p-1 text-slate-400 hover:text-red-500 hover:bg-slate-50 rounded-lg transition-colors cursor-pointer"
+                  className="p-1 text-slate-400 hover:text-red-400 hover:bg-neutral-900 rounded-md transition-colors cursor-pointer"
                 >
-                  <X className="h-5 w-5" />
+                  <X className="h-3.5 w-3.5" />
                 </button>
               </div>
 
-              <div className="mt-6 flex flex-col gap-2">
+              <div className="mt-3 flex flex-col gap-0.5">
                 {navItems.map((item) => (
                   <button
                     key={item.value}
                     id={`mobile-nav-${item.value}`}
                     onClick={() => { onNavigate(item.value); onSearch(''); setSearchTerm(''); setMobileMenuOpen(false); }}
-                    className={`w-full text-left py-2.5 font-bold uppercase tracking-wider text-xs rounded-xl transition-all ${
+                    className={`w-full text-left py-1.5 px-3 font-bold uppercase tracking-wider text-[10px] rounded-md transition-all ${
                       activeTab === item.value 
-                        ? 'text-emerald-700 bg-emerald-50 px-4' 
-                        : 'text-slate-600 hover:text-emerald-600 hover:bg-slate-50 px-4'
+                        ? 'text-emerald-400 bg-slate-900' 
+                        : 'text-slate-350 hover:text-emerald-400 hover:bg-slate-900/40 text-slate-300'
                     }`}
                   >
                     {item.label}
@@ -332,10 +314,10 @@ export default function Header({
               </div>
             </div>
 
-            <div className="border-t border-gray-100 pt-5 space-y-3.5 text-xs text-slate-500">
-              <div className="text-center text-[11px] font-medium space-y-1">
-                <p>Hotline Service Support: <strong className="font-mono text-slate-700">{settings.phone}</strong></p>
-                <p className="text-[10px] text-slate-400">Hours: {settings.operatingHours}</p>
+            <div className="border-t border-neutral-900 pt-3 space-y-1 text-[8px] text-slate-500">
+              <div className="text-center font-medium space-y-0.5 leading-tight">
+                <p>Support Support: <strong className="font-mono text-slate-300">{settings.phone}</strong></p>
+                <p className="text-[7.5px] text-slate-450">Hours: {settings.operatingHours}</p>
               </div>
             </div>
           </div>
