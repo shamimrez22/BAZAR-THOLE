@@ -9,6 +9,52 @@ import { ResponsiveContainer, AreaChart, Area, XAxis, YAxis, Tooltip, CartesianG
 import { Product, Category, Order, User, Coupon, Banner, StoreSettings } from '../types';
 import { db } from '../data/mockDb';
 
+const originalLocalStorage = typeof window !== 'undefined' ? window.localStorage : null;
+const memoryStorage: Record<string, string> = {};
+
+const localStorage = {
+  getItem(key: string): string | null {
+    try {
+      if (!originalLocalStorage) return memoryStorage[key] || null;
+      return originalLocalStorage.getItem(key);
+    } catch (e) {
+      return memoryStorage[key] || null;
+    }
+  },
+  setItem(key: string, value: string): void {
+    try {
+      if (!originalLocalStorage) {
+        memoryStorage[key] = value;
+        return;
+      }
+      originalLocalStorage.setItem(key, value);
+    } catch (e) {
+      memoryStorage[key] = value;
+    }
+  },
+  removeItem(key: string): void {
+    try {
+      if (!originalLocalStorage) {
+        delete memoryStorage[key];
+        return;
+      }
+      originalLocalStorage.removeItem(key);
+    } catch (e) {
+      delete memoryStorage[key];
+    }
+  },
+  clear(): void {
+    try {
+      if (originalLocalStorage) {
+        originalLocalStorage.clear();
+      }
+    } catch (e) {
+      // ignore
+    }
+    Object.keys(memoryStorage).forEach(k => delete memoryStorage[k]);
+  }
+};
+
 interface AdminPanelProps {
   onDataChanged: () => void;
   onClose: () => void;

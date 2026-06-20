@@ -1,6 +1,56 @@
 import { Product, Category, Order, User, Coupon, Banner, Review, StoreSettings } from '../types';
 import { INITIAL_PRODUCTS, INITIAL_CATEGORIES, INITIAL_COUPONS, INITIAL_BANNERS, INITIAL_REVIEWS, DEFAULT_SETTINGS } from './initialData';
 
+const originalLocalStorage = typeof window !== 'undefined' ? window.localStorage : null;
+
+// Memory storage fallback buffer when localStorage is unavailable (e.g., iOS Safari Private Mode, embedded social app webviews, or restricted cookies)
+const memoryStorage: Record<string, string> = {};
+
+const localStorage = {
+  getItem(key: string): string | null {
+    try {
+      if (!originalLocalStorage) return memoryStorage[key] || null;
+      return originalLocalStorage.getItem(key);
+    } catch (e) {
+      console.warn(`[BT Database Warning] localStorage.getItem failed for key "${key}":`, e);
+      return memoryStorage[key] || null;
+    }
+  },
+  setItem(key: string, value: string): void {
+    try {
+      if (!originalLocalStorage) {
+        memoryStorage[key] = value;
+        return;
+      }
+      originalLocalStorage.setItem(key, value);
+    } catch (e) {
+      console.error(`[BT Database Warning] localStorage.setItem failed for key "${key}" (cookie blocked or quota exceeded):`, e);
+      memoryStorage[key] = value;
+    }
+  },
+  removeItem(key: string): void {
+    try {
+      if (!originalLocalStorage) {
+        delete memoryStorage[key];
+        return;
+      }
+      originalLocalStorage.removeItem(key);
+    } catch (e) {
+      delete memoryStorage[key];
+    }
+  },
+  clear(): void {
+    try {
+      if (originalLocalStorage) {
+        originalLocalStorage.clear();
+      }
+    } catch (e) {
+      // ignore
+    }
+    Object.keys(memoryStorage).forEach(k => delete memoryStorage[k]);
+  }
+};
+
 // DB keys for localStorage
 const KEYS = {
   PRODUCTS: 'bazar_products_v1',
