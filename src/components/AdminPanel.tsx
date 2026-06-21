@@ -146,7 +146,7 @@ export default function AdminPanel({ onDataChanged, onClose }: AdminPanelProps) 
   const [productFormState, setProductFormState] = useState<Partial<Product>>({
     id: '', name: '', category: 'fruits', image: '', unit: '1 kg', price: 0, originalPrice: 0, 
     discountPercent: 0, stock: 50, description: '', rating: 4.5, featured: false, bestSeller: false, isNewArrival: true, popular: false,
-    isFlashSale: false, isSpecialOffer: false, deliveryFee: undefined, affiliateUrl: ''
+    isFlashSale: false, isSpecialOffer: false, deliveryFee: undefined, affiliateUrl: '', sizes: undefined
   });
 
   // Coupon configuration Form state
@@ -277,6 +277,7 @@ export default function AdminPanel({ onDataChanged, onClose }: AdminPanelProps) 
       isSpecialOffer: !!productFormState.isSpecialOffer,
       deliveryFee: productFormState.deliveryFee !== undefined && productFormState.deliveryFee !== null ? Number(productFormState.deliveryFee) : undefined,
       affiliateUrl: productFormState.affiliateUrl || undefined,
+      sizes: productFormState.sizes || undefined,
     };
 
     db.saveProduct(target);
@@ -285,7 +286,7 @@ export default function AdminPanel({ onDataChanged, onClose }: AdminPanelProps) 
     setProductFormState({
       id: '', name: '', category: 'fruits', image: '', unit: '1 kg', price: 0, originalPrice: 0, 
       discountPercent: 0, stock: 20, description: '', rating: 4.5, featured: false, bestSeller: false, isNewArrival: true, popular: false,
-      isFlashSale: false, isSpecialOffer: false, deliveryFee: undefined, affiliateUrl: ''
+      isFlashSale: false, isSpecialOffer: false, deliveryFee: undefined, affiliateUrl: '', sizes: undefined
     });
     syncLists();
   };
@@ -1492,6 +1493,24 @@ export default function AdminPanel({ onDataChanged, onClose }: AdminPanelProps) 
                             value={productFormState.description || ''}
                             onChange={(e) => setProductFormState({ ...productFormState, description: e.target.value })}
                           />
+                        </div>
+
+                        <div>
+                          <label className="block text-xs font-bold text-stone-900 mb-1 uppercase tracking-wider">Product Sizes (কমা দিয়ে সাইজ লিখুন, ঐচ্ছিক)</label>
+                          <input
+                            id="form-product-sizes"
+                            type="text"
+                            placeholder="e.g. S, M, L, XL or 38, 40, 42"
+                            className="w-full font-sans text-xs uppercase"
+                            value={productFormState.sizes ? productFormState.sizes.join(', ') : ''}
+                            onChange={(e) => {
+                              const vals = e.target.value 
+                                ? e.target.value.split(',').map(s => s.trim()).filter(s => s.length > 0) 
+                                : [];
+                              setProductFormState({ ...productFormState, sizes: vals.length > 0 ? vals : undefined });
+                            }}
+                          />
+                          <p className="text-[9px] text-[#9E2A2B] mt-1 font-bold">আলাদা সাইজের পণ্য হলে কমা (,) দিয়ে সাইজগুলো লিখুন (যেমন: S, M, L)</p>
                         </div>
                       </div>
 

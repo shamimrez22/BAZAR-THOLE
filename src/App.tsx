@@ -100,6 +100,7 @@ export default function App() {
   // Product detailed modal state
   const [detailProduct, setDetailProduct] = useState<Product | null>(null);
   const [detailQuantity, setDetailQuantity] = useState<number>(1);
+  const [detailProductSize, setDetailProductSize] = useState<string | undefined>(undefined);
 
   // E-commerce Cart & Wishlist state
   const [cart, setCart] = useState<CartItem[]>([]);
@@ -122,6 +123,7 @@ export default function App() {
   // Payment simulator visual display
   const [paySimulator, setPaySimulator] = useState<{ active: boolean; method: typeof paymentOption; amount: number } | null>(null);
   const [latestPlacedOrder, setLatestPlacedOrder] = useState<Order | null>(null);
+  const [successCountdown, setSuccessCountdown] = useState<number>(10);
 
   // Order tracking page search parameters
   const [trackCodeInput, setTrackCodeInput] = useState<string>('');
@@ -193,8 +195,33 @@ export default function App() {
   useEffect(() => {
     if (detailProduct) {
       setDetailQuantity(1);
+      setDetailProductSize(detailProduct.sizes && detailProduct.sizes.length > 0 ? detailProduct.sizes[0] : undefined);
+    } else {
+      setDetailProductSize(undefined);
     }
   }, [detailProduct]);
+
+  // Success screen redirection timer effect
+  useEffect(() => {
+    let interval: NodeJS.Timeout | undefined;
+    if (activeTab === 'order-confirmation' && latestPlacedOrder) {
+      setSuccessCountdown(10);
+      interval = setInterval(() => {
+        setSuccessCountdown(p => {
+          if (p <= 1) {
+            clearInterval(interval);
+            setActiveTab('home');
+            setLatestPlacedOrder(null);
+            return 10;
+          }
+          return p - 1;
+        });
+      }, 1000);
+    }
+    return () => {
+      if (interval) clearInterval(interval);
+    };
+  }, [activeTab, latestPlacedOrder]);
 
   // Home Page Slider Autoplay Loop
   useEffect(() => {
@@ -315,13 +342,15 @@ export default function App() {
   };
 
   // Cart operations
-  const handleAddToCart = (product: Product, quantity: number = 1) => {
+  const handleAddToCart = (product: Product, quantity: number = 1, selectedSize?: string) => {
     if (product.stock <= 0) {
       triggerToast('⚠️ Sorry, this item is out of stock!');
       return;
     }
 
-    const currentInCart = cart.find(item => item.product.id === product.id);
+    const sizeString = selectedSize || (product.sizes && product.sizes.length > 0 ? product.sizes[0] : undefined);
+
+    const currentInCart = cart.find(item => item.product.id === product.id && item.selectedSize === sizeString);
     const existingQty = currentInCart ? currentInCart.quantity : 0;
 
     if (existingQty + quantity > product.stock) {
@@ -330,17 +359,17 @@ export default function App() {
     }
 
     setCart(prevCart => {
-      const matchIdx = prevCart.findIndex(item => item.product.id === product.id);
+      const matchIdx = prevCart.findIndex(item => item.product.id === product.id && item.selectedSize === sizeString);
       if (matchIdx >= 0) {
         const updated = [...prevCart];
         updated[matchIdx].quantity += quantity;
         return updated;
       } else {
-        return [...prevCart, { product, quantity }];
+        return [...prevCart, { product, quantity, selectedSize: sizeString }];
       }
     });
 
-    triggerToast(`🛒 Succeeded: Sourced ${quantity} x ${product.name} to your basket!`);
+    triggerToast(`🛒 Succeeded: Sourced ${quantity} x ${product.name} ${sizeString ? `(${sizeString})` : ''} to your basket!`);
   };
 
   const handleUpdateCartQty = (productId: string, delta: number) => {
@@ -389,7 +418,7 @@ export default function App() {
   };
 
   // Checkout Direct Buy Now Shortcut
-  const handleDirectBuyNow = (product: Product, quantity: number = 1) => {
+  const handleDirectBuyNow = (product: Product, quantity: number = 1, selectedSize?: string) => {
     if (product.affiliateUrl) {
       window.open(product.affiliateUrl, '_blank', 'noopener,noreferrer');
       triggerToast('🚀 Redirecting to official store affiliate link...');
@@ -399,8 +428,9 @@ export default function App() {
       triggerToast('⚠️ Sorry, this item is out of stock!');
       return;
     }
-    // Clear and put single item in cart
-    setCart([{ product, quantity }]);
+    const sizeString = selectedSize || (product.sizes && product.sizes.length > 0 ? product.sizes[0] : undefined);
+    // Clear and put single item in cart with correct size
+    setCart([{ product, quantity, selectedSize: sizeString }]);
     setActiveTab('checkout');
     setIsCartOpen(false);
   };
@@ -484,7 +514,8 @@ export default function App() {
         price: item.product.price,
         quantity: item.quantity,
         unit: item.product.unit,
-        image: item.product.image
+        image: item.product.image,
+        selectedSize: item.selectedSize || (item.product.sizes && item.product.sizes.length > 0 ? item.product.sizes[0] : undefined)
       })),
       subtotal,
       discount: discountVal,
@@ -3088,7 +3119,29 @@ export default function App() {
                       {cart.map((item, idx) => (
                         <tr key={idx} className="bg-[#FAF5EE] border-b border-stone-300 font-bold text-stone-900 border-r border-l border-stone-900">
                           <td className="py-3 px-3 border-r border-[#DCDCDC] text-left leading-snug">
-                            {item.product.name}
+                            <div>{item.product.name}</div>
+                            {item.product.sizes && item.product.sizes.length > 0 && (
+                              <div className="mt-1 flex items-center gap-1.5 bg-emerald-50 border border-[#0E6C57]/40 px-2 py-0.5 rounded text-[10px] w-fit">
+                                <span className="text-[#0E6C57] font-black uppercase text-[9px]">Select Size:</span>
+                                <select
+                                  value={item.selectedSize || item.product.sizes[0]}
+                                  onChange={(e) => {
+                                    const newSize = e.target.value;
+                                    setCart(prevCart => {
+                                      const updated = [...prevCart];
+                                      updated[idx].selectedSize = newSize;
+                                      return updated;
+                                    });
+                                    triggerToast(`✨ Size updated to ${newSize} for ${item.product.name}!`);
+                                  }}
+                                  className="bg-white border border-stone-300 text-stone-800 rounded font-bold px-1.5 py-0.5 cursor-pointer text-[10px] uppercase outline-none focus:border-[#0E6C57]"
+                                >
+                                  {item.product.sizes.map(sz => (
+                                    <option key={sz} value={sz}>{sz}</option>
+                                  ))}
+                                </select>
+                              </div>
+                            )}
                           </td>
                           <td className="py-3 px-3 border-r border-[#DCDCDC] text-center font-mono">
                             {item.quantity} × {item.product.unit}
@@ -3185,7 +3238,7 @@ export default function App() {
               <div className="inline-flex items-center justify-center h-24 w-24 rounded-full bg-emerald-50 text-emerald-600 border-4 border-emerald-500/20 shadow-md animate-bounce">
                 <CheckCircle2 className="h-12 w-12 animate-pulse text-emerald-600" />
               </div>
-              <div className="space-y-2 max-w-xl mx-auto">
+              <div className="space-y-4 max-w-xl mx-auto">
                 <span className="text-[10px] bg-emerald-100/90 text-emerald-800 border border-emerald-200 px-4 py-1.5 rounded-full font-black uppercase tracking-widest font-sans inline-block animate-pulse">
                   ✓ ORDER PLACED & CONFIRMED SUCCESSFULLY
                 </span>
@@ -3195,6 +3248,13 @@ export default function App() {
                 <p className="text-[12px] text-slate-500 font-medium font-sans leading-relaxed px-4">
                   আপনার অর্ডারটি সফলভাবে গ্রহণ করা হয়েছে। BAZAR THOLE এর সাথে থাকার জন্য আপনাকে অসংখ্য ধন্যবাদ! Our harvest dispatch team has completed verification and is preparing packaging.
                 </p>
+
+                {/* Elegantly styled Redirection countdown matching original look */}
+                <div className="inline-flex items-center gap-2.5 bg-[#FAF5EE] border-2 border-stone-900 px-4 py-1.5 rounded-full text-[11px] font-black uppercase tracking-widest text-[#0E6C57] shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] select-none">
+                  <span>⏱️ REDIRECTING TO HOME IN</span>
+                  <span className="bg-[#0E6C57] text-[#FAF5EE] px-1.5 py-0.5 rounded text-xs font-mono font-black">{successCountdown}</span>
+                  <span>SECONDS</span>
+                </div>
               </div>
             </div>
 
@@ -3592,7 +3652,6 @@ export default function App() {
               </button>
 
             </div>
-
           </div>
         )}
 
@@ -3711,6 +3770,34 @@ export default function App() {
                     {detailProduct.description}
                   </p>
 
+                  {/* Size selection options if size-wise product */}
+                  {detailProduct.sizes && detailProduct.sizes.length > 0 && (
+                    <div className="py-3 border-t border-b border-dashed border-stone-200">
+                      <span className="block text-xs font-bold text-stone-900 mb-2 uppercase tracking-wider">
+                        Select available Size / Weight (সাইজ নির্বাচন করুন):
+                      </span>
+                      <div className="flex flex-wrap gap-2">
+                        {detailProduct.sizes.map((sz) => {
+                          const isSel = detailProductSize === sz;
+                          return (
+                            <button
+                              key={sz}
+                              type="button"
+                              onClick={() => setDetailProductSize(sz)}
+                              className={`px-3.5 py-1.5 rounded-lg text-xs font-black uppercase transition-all tracking-wider cursor-pointer border-2 ${
+                                isSel
+                                  ? 'bg-[#0E6C57] text-[#FAF5EE] border-[#0E6C57] shadow-md scale-105'
+                                  : 'bg-white text-stone-700 border-stone-300 hover:border-stone-500 hover:bg-stone-50'
+                              }`}
+                            >
+                              {sz}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
+
                   {/* Interactive Quantity Selector */}
                   <div className="flex items-center gap-4 py-2">
                     <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Quantity:</span>
@@ -3757,7 +3844,7 @@ export default function App() {
                       <button
                         id="detail-add-cart-custom"
                         type="button"
-                        onClick={() => { handleAddToCart(detailProduct, detailQuantity); setDetailProduct(null); }}
+                        onClick={() => { handleAddToCart(detailProduct, detailQuantity, detailProductSize); setDetailProduct(null); }}
                         disabled={detailProduct.stock === 0}
                         className="w-full sm:w-1/2 bg-orange-500 hover:bg-orange-600 text-white rounded-xl py-3.5 px-4 text-xs font-bold transition-all disabled:bg-gray-200 disabled:text-gray-400 disabled:shadow-none cursor-pointer flex items-center justify-center gap-2 uppercase tracking-wider shadow"
                       >
@@ -3770,7 +3857,7 @@ export default function App() {
                     <button
                       id="detail-buy-now-custom"
                       type="button"
-                      onClick={() => { handleDirectBuyNow(detailProduct, detailQuantity); setDetailProduct(null); }}
+                      onClick={() => { handleDirectBuyNow(detailProduct, detailQuantity, detailProductSize); setDetailProduct(null); }}
                       disabled={detailProduct.stock === 0 && !detailProduct.affiliateUrl}
                       className={`${detailProduct.affiliateUrl ? 'w-full' : 'w-full sm:w-1/2'} bg-[#022B28] hover:bg-teal-950 text-white rounded-xl py-3.5 px-4 text-xs font-black shadow-lg transition-all disabled:bg-gray-200 disabled:text-gray-400 disabled:cursor-not-allowed cursor-pointer text-center uppercase tracking-widest animate-wiggle-action flex items-center justify-center gap-1.5`}
                     >

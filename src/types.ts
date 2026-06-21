@@ -18,6 +18,7 @@ export interface Product {
   affiliateUrl?: string;
   isFlashSale?: boolean;
   isSpecialOffer?: boolean;
+  sizes?: string[];
 }
 
 export interface Category {
@@ -31,6 +32,7 @@ export type OrderStatus = 'Pending' | 'Processing' | 'Shipped' | 'Delivered' | '
 export interface CartItem {
   product: Product;
   quantity: number;
+  selectedSize?: string;
 }
 
 export interface Order {
@@ -48,6 +50,7 @@ export interface Order {
     quantity: number;
     unit: string;
     image: string;
+    selectedSize?: string;
   }[];
   subtotal: number;
   discount: number;

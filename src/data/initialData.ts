@@ -31,6 +31,7 @@ export const INITIAL_PRODUCTS: Product[] = [
     bestSeller: true,
     isNewArrival: false,
     popular: true,
+    sizes: ['Medium', 'Large', 'Extra Large'],
   },
   {
     id: 'f-2',
