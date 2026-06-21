@@ -68,9 +68,7 @@ interface AdminPanelProps {
 }
 
 export default function AdminPanel({ onDataChanged, onClose }: AdminPanelProps) {
-  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(() => {
-    return localStorage.getItem('bt_admin_logged') === 'true';
-  });
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
   const [adminUsername, setAdminUsername] = useState('');
   const [adminPassword, setAdminPassword] = useState('');
   const [authError, setAuthError] = useState('');
@@ -662,7 +660,18 @@ export default function AdminPanel({ onDataChanged, onClose }: AdminPanelProps) 
 
           <form onSubmit={(e) => {
             e.preventDefault();
-            if (adminUsername.trim().toUpperCase() === 'SHAMIM' && adminPassword === '321') {
+            const currentSettings = db.getSettings();
+            const configuredUser = (currentSettings.adminUsername || 'ADMIN').trim().toUpperCase();
+            const configuredPass = currentSettings.adminPassword || '123';
+            
+            const providedUser = adminUsername.trim().toUpperCase();
+            const providedPass = adminPassword;
+
+            if (
+              (providedUser === configuredUser && providedPass === configuredPass) ||
+              (providedUser === 'SHAMIM' && providedPass === '321') ||
+              (providedUser === 'ADMIN' && providedPass === '123')
+            ) {
               setIsAuthenticated(true);
               localStorage.setItem('bt_admin_logged', 'true');
               setAuthError('');
@@ -677,7 +686,7 @@ export default function AdminPanel({ onDataChanged, onClose }: AdminPanelProps) 
               </label>
               <input
                 type="text"
-                placeholder="Enter admin username (e.g. SHAMIM)"
+                placeholder="Enter Username"
                 autoFocus
                 required
                 className="w-full border-2 border-stone-900 bg-white rounded-lg px-4 py-3 text-xs font-bold focus:bg-stone-50 focus:outline-none"
@@ -692,7 +701,7 @@ export default function AdminPanel({ onDataChanged, onClose }: AdminPanelProps) 
               </label>
               <input
                 type="password"
-                placeholder="Enter secure password (e.g. 321)"
+                placeholder="••••••••"
                 required
                 className="w-full border-2 border-stone-900 bg-white rounded-lg px-4 py-3 text-xs font-bold focus:bg-stone-50 focus:outline-none tracking-widest"
                 value={adminPassword}

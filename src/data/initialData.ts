@@ -454,8 +454,8 @@ export const DEFAULT_SETTINGS: StoreSettings = {
   minOrderValue: 200,
 
   // Security & Admin 
-  adminUsername: 'ADMIN',
-  adminPassword: '123',
+  adminUsername: 'SHAMIM',
+  adminPassword: '321',
   recoveryEmail: 'admin@example.com',
   recoveryPhone: '01700000000',
 

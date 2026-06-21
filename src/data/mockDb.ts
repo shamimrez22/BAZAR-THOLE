@@ -413,8 +413,18 @@ export const db = {
     try {
       const parsed = JSON.parse(stored);
       // Automatically sanitize and migrate any older/interim branding variants to BAZAR THOLE
+      let changed = false;
       if (parsed && (!parsed.storeName || parsed.storeName.trim() === '' || parsed.storeName === 'BAZAR' || parsed.storeName === 'Bazar' || parsed.storeName.toUpperCase().includes('E-COMMERCE') || parsed.storeName.toUpperCase() === 'BAZAR DHAKA')) {
         parsed.storeName = 'BAZAR THOLE';
+        changed = true;
+      }
+      // Migrate default credentials from ADMIN / 123 to SHAMIM / 321
+      if (parsed && (!parsed.adminUsername || parsed.adminUsername === 'ADMIN') && (!parsed.adminPassword || parsed.adminPassword === '123')) {
+        parsed.adminUsername = 'SHAMIM';
+        parsed.adminPassword = '321';
+        changed = true;
+      }
+      if (changed) {
         localStorage.setItem(KEYS.SETTINGS, JSON.stringify(parsed));
       }
       return { ...DEFAULT_SETTINGS, ...parsed };
