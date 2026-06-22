@@ -120,6 +120,20 @@ export default function App() {
   const [billingAddress, setBillingAddress] = useState<string>('');
   const [paymentOption, setPaymentOption] = useState<'Cash on Delivery' | 'bKash' | 'Nagad' | 'SSLCommerz'>('Cash on Delivery');
   
+  // Auto-fallback if the currently selected paymentOption is disabled from Admin Panel settings
+  useEffect(() => {
+    const activeMethods = [
+      { id: 'Cash on Delivery', enabled: settings.enableCOD !== false },
+      { id: 'bKash', enabled: settings.enableBkash !== false },
+      { id: 'Nagad', enabled: settings.enableNagad !== false },
+      { id: 'SSLCommerz', enabled: settings.enableSSLCommerz !== false }
+    ].filter(m => m.enabled);
+    
+    if (activeMethods.length > 0 && !activeMethods.some(m => m.id === paymentOption)) {
+      setPaymentOption(activeMethods[0].id as any);
+    }
+  }, [settings.enableCOD, settings.enableBkash, settings.enableNagad, settings.enableSSLCommerz, paymentOption]);
+  
   // Payment simulator visual display
   const [paySimulator, setPaySimulator] = useState<{ active: boolean; method: typeof paymentOption; amount: number } | null>(null);
   const [latestPlacedOrder, setLatestPlacedOrder] = useState<Order | null>(null);
@@ -2964,92 +2978,128 @@ export default function App() {
                     ⚡ SELECT PAYMENT METHOD (পেমেন্ট পদ্ধতি নির্ধারণ করুন) :*
                   </div>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 pt-3">
+
+                  {/* Two-column responsive layout: Product Image Preview on the Left, Payment option on the Right. Submit Order is placed neatly below them */}
+                  <div className="pt-4 border-t border-stone-300 space-y-5">
                     
-                    <label className={`flex items-center gap-3 p-3.5 border-2 cursor-pointer select-none transition-all ${paymentOption === 'Cash on Delivery' ? 'border-black bg-stone-950/5' : 'border-stone-900 bg-[#DCDCDC] hover:bg-stone-300'}`}>
-                      <input
-                        id="pay-method-cod"
-                        type="radio"
-                        name="payment_opt"
-                        className="h-4 w-4 accent-black"
-                        checked={paymentOption === 'Cash on Delivery'}
-                        onChange={() => setPaymentOption('Cash on Delivery')}
-                      />
-                      <div>
-                        <span className="font-bold text-stone-900 text-xs block uppercase">Cash on Delivery (ক্যাশ অন ডেলিভারি)</span>
-                        <span className="text-[11px] text-stone-600 font-medium">হাতে পণ্য পেয়ে মূল্য পরিশোধ করুন</span>
+                    {/* Top Row: Left Image column, Right Payment Column */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-5 animate-fade-in">
+                      
+                      {/* Left Column: Beautiful Clean Product Image Frame (No text or badge overlays) */}
+                      <div className="bg-white border-2 border-stone-900 p-2 rounded-none flex items-center justify-center">
+                        {cart.length > 0 ? (
+                          <div className="w-full relative aspect-[4/3] bg-white flex items-center justify-center overflow-hidden select-none">
+                            <img 
+                              src={cart[0].product.image} 
+                              alt={cart[0].product.name} 
+                              className="w-full h-full object-cover rounded-none"
+                              referrerPolicy="no-referrer"
+                            />
+                          </div>
+                        ) : (
+                          <div className="h-full flex flex-col items-center justify-center text-center p-6 space-y-2">
+                            <span className="text-3xl">📦</span>
+                            <p className="text-[11px] font-bold text-stone-500 uppercase tracking-widest">NO PRODUCTS IN CART</p>
+                          </div>
+                        )}
                       </div>
-                    </label>
 
-                    <label className={`flex items-center gap-3 p-3.5 border-2 cursor-pointer select-none transition-all ${paymentOption === 'bKash' ? 'border-black bg-stone-950/5' : 'border-stone-900 bg-[#DCDCDC] hover:bg-stone-300'}`}>
-                      <input
-                        id="pay-method-bkash"
-                        type="radio"
-                        name="payment_opt"
-                        className="h-4 w-4 accent-black"
-                        checked={paymentOption === 'bKash'}
-                        onChange={() => setPaymentOption('bKash')}
-                      />
-                      <div>
-                        <span className="font-extrabold text-[#e11e5f] text-xs block uppercase">bKash Mobile Wallet (বিকাশ)</span>
-                        <span className="text-[11px] text-[#e11e5f] font-bold">বিকাশ ওয়ালেট থেকে পেমেন্ট করুন</span>
+                      {/* Right Column: Dynamic Payment Switchboards */}
+                      <div className="bg-stone-100 border-2 border-stone-900 p-4 rounded-none flex flex-col justify-center space-y-3">
+                        <span className="text-[10px] font-black tracking-widest text-[#0E6C57] uppercase block">⚡ SELECT PAYMENT SYSTEM (পেমেন্ট পদ্ধতি)</span>
+                        
+                        <div className="space-y-2.5">
+                          {/* Cash on Delivery option if enabled */}
+                          {settings.enableCOD !== false && (
+                            <label className={`flex items-start gap-3 p-3 border-2 cursor-pointer select-none transition-all ${paymentOption === 'Cash on Delivery' ? 'border-black bg-stone-950/5' : 'border-stone-300 bg-white hover:border-stone-400'}`}>
+                              <input
+                                type="radio"
+                                name="payment_opt_real"
+                                className="h-4 w-4 mt-0.5 accent-black"
+                                checked={paymentOption === 'Cash on Delivery'}
+                                onChange={() => setPaymentOption('Cash on Delivery')}
+                              />
+                              <div>
+                                <span className="font-bold text-stone-900 text-xs block uppercase">Cash on Delivery (ক্যাশ অন ডেলিভারি)</span>
+                                <span className="text-[11px] text-stone-600 font-semibold font-sans block leading-tight mt-1">হাতে পণ্য পেয়ে মূল্য পরিশোধ করুন</span>
+                              </div>
+                            </label>
+                          )}
+
+                          {/* bKash option if enabled */}
+                          {settings.enableBkash !== false && (
+                            <label className={`flex items-start gap-3 p-3 border-2 cursor-pointer select-none transition-all ${paymentOption === 'bKash' ? 'border-[#e11e5f] bg-[#e11e5f]/5' : 'border-stone-300 bg-white hover:border-stone-400'}`}>
+                              <input
+                                type="radio"
+                                name="payment_opt_real"
+                                className="h-4 w-4 mt-0.5 accent-[#e11e5f]"
+                                checked={paymentOption === 'bKash'}
+                                onChange={() => setPaymentOption('bKash')}
+                              />
+                              <div>
+                                <span className="font-extrabold text-[#e11e5f] text-xs block uppercase">bKash (বিকাশ ওয়ালেট)</span>
+                                <span className="text-[11px] text-[#e11e5f] font-semibold font-sans block leading-tight mt-1 font-sans">বিকাশ ওয়ালেট থেকে পেমেন্ট করুন</span>
+                              </div>
+                            </label>
+                          )}
+
+                          {/* Nagad option if enabled */}
+                          {settings.enableNagad !== false && (
+                            <label className={`flex items-start gap-3 p-3 border-2 cursor-pointer select-none transition-all ${paymentOption === 'Nagad' ? 'border-[#E65100] bg-[#E65100]/5' : 'border-stone-300 bg-white hover:border-stone-400'}`}>
+                              <input
+                                type="radio"
+                                name="payment_opt_real"
+                                className="h-4 w-4 mt-0.5 tracking-wide accent-[#E65100]"
+                                checked={paymentOption === 'Nagad'}
+                                onChange={() => setPaymentOption('Nagad')}
+                              />
+                              <div>
+                                <span className="font-extrabold text-[#E65100] text-xs block uppercase">Nagad (নগদ ওয়ালেট)</span>
+                                <span className="text-[11px] text-[#E65100] font-semibold font-sans block leading-tight mt-1 font-sans">নগদ ওয়ালেট থেকে পেমেন্ট করুন</span>
+                              </div>
+                            </label>
+                          )}
+
+                          {/* SSLCommerz option if enabled */}
+                          {settings.enableSSLCommerz !== false && (
+                            <label className={`flex items-start gap-3 p-3 border-2 cursor-pointer select-none transition-all ${paymentOption === 'SSLCommerz' ? 'border-black bg-stone-950/5' : 'border-stone-400 bg-white hover:border-stone-400'}`}>
+                              <input
+                                type="radio"
+                                name="payment_opt_real"
+                                className="h-4 w-4 mt-0.5 accent-black"
+                                checked={paymentOption === 'SSLCommerz'}
+                                onChange={() => setPaymentOption('SSLCommerz')}
+                              />
+                              <div>
+                                <span className="font-bold text-stone-900 text-xs block uppercase">SSLCommerz Sandbox</span>
+                                <span className="text-[11px] text-stone-600 font-semibold font-sans block leading-tight mt-1">কার্ড বা অন্য অনলাইন ব্যাংকিং</span>
+                              </div>
+                            </label>
+                          )}
+
+                          {/* If no gateways are enabled */}
+                          {settings.enableCOD === false && settings.enableBkash === false && settings.enableNagad === false && settings.enableSSLCommerz === false && (
+                            <div className="p-4 bg-red-50 border-2 border-red-500 text-red-700 text-xs text-center font-bold">
+                              ⚠️ NO ACTIVE GATEWAYS AVAILABLE AT THE MOMENT.
+                            </div>
+                          )}
+
+                        </div>
                       </div>
-                    </label>
 
-                    <label className={`flex items-center gap-3 p-3.5 border-2 cursor-pointer select-none transition-all ${paymentOption === 'Nagad' ? 'border-black bg-stone-950/5' : 'border-stone-900 bg-[#DCDCDC] hover:bg-stone-300'}`}>
-                      <input
-                        id="pay-method-nagad"
-                        type="radio"
-                        name="payment_opt"
-                        className="h-4 w-4 accent-black"
-                        checked={paymentOption === 'Nagad'}
-                        onChange={() => setPaymentOption('Nagad')}
-                      />
-                      <div>
-                        <span className="font-extrabold text-[#E65100] text-xs block uppercase">Nagad Mobile Wallet (নগদ)</span>
-                        <span className="text-[11px] text-[#E65100] font-bold">নগদ ওয়ালেট থেকে পেমেন্ট করুন</span>
-                      </div>
-                    </label>
+                    </div>
 
-                    <label className={`flex items-center gap-3 p-3.5 border-2 cursor-pointer select-none transition-all ${paymentOption === 'SSLCommerz' ? 'border-black bg-stone-950/5' : 'border-stone-900 bg-[#DCDCDC] hover:bg-stone-300'}`}>
-                      <input
-                        id="pay-method-ssl"
-                        type="radio"
-                        name="payment_opt"
-                        className="h-4 w-4 accent-black"
-                        checked={paymentOption === 'SSLCommerz'}
-                        onChange={() => setPaymentOption('SSLCommerz')}
-                      />
-                      <div>
-                        <span className="font-bold text-stone-900 text-xs block uppercase">SSLCommerz Sandbox Interface</span>
-                        <span className="text-[11px] text-stone-600 font-medium font-bold">কার্ড বা অন্য অনলাইন ব্যাংকিং</span>
-                      </div>
-                    </label>
+                    {/* Bottom Row: Order Placement button with Bengali notice */}
+                    <div className="pt-4 border-t border-stone-200">
+                      <button
+                        id="place-order-submit-btn"
+                        type="submit"
+                        className="w-full bg-black hover:bg-stone-900 text-[#FAFAFA] font-extrabold py-4 text-center shadow cursor-pointer text-sm active:scale-95 transition-all uppercase tracking-wider flex items-center justify-center gap-2 border-2 border-stone-900 animate-pulse"
+                      >
+                        ⚡ CONFIRM SECURE ORDER (অর্ডার নিশ্চিত করুন)
+                      </button>
+                    </div>
 
-                  </div>
-
-                  {/* Blue check Terms Agreement exactly matching the blue checkbox text at the bottom order form */}
-                  <div className="pt-4 border-t border-stone-300 flex items-center justify-center gap-2">
-                    <input 
-                      id="chk-terms-agree"
-                      type="checkbox" 
-                      className="h-4 w-4 accent-[#0000FF]" 
-                      defaultChecked={true} 
-                      required
-                    />
-                    <label htmlFor="chk-terms-agree" className="chk-terms-label cursor-pointer select-none font-bold text-xs text-[#0000FF] uppercase tracking-wide">
-                      I AGREE TO ALL THE TERMS AND CONDITIONS (আমি শর্তাবলীতে সম্মতি জানাচ্ছি)
-                    </label>
-                  </div>
-
-                  <div className="pt-2">
-                    <button
-                      id="place-order-submit-btn"
-                      type="submit"
-                      className="w-full bg-black hover:bg-stone-900 text-[#FAFAFA] font-extrabold py-3.5 text-center shadow cursor-pointer text-sm active:scale-95 transition-all uppercase tracking-wider flex items-center justify-center gap-2 border-2 border-stone-900 animate-pulse"
-                    >
-                      ⚡ CONFIRM SECURE ORDER (অর্ডার নিশ্চিত করুন)
-                    </button>
                   </div>
                 </div>
                 </form>
@@ -3224,433 +3274,59 @@ export default function App() {
 
         {/* VIEW 9.5: ORDER CONFIRMATION / SUCCESS PAGE */}
         {activeTab === 'order-confirmation' && latestPlacedOrder && (
-          <div className="max-w-3xl mx-auto space-y-10 animate-fade-in text-slate-800 py-6 sm:py-10 relative">
+          <div className="max-w-xl mx-auto space-y-8 animate-fade-in text-slate-800 py-12 px-4 text-center">
             
-            {/* Animated celebration background sparks (pure CSS) */}
-            <div className="absolute inset-0 pointer-events-none overflow-hidden z-0">
+            {/* Celebration Sparkles background (pure CSS) */}
+            <div className="absolute inset-x-0 top-0 pointer-events-none overflow-hidden z-0 h-96">
               <div className="absolute top-10 left-1/4 w-2 h-2 bg-yellow-400 rounded-full animate-ping" style={{ animationDuration: '3s' }}></div>
               <div className="absolute top-20 right-1/4 w-3 h-3 bg-[#F97316] rounded-full animate-ping" style={{ animationDuration: '4s' }}></div>
               <div className="absolute top-40 left-10 w-2.5 h-2.5 bg-emerald-400 rounded-full animate-ping" style={{ animationDuration: '2.5s' }}></div>
               <div className="absolute top-60 right-12 w-2 h-2 bg-indigo-400 rounded-full animate-ping" style={{ animationDuration: '5s' }}></div>
             </div>
 
-            <div className="text-center space-y-4 relative z-10">
-              <div className="inline-flex items-center justify-center h-24 w-24 rounded-full bg-emerald-50 text-emerald-600 border-4 border-emerald-500/20 shadow-md animate-bounce">
-                <CheckCircle2 className="h-12 w-12 animate-pulse text-emerald-600" />
-              </div>
-              <div className="space-y-4 max-w-xl mx-auto">
-                <span className="text-[10px] bg-emerald-100/90 text-emerald-800 border border-emerald-200 px-4 py-1.5 rounded-full font-black uppercase tracking-widest font-sans inline-block animate-pulse">
-                  ✓ ORDER PLACED & CONFIRMED SUCCESSFULLY
-                </span>
-                <h2 className="font-display font-black text-3.5xl sm:text-4xl text-neutral-900 leading-none">
-                  ALHAMDULILLAH! ORDER CONFIRMED
-                </h2>
-                <p className="text-[12px] text-slate-500 font-medium font-sans leading-relaxed px-4">
-                  আপনার অর্ডারটি সফলভাবে গ্রহণ করা হয়েছে। BAZAR THOLE এর সাথে থাকার জন্য আপনাকে অসংখ্য ধন্যবাদ! Our harvest dispatch team has completed verification and is preparing packaging.
-                </p>
+            <div className="inline-flex items-center justify-center h-24 w-24 rounded-full bg-emerald-50 text-emerald-600 border-4 border-emerald-500/20 shadow-md animate-bounce relative z-10">
+              <CheckCircle2 className="h-12 w-12 text-emerald-600 animate-pulse" />
+            </div>
 
-                {/* Elegantly styled Redirection countdown matching original look */}
-                <div className="inline-flex items-center gap-2.5 bg-[#FAF5EE] border-2 border-stone-900 px-4 py-1.5 rounded-full text-[11px] font-black uppercase tracking-widest text-[#0E6C57] shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] select-none">
+            <div className="bg-white border-2 border-stone-900 p-8 rounded-3xl shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] space-y-6 relative overflow-hidden z-10">
+              <div className="space-y-4">
+                <h2 className="font-sans font-black text-2xl sm:text-3xl text-stone-950 leading-tight">
+                  আলহামদুলিল্লাহ! আপনার অর্ডারটি কনফার্ম হয়েছে।
+                </h2>
+                <p className="text-sm font-semibold text-emerald-700 font-sans leading-relaxed max-w-sm mx-auto">
+                  আমাদের একজন প্রতিনিধি যত দ্রুত সম্ভব আপনার সাথে যোগাযোগ করবে।
+                </p>
+              </div>
+
+              {/* Dynamic Tracking Code Block */}
+              <div className="bg-stone-50 border-2 border-dashed border-stone-300 p-5 rounded-2xl space-y-3">
+                <span className="text-[10px] font-black text-stone-400 block uppercase tracking-widest leading-none">YOUR TRACKING ID (ট্র্যাকিং আইডি):</span>
+                <div className="flex items-center justify-center gap-2 mt-2">
+                  <strong className="text-stone-950 font-mono text-base tracking-widest uppercase bg-white border border-stone-300 px-3 py-1.5 rounded">
+                    {latestPlacedOrder.trackingCode}
+                  </strong>
+                  <button
+                    onClick={() => {
+                      navigator.clipboard.writeText(latestPlacedOrder.trackingCode);
+                      triggerToast('📋 Tracking ID copied safely to device!');
+                    }}
+                    className="p-2.5 bg-white hover:bg-stone-50 border border-stone-350 rounded-xl text-emerald-650 text-emerald-600 transition-colors cursor-pointer active:scale-95 shadow-sm flex items-center justify-center"
+                    title="Copy Tracking ID"
+                    type="button"
+                  >
+                    <Copy className="h-4 w-4" />
+                  </button>
+                </div>
+              </div>
+
+              {/* Redirection countdown clock */}
+              <div className="pt-2">
+                <div className="inline-flex items-center gap-2.5 bg-[#FAF5EE] border-2 border-stone-900 px-4 py-2 rounded-full text-xs font-black uppercase tracking-widest text-[#0E6C57] shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] select-none">
                   <span>⏱️ REDIRECTING TO HOME IN</span>
                   <span className="bg-[#0E6C57] text-[#FAF5EE] px-1.5 py-0.5 rounded text-xs font-mono font-black">{successCountdown}</span>
                   <span>SECONDS</span>
                 </div>
               </div>
-            </div>
-
-            {/* Interactive order flow tracking timeline */}
-            <div className="bg-white border-2 border-stone-900 p-6 rounded-3xl shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] relative z-10">
-              <h3 className="text-xs font-black uppercase tracking-widest text-stone-900 mb-6 flex items-center gap-2">
-                <span>📍</span> DELIVERY LIFECYCLE SEQUENCE (অর্ডারের অগ্রগতি ট্র্যাকিং):
-              </h3>
-              <div className="grid grid-cols-4 gap-2 relative">
-                {/* Connecting bar */}
-                <div className="absolute top-4 left-[12%] right-[12%] h-[3px] bg-stone-200 -z-10">
-                  <div className="h-full bg-emerald-550 w-[25%] animate-pulse"></div>
-                </div>
-                
-                <div className="flex flex-col items-center text-center space-y-2">
-                  <div className="w-8 h-8 rounded-full bg-emerald-600 text-white font-bold text-xs flex items-center justify-center border-2 border-stone-900 shadow">✓</div>
-                  <span className="text-[10px] font-black uppercase tracking-tight text-stone-900">Ordered</span>
-                  <p className="text-[8.5px] text-slate-400 font-sans hidden sm:block font-medium">Logged & Verified</p>
-                </div>
-
-                <div className="flex flex-col items-center text-center space-y-2">
-                  <div className="w-8 h-8 rounded-full bg-emerald-50 text-emerald-700 font-bold text-xs flex items-center justify-center border-2 border-dashed border-emerald-600 animate-pulse">2</div>
-                  <span className="text-[10px] font-black uppercase tracking-tight text-emerald-700">Processing</span>
-                  <p className="text-[8.5px] text-slate-400 font-sans hidden sm:block font-medium">Harvest Packaging</p>
-                </div>
-
-                <div className="flex flex-col items-center text-center space-y-2">
-                  <div className="w-8 h-8 rounded-full bg-stone-100 text-stone-400 font-bold text-xs flex items-center justify-center border-2 border-stone-300">3</div>
-                  <span className="text-[10px] font-black uppercase tracking-tight text-stone-500">On The Way</span>
-                  <p className="text-[8.5px] text-slate-400 font-sans hidden sm:block font-medium">Rider Dispatched</p>
-                </div>
-
-                <div className="flex flex-col items-center text-center space-y-2">
-                  <div className="w-8 h-8 rounded-full bg-stone-100 text-stone-400 font-bold text-xs flex items-center justify-center border-2 border-stone-300">4</div>
-                  <span className="text-[10px] font-black uppercase tracking-tight text-stone-500">Delivered</span>
-                  <p className="text-[8.5px] text-slate-400 font-sans hidden sm:block font-medium">Safe Door Handover</p>
-                </div>
-              </div>
-            </div>
-
-            {/* Core Billing and Receipt Details Breakdown - Cash Memo Theme */}
-            <div className="bg-amber-50/40 border-2 border-stone-900 rounded-3xl p-6 md:p-8 shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] space-y-6 relative overflow-hidden z-10">
-              
-              {/* Authenticity Red Ink Stamp overlay */}
-              <div className="absolute top-1/2 left-2/3 -translate-x-1/2 -translate-y-1/2 pointer-events-none select-none opacity-15 rotate-12 scale-125 border-4 border-double border-red-650 text-red-600 font-mono font-black py-2.5 px-5 rounded-xl uppercase text-center shrink-0 min-w-[210px] hidden sm:block">
-                <span className="text-xs tracking-wider block">✓ VERIFIED LOGISTICS</span>
-                <span className="text-lg font-black block mt-0.5">BAZAR THOLE</span>
-                <span className="text-[9px] block">100% SECURE SANDBOX</span>
-              </div>
-
-              {/* Receipt Header summary */}
-              <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 pb-5 border-b-2 border-dashed border-stone-350">
-                <div>
-                  <span className="text-[10px] font-black text-stone-500 block uppercase tracking-widest leading-none">OFFICIAL UNIQUE TRACKING CODE:</span>
-                  <div className="flex items-center gap-2 mt-2">
-                    <strong className="text-stone-900 font-mono text-lg tracking-widest uppercase bg-white border border-stone-300 px-3 py-1 rounded">
-                      {latestPlacedOrder.trackingCode}
-                    </strong>
-                    <button
-                      onClick={() => {
-                        navigator.clipboard.writeText(latestPlacedOrder.trackingCode);
-                        triggerToast('📋 Tracking Code copied safely to device!');
-                      }}
-                      className="p-2 bg-white hover:bg-stone-100 border border-stone-350 rounded text-stone-605 text-emerald-600 transition-colors cursor-pointer active:scale-95"
-                      title="Copy Code"
-                      type="button"
-                    >
-                      <Copy className="h-4 w-4" />
-                    </button>
-                  </div>
-                </div>
-                
-                <div className="text-left sm:text-right">
-                  <span className="text-[10px] font-black text-stone-500 block uppercase tracking-widest leading-none">ORDER RECEIVED ON:</span>
-                  <strong className="text-stone-800 font-sans text-xs mt-2 block font-extrabold uppercase bg-stone-100 py-1.5 px-3 border border-stone-300 rounded inline-block">
-                    📅 {new Date(latestPlacedOrder.orderDate).toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short' })}
-                  </strong>
-                </div>
-              </div>
-
-              {/* Delivery Details Block */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 text-xs border-b border-solid border-stone-200 pb-5">
-                <div className="space-y-2">
-                  <h4 className="font-display font-black text-stone-900 uppercase tracking-widest text-xs flex items-center gap-1.5">
-                    <span>👤</span> Delivery Recipient Info (গ্রাহকের বিবরণ)
-                  </h4>
-                  <div className="font-sans font-medium text-stone-700 p-4 rounded-xl bg-white border border-stone-200 shadow-sm leading-relaxed space-y-1.5">
-                    <p className="block font-black text-stone-900 border-b border-stone-100 pb-1 text-[13px]">{latestPlacedOrder.customerName}</p>
-                    <p className="block font-mono text-stone-800 font-bold text-xs">📞 {latestPlacedOrder.phone}</p>
-                    <p className="text-stone-600 font-sans">🏠 {latestPlacedOrder.address}, {latestPlacedOrder.city}</p>
-                  </div>
-                </div>
-
-                <div className="space-y-2">
-                  <h4 className="font-display font-black text-stone-900 uppercase tracking-widest text-xs flex items-center gap-1.5">
-                    <span>💵</span> Payment Configuration (পেমেন্ট স্ট্যাটাস)
-                  </h4>
-                  <div className="p-4 rounded-xl bg-white border border-stone-200 shadow-sm space-y-3">
-                    <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-emerald-50 text-emerald-800 border border-emerald-200 rounded-lg text-xs font-black uppercase tracking-wider font-sans">
-                      <span>💳</span>
-                      <span>{latestPlacedOrder.paymentMethod}</span>
-                    </div>
-                    <div>
-                      <span className="text-[10px] font-bold text-stone-400 uppercase tracking-wider block">Gateway Validation:</span>
-                      <strong className={`text-xs uppercase font-sans font-black tracking-tight ${latestPlacedOrder.paymentStatus === 'Paid' ? 'text-emerald-600' : 'text-amber-600'}`}>
-                        {latestPlacedOrder.paymentStatus === 'Paid' ? '● Paid & Secured via Sandbox' : '● Cash On Delivery Pending Manual Verification'}
-                      </strong>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Purchased Products itemized summary list */}
-              <div className="space-y-4">
-                <h4 className="font-display font-black text-stone-900 uppercase tracking-widest text-[11px] flex items-center gap-1.5">
-                  <span>🛍️</span> ITEMISED INVOICE PARTICULARS (ক্রয়কৃত পণ্যের তালিকা)
-                </h4>
-                
-                <div className="divide-y divide-stone-200 border-2 border-stone-900 rounded-2xl overflow-hidden shadow-sm bg-white">
-                  {latestPlacedOrder.items.map((item, idx) => (
-                    <div key={idx} className="flex items-center justify-between p-4 leading-tight hover:bg-stone-50 transition-colors">
-                      <div className="flex items-center gap-3">
-                        <img src={item.image} className="h-12 w-12 rounded-lg object-cover border-2 border-stone-900 shrink-0" alt="" />
-                        <div>
-                          <span className="font-black text-stone-900 text-xs block truncate max-w-[200px] sm:max-w-md">{item.productName}</span>
-                          <span className="text-[10px] text-stone-500 block mt-1 font-sans font-bold">Quantity: {item.quantity} x {item.unit} (৳{item.price}/{item.unit})</span>
-                        </div>
-                      </div>
-                      <span className="font-mono font-black text-stone-900 text-xs text-right shrink-0">
-                        ৳ {(item.price * item.quantity).toLocaleString('en-US')}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Financial Computation Panel */}
-              <div className="border-t-2 border-dashed border-stone-350 pt-5 space-y-2.5 text-stone-700 font-semibold text-xs font-sans">
-                <div className="flex justify-between">
-                  <span className="font-bold">Subtotal Sum (উপমোট পণ্য মূল্য):</span>
-                  <span className="text-stone-900 font-mono font-bold">৳ {latestPlacedOrder.subtotal.toLocaleString('en-US')}</span>
-                </div>
-
-                {latestPlacedOrder.discount > 0 && (
-                  <div className="flex justify-between text-red-650">
-                    <span className="font-bold text-red-650">Savings Applied Promo (কুপন ডিসকাউন্ট):</span>
-                    <span className="font-mono font-black text-red-600">- ৳ {latestPlacedOrder.discount.toLocaleString('en-US')}</span>
-                  </div>
-                )}
-
-                <div className="flex justify-between">
-                  <span className="font-bold">Shipping & Home Delivery Charge (ডেলিভারি চার্জ):</span>
-                  <span className="text-stone-900 font-mono font-bold">
-                    {latestPlacedOrder.deliveryFee === 0 ? 'FREE (ফ্রি ডেলিভারি)' : `৳ ${latestPlacedOrder.deliveryFee}`}
-                  </span>
-                </div>
-
-                <div className="border-t-2 border-stone-900 pt-4 flex justify-between font-black text-stone-950 text-sm sm:text-base bg-stone-100/60 p-3 rounded-xl border border-stone-300">
-                  <span className="uppercase tracking-wider flex items-center gap-1">
-                    <span>💰</span> NET INVOICED TOTAL (সর্বমোট বিল):
-                  </span>
-                  <span className="text-emerald-705 font-display text-lg sm:text-xl font-black">
-                    ৳ {latestPlacedOrder.total.toLocaleString('en-US')}
-                  </span>
-                </div>
-              </div>
-
-            </div>
-
-            {/* ACTION CTAs FOR INTERACTIVE NAVIGATION (Track Order Live / Helpline Calls / WhatsApp) */}
-            <div className="grid grid-cols-1 sm:grid-cols-4 gap-3 relative z-10">
-              
-              {/* Track live */}
-              <button
-                onClick={() => {
-                  setTrackCodeInput(latestPlacedOrder.trackingCode);
-                  setTrackedOrder(latestPlacedOrder);
-                  setTrackSearchError(false);
-                  setActiveTab('tracking');
-                }}
-                className="w-full bg-[#022B28] hover:bg-neutral-900 text-[#FAF5EE] rounded-2xl py-3.5 text-center cursor-pointer font-black transition-all text-xs uppercase tracking-widest active:scale-95 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-none border border-stone-900 flex items-center justify-center gap-2"
-                type="button"
-              >
-                🔍 Live Delivery status
-              </button>
-
-              {/* Support WhatsApp */}
-              <button
-                onClick={() => {
-                  const inquiryMsg = `Hello support! I successfully confirmed my BAZAR THOLE order. Tracking ID: ${latestPlacedOrder.trackingCode}. Total billing: ৳${latestPlacedOrder.total}. Please process it as soon as possible!`;
-                  window.open(`https://wa.me/${settings.phone.replace(/[^0-9]/g, '')}?text=${encodeURIComponent(inquiryMsg)}`, '_blank');
-                }}
-                className="w-full bg-[#12a14b] hover:bg-green-700 text-white rounded-2xl py-3.5 text-center cursor-pointer font-bold transition-all text-xs uppercase tracking-wider active:scale-95 flex items-center justify-center gap-1.5 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-none border border-stone-900"
-                type="button"
-              >
-                <span>💬</span>
-                WhatsApp Confirm
-              </button>
-
-              {/* Keep shopping */}
-              <button
-                onClick={() => {
-                  setActiveTab('home');
-                }}
-                className="w-full bg-orange-500 hover:bg-orange-600 text-white rounded-2xl py-3.5 text-center cursor-pointer font-bold transition-all text-xs uppercase tracking-wider active:scale-95 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-none border border-stone-900 animate-wiggle-action"
-                type="button"
-              >
-                🏪 Continue Shopping
-              </button>
-
-              {/* Print Invoice button */}
-              <button
-                onClick={() => {
-                  try {
-                    const cleanStoreName = 'BAZAR THOLE';
-                    const qrData = `ORDER-REPORT: #${latestPlacedOrder.id}\nCustomer: ${latestPlacedOrder.customerName}\nPhone: ${latestPlacedOrder.phone}\nTotal Amount: ৳${latestPlacedOrder.total}\nTracking Code: ${latestPlacedOrder.trackingCode || 'N/A'}\nItems:\n${latestPlacedOrder.items.map(it => ` - ${it.productName} (${it.quantity}x)`).join('\n')}`;
-                    const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(qrData)}`;
-                    
-                    const reportHtml = `<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BAZAR_THOLE_INVOICE_REPORT_${latestPlacedOrder.id}</title>
-    <style>
-        body { font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; color: #1e293b; margin: 0; padding: 40px; background-color: #f8fafc; }
-        .invoice-card { max-width: 800px; margin: 0 auto; background: white; border: 1px solid #e2e8f0; padding: 40px; border-radius: 20px; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.05); }
-        .header { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 3px solid #00796B; padding-bottom: 24px; margin-bottom: 32px; }
-        .logo-section h1 { margin: 0; color: #00796B; font-size: 32px; font-weight: 900; letter-spacing: -1px; text-transform: uppercase; }
-        .logo-section p { margin: 6px 0 0; font-size: 11px; text-transform: uppercase; color: #64748b; font-family: monospace; font-weight: bold; letter-spacing: 2px; }
-        .invoice-meta { text-align: right; }
-        .invoice-meta h2 { margin: 0; font-size: 24px; color: #0f172a; font-weight: 850; letter-spacing: -0.5px; }
-        .invoice-meta p { margin: 6px 0 0; font-size: 12px; font-family: monospace; color: #475569; font-weight: bold; }
-        .grid-details { display: grid; grid-template-columns: 1.2fr 0.8fr; gap: 40px; margin-bottom: 32px; }
-        .col h3 { font-size: 11px; text-transform: uppercase; color: #00796B; margin: 0 0 12px; border-bottom: 2px solid #f1f5f9; padding-bottom: 6px; font-weight: 900; letter-spacing: 1px; }
-        .col p { margin: 6px 0; font-size: 13.5px; line-height: 1.6; color: #334155; }
-        .col p strong { color: #0f172a; font-weight: 600; }
-        .qr-section { text-align: center; border: 1px solid #e2e8f0; padding: 20px; border-radius: 16px; background: #f8fafc; display: inline-block; box-shadow: inset 0 2px 4px 0 rgba(0, 0, 0, 0.02); }
-        .qr-section img { display: block; margin: 0 auto 12px; width: 140px; height: 140px; border-radius: 8px; }
-        .qr-section span { font-size: 10px; font-family: monospace; color: #64748b; text-transform: uppercase; font-weight: 800; letter-spacing: 0.5px; }
-        table { width: 100%; border-collapse: collapse; margin-bottom: 32px; }
-        th { background-color: #00796B; color: white; text-align: left; padding: 12px; font-size: 11px; text-transform: uppercase; font-weight: 800; letter-spacing: 1px; }
-        td { padding: 14px 12px; border-bottom: 1px solid #f1f5f9; font-size: 13.5px; color: #334155; }
-        .text-right { text-align: right; }
-        .totals-block { float: right; width: 40%; margin-top: 16px; border-top: 1.5px solid #cbd5e1; padding-top: 15px; }
-        .totals-row { display: flex; justify-content: space-between; font-size: 13.5px; margin-bottom: 8px; color: #475569; }
-        .totals-row.grand { font-size: 18px; font-weight: 900; border-top: 2px solid #00796B; padding-top: 12px; margin-top: 12px; color: #00796B; }
-        .footer-note { clear: both; text-align: center; margin-top: 64px; font-size: 11px; color: #64748b; border-top: 1px dashed #cbd5e1; padding-top: 24px; line-height: 1.6; }
-        @media print {
-            body { background: white; padding: 0; color: black; }
-            .invoice-card { border: none; box-shadow: none; padding: 0; max-width: 100%; }
-            .totals-block { width: 50%; }
-        }
-    </style>
-</head>
-<body>
-    <div class="invoice-card">
-        <div class="header">
-            <div class="logo-section">
-                <h1>${cleanStoreName.toUpperCase()}</h1>
-                <p>Official Verification Report & Invoice</p>
-            </div>
-            <div class="invoice-meta">
-                <h2>INVOICE #${latestPlacedOrder.id}</h2>
-                <p>DATE: ${new Date(latestPlacedOrder.orderDate).toLocaleString('en-US')}</p>
-                <p>TRACKING CODE: ${latestPlacedOrder.trackingCode || 'NOT ASSIGNED'}</p>
-            </div>
-        </div>
-        
-        <div class="grid-details">
-            <div class="col">
-                <h3>SHIPPING & PACKAGING RECIPIENT</h3>
-                <p><strong>Customer Name:</strong> ${latestPlacedOrder.customerName}</p>
-                <p><strong>Contact Phone:</strong> ${latestPlacedOrder.phone}</p>
-                <p><strong>Email Address:</strong> ${latestPlacedOrder.email || 'N/A'}</p>
-                <p><strong>City Region:</strong> ${latestPlacedOrder.city.toUpperCase()}</p>
-                <p><strong>Street Address:</strong> ${latestPlacedOrder.address}</p>
-            </div>
-            <div class="col text-right" style="display: flex; flex-direction: column; align-items: flex-end;">
-                <h3>SECURE VERIFICATION QR</h3>
-                <div class="qr-section">
-                    <img src="${qrCodeUrl}" alt="Order Verification QR Code" />
-                    <span>Scan to Verify Invoice #${latestPlacedOrder.id}</span>
-                </div>
-            </div>
-        </div>
-
-        <h3>ORDERED ITEMS DETAILS</h3>
-        <table>
-            <thead>
-                <tr style="background-color: #00796B; color: white;">
-                    <th style="padding: 12px; text-align: left;">Item Description</th>
-                    <th style="padding: 12px; text-align: right;" class="text-right">Unit Price</th>
-                    <th style="padding: 12px; text-align: right;" class="text-right">Quantity</th>
-                    <th style="padding: 12px; text-align: right;" class="text-right">Subtotal</th>
-                </tr>
-            </thead>
-            <tbody>
-                ${latestPlacedOrder.items.map(item => `
-                    <tr>
-                        <td style="padding: 12px; border-bottom: 1px solid #e2e8f0; text-align: left;">${item.productName} (${item.unit || '1 kg'})</td>
-                        <td style="padding: 12px; border-bottom: 1px solid #e2e8f0; text-align: right;" class="text-right">৳${item.price}</td>
-                        <td style="padding: 12px; border-bottom: 1px solid #e2e8f0; text-align: right;" class="text-right">${item.quantity}</td>
-                        <td style="padding: 12px; border-bottom: 1px solid #e2e8f0; text-align: right;" class="text-right">৳${item.price * item.quantity}</td>
-                    </tr>
-                `).join('')}
-            </tbody>
-        </table>
-
-        <div class="totals-block">
-            <div class="totals-row">
-                <span>Subtotal:</span>
-                <span>৳${latestPlacedOrder.subtotal}</span>
-            </div>
-            <div class="totals-row">
-                <span>Coupon Discount:</span>
-                <span>-৳${latestPlacedOrder.discount}</span>
-            </div>
-            <div class="totals-row">
-                <span>Delivery Charge:</span>
-                <span>৳${latestPlacedOrder.deliveryFee}</span>
-            </div>
-            <div class="totals-row grand">
-                <span>Grand Total:</span>
-                <span>৳${latestPlacedOrder.total}</span>
-            </div>
-            <div class="totals-row" style="margin-top: 12px; font-size: 11px; color: #64748b;">
-                <span>Payment Method:</span>
-                <span>${latestPlacedOrder.paymentMethod}</span>
-            </div>
-            <div class="totals-row" style="font-size: 11px; color: #64748b;">
-                <span>Payment Status-</span>
-                <strong style="color: ${latestPlacedOrder.paymentStatus === 'Paid' ? '#00796B' : '#f59e0b'}">${latestPlacedOrder.paymentStatus}</strong>
-            </div>
-        </div>
-
-        <div class="footer-note">
-            <p>Thank you for purchasing from ${cleanStoreName}. All fresh farm greens and grocery products are processed with verified hygienic packaging guidelines. For support, call: ${settings.phone}.</p>
-            <p style="font-family: monospace; font-size: 9px; margin-top: 12px; color: #94a3b8; letter-spacing: 0.5px;">Report Generated Safely via ${cleanStoreName} Merchant Analytics - Secure Merchant Report.</p>
-        </div>
-    </div>
-</body>
-</html>`;
-
-                    // Add auto-print script right before body ends to trigger printing as soon as the file is opened
-                    const printScript = `
-                    <script>
-                        window.onload = function() {
-                            setTimeout(function() {
-                                window.print();
-                            }, 500);
-                        };
-                    </script>
-                    `;
-                    const finalReportHtml = reportHtml.replace('</body>', `${printScript}</body>`);
-                    
-                    // Direct HTML download bypasses iframe sandboxing blocks perfectly
-                    const blob = new Blob([finalReportHtml], { type: 'text/html;charset=utf-8' });
-                    const url = URL.createObjectURL(blob);
-                    const link = document.createElement('a');
-                    link.href = url;
-                    link.download = `BAZAR_THOLE_INVOICE_REPORT_${latestPlacedOrder.id}.html`;
-                    link.style.display = 'none';
-                    document.body.appendChild(link);
-                    link.click();
-                    setTimeout(() => {
-                      document.body.removeChild(link);
-                      URL.revokeObjectURL(url);
-                    }, 300);
-
-                    // Also try to open the print window for premium desktop experience if allowed by modern browsers
-                    try {
-                      const win = window.open('', '_blank');
-                      if (win) {
-                        win.document.open();
-                        win.document.write(finalReportHtml);
-                        win.document.close();
-                      }
-                    } catch (e) {
-                      console.warn("Popup blocked, fallback download triggered successfully.");
-                    }
-
-                    triggerToast(`📥 Invoice downloaded successfully as 'BAZAR_THOLE_INVOICE_REPORT_${latestPlacedOrder.id}.html'! Open this file to print or save to PDF!`);
-                  } catch (err) {
-                    console.error("Print generation error:", err);
-                    triggerToast("⚠️ Print error. Falling back to native printer menu...");
-                    window.print();
-                  }
-                }}
-                className="w-full bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-2xl py-3.5 text-center cursor-pointer font-bold transition-all text-xs uppercase tracking-wider active:scale-95 border border-stone-300 flex items-center justify-center gap-1"
-                title="Print Receipt Invoice"
-                type="button"
-              >
-                <span>🖨️</span> PDF Invoice Print
-              </button>
-
             </div>
           </div>
         )}

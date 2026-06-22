@@ -3651,9 +3651,24 @@ VALUES ('exotics', 'Exotics (আজব ফল)', 'https://unsplash.com/...');`}
                     </div>
 
                     <div className="border-t border-slate-100 pt-5 space-y-4">
-                      <span className="text-xs font-bold text-slate-600 uppercase tracking-widest block">INTEGRATED PAYMENT CLOUD SWITCHES</span>
+                      <span className="text-xs font-bold text-slate-600 uppercase tracking-widest block">INTEGRATED PAYMENT CLOUD SWITCHES (পেমেন্ট গেটওয়ে কন্ট্রোল)</span>
                       
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {/* Cash on Delivery */}
+                        <div className="p-4 bg-slate-50 rounded-xl border flex items-center justify-between">
+                          <div>
+                            <span className="text-xs font-bold text-slate-800">Cash on Delivery (ক্যাশ অন ডেলিভারি)</span>
+                            <p className="text-[10px] text-slate-400">Enable or disable Pay on Arrival block</p>
+                          </div>
+                          <input
+                            type="checkbox"
+                            className="h-4 w-4 text-[#00796B] focus:ring-[#00796B]"
+                            checked={settingsForm.enableCOD !== false}
+                            onChange={(e) => setSettingsForm({ ...settingsForm, enableCOD: e.target.checked })}
+                          />
+                        </div>
+
+                        {/* SSLCommerz */}
                         <div className="p-4 bg-slate-50 rounded-xl border flex items-center justify-between">
                           <div>
                             <span className="text-xs font-bold text-slate-800">SSLCommerz Sandbox Gateway</span>
@@ -3667,21 +3682,45 @@ VALUES ('exotics', 'Exotics (আজব ফল)', 'https://unsplash.com/...');`}
                           />
                         </div>
 
-                        <div className="space-y-4">
-                          <div className="p-4 bg-slate-50 rounded-xl border flex items-center justify-between">
-                            <div>
-                              <span className="text-xs font-bold text-slate-800">MFS Merchant Node (bKash & Nagad)</span>
-                              <p className="text-[10px] text-slate-400">Triggers intuitive mobile wallets payment sheet</p>
-                            </div>
-                            <input
-                              type="checkbox"
-                              className="h-4 w-4 text-[#00796B] focus:ring-[#00796B]"
-                              checked={settingsForm.enableBkashNagad !== false}
-                              onChange={(e) => setSettingsForm({ ...settingsForm, enableBkashNagad: e.target.checked })}
-                            />
+                        {/* bKash */}
+                        <div className="p-4 bg-slate-50 rounded-xl border flex items-center justify-between">
+                          <div>
+                            <span className="text-xs font-bold text-slate-800">bKash Mobile Wallet (বিকাশ)</span>
+                            <p className="text-[10px] text-slate-400">Triggers intuitive bKash wallet instructions</p>
                           </div>
+                          <input
+                            type="checkbox"
+                            className="h-4 w-4 text-[#00796B] focus:ring-[#00796B]"
+                            checked={settingsForm.enableBkash !== false}
+                            onChange={(e) => setSettingsForm({ ...settingsForm, enableBkash: e.target.checked })}
+                          />
+                        </div>
 
-                          {settingsForm.enableBkashNagad !== false && (
+                        {/* Nagad */}
+                        <div className="p-4 bg-slate-50 rounded-xl border flex items-center justify-between">
+                          <div>
+                            <span className="text-xs font-bold text-slate-800">Nagad Mobile Wallet (নগদ)</span>
+                            <p className="text-[10px] text-slate-400">Triggers intuitive Nagad wallet instructions</p>
+                          </div>
+                          <input
+                            type="checkbox"
+                            className="h-4 w-4 text-[#00796B] focus:ring-[#00796B]"
+                            checked={settingsForm.enableNagad !== false}
+                            onChange={(e) => setSettingsForm({ ...settingsForm, enableNagad: e.target.checked })}
+                          />
+                        </div>
+
+                        {/* Master toggle for extra details layout */}
+                        <div className="hidden">
+                          <input
+                            type="checkbox"
+                            checked={settingsForm.enableBkashNagad !== false}
+                            onChange={(e) => setSettingsForm({ ...settingsForm, enableBkashNagad: e.target.checked })}
+                          />
+                        </div>
+
+                        <div className="space-y-4 col-span-1 md:col-span-2">
+                          {(settingsForm.enableBkash !== false || settingsForm.enableNagad !== false) && (
                             <div className="p-4 bg-orange-50/20 rounded-xl border border-orange-200/50 grid grid-cols-1 md:grid-cols-2 gap-4 animate-slide-up">
                               <div className="space-y-3">
                                 <span className="text-[10px] font-black text-[#e11e5f] uppercase tracking-wider block">💓 bKash Gateway Settings</span>

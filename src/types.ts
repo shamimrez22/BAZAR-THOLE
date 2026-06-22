@@ -133,6 +133,9 @@ export interface StoreSettings {
   vatTaxPercent?: number;
   enableSSLCommerz?: boolean;
   enableBkashNagad?: boolean;
+  enableCOD?: boolean;
+  enableBkash?: boolean;
+  enableNagad?: boolean;
   bkashNumber?: string;
   nagadNumber?: string;
   bkashInstruction?: string;
