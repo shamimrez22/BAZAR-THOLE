@@ -660,12 +660,12 @@ export default function App() {
       
       {/* Dynamic Toast Alerts banner */}
       {toastMessage && (
-        <div className="fixed top-24 left-1/2 -translate-x-1/2 z-[100] bg-[#FAF5EE] border-3 border-stone-900 text-stone-900 px-6 py-4 rounded-none shadow-[5px_5px_0px_0px_rgba(158,42,43,1)] flex flex-col gap-1 min-w-[290px] sm:min-w-[350px] max-w-md animate-slide-down">
+        <div className="fixed top-24 left-1/2 -translate-x-1/2 z-[100] bg-[#FAF5EE] border-3 border-stone-900 text-stone-900 px-6 py-4 rounded-none shadow-[5px_5px_0px_0px_rgba(0,0,0,1)] flex flex-col gap-1 min-w-[290px] sm:min-w-[350px] max-w-md animate-slide-down">
           <div className="flex items-center justify-between border-b-2 border-stone-900/10 pb-1.5 mb-1 bg-stone-100/50 -mx-6 -mt-4 px-6 py-1.5 select-none">
-            <span className="bg-[#9E2A2B] text-white font-mono text-[9px] font-black tracking-widest px-2 py-0.5 uppercase">
+            <span className="bg-black text-[#FAFAFA] font-mono text-[9px] font-black tracking-widest px-2 py-0.5 uppercase">
               ALHAMDULILLAH ✨
             </span>
-            <span className="text-[9px] text-[#9E2A2B] font-display font-black tracking-widest uppercase">
+            <span className="text-[9px] text-black font-display font-black tracking-widest uppercase">
               SYSTEM NOTIFICATION
             </span>
           </div>
@@ -2889,10 +2889,10 @@ export default function App() {
                 
                 <form id="checkout-billing-form" onSubmit={handleCheckoutSubmit} className="bg-[#FAF5EE] border-2 border-stone-900 p-0 shadow-sm space-y-0 text-sm overflow-hidden">
                   
-                  {/* Crimson Banner Head like user screenshot: "PERSONAL INFORMATION:" style */}
-                  <div className="bg-[#9E2A2B] text-white px-5 py-3 font-bold text-sm uppercase tracking-wider border-b border-stone-900 select-none flex items-center justify-between">
+                  {/* Black Banner Head like user screenshot: "PERSONAL INFORMATION:" style */}
+                  <div className="bg-black text-[#FAFAFA] px-5 py-3 font-bold text-sm uppercase tracking-wider border-b border-stone-900 select-none flex items-center justify-between">
                     <span>📋 RECIPIENT & PERSONAL DETAILS (ব্যক্তিগত এবং ডেলিভারি তথ্য)</span>
-                    <span className="text-xs bg-red-950/40 px-2 py-0.5 border border-red-700/50 font-mono font-bold">SECTIONS: ALL</span>
+                    <span className="text-xs bg-neutral-800 px-2 py-0.5 border border-neutral-700 font-mono font-bold">SECTIONS: ALL</span>
                   </div>
                   
                   <div className="p-6 space-y-5">
@@ -2959,19 +2959,19 @@ export default function App() {
                       />
                     </div>
 
-                  {/* RED CRIMSON BANNER HEAD 2 */}
-                  <div className="bg-[#9E2A2B] text-white px-4 py-2 font-bold text-xs uppercase tracking-wider relative -left-6 w-[calc(100%+3rem)] select-none mt-6 border-y border-stone-900">
+                  {/* BLACK BANNER HEAD 2 */}
+                  <div className="bg-black text-[#FAFAFA] px-4 py-2 font-bold text-xs uppercase tracking-wider relative -left-6 w-[calc(100%+3rem)] select-none mt-6 border-y border-stone-900">
                     ⚡ SELECT PAYMENT METHOD (পেমেন্ট পদ্ধতি নির্ধারণ করুন) :*
                   </div>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 pt-3">
                     
-                    <label className={`flex items-center gap-3 p-3.5 border-2 cursor-pointer select-none transition-all ${paymentOption === 'Cash on Delivery' ? 'border-[#9E2A2B] bg-[#9E2A2B]/10' : 'border-stone-900 bg-[#DCDCDC] hover:bg-stone-300'}`}>
+                    <label className={`flex items-center gap-3 p-3.5 border-2 cursor-pointer select-none transition-all ${paymentOption === 'Cash on Delivery' ? 'border-black bg-stone-950/5' : 'border-stone-900 bg-[#DCDCDC] hover:bg-stone-300'}`}>
                       <input
                         id="pay-method-cod"
                         type="radio"
                         name="payment_opt"
-                        className="h-4 w-4 accent-[#9E2A2B]"
+                        className="h-4 w-4 accent-black"
                         checked={paymentOption === 'Cash on Delivery'}
                         onChange={() => setPaymentOption('Cash on Delivery')}
                       />
@@ -2981,12 +2981,12 @@ export default function App() {
                       </div>
                     </label>
 
-                    <label className={`flex items-center gap-3 p-3.5 border-2 cursor-pointer select-none transition-all ${paymentOption === 'bKash' ? 'border-[#9E2A2B] bg-[#9E2A2B]/10' : 'border-stone-900 bg-[#DCDCDC] hover:bg-stone-300'}`}>
+                    <label className={`flex items-center gap-3 p-3.5 border-2 cursor-pointer select-none transition-all ${paymentOption === 'bKash' ? 'border-black bg-stone-950/5' : 'border-stone-900 bg-[#DCDCDC] hover:bg-stone-300'}`}>
                       <input
                         id="pay-method-bkash"
                         type="radio"
                         name="payment_opt"
-                        className="h-4 w-4 accent-[#9E2A2B]"
+                        className="h-4 w-4 accent-black"
                         checked={paymentOption === 'bKash'}
                         onChange={() => setPaymentOption('bKash')}
                       />
@@ -2996,12 +2996,12 @@ export default function App() {
                       </div>
                     </label>
 
-                    <label className={`flex items-center gap-3 p-3.5 border-2 cursor-pointer select-none transition-all ${paymentOption === 'Nagad' ? 'border-[#9E2A2B] bg-[#9E2A2B]/10' : 'border-stone-900 bg-[#DCDCDC] hover:bg-stone-300'}`}>
+                    <label className={`flex items-center gap-3 p-3.5 border-2 cursor-pointer select-none transition-all ${paymentOption === 'Nagad' ? 'border-black bg-stone-950/5' : 'border-stone-900 bg-[#DCDCDC] hover:bg-stone-300'}`}>
                       <input
                         id="pay-method-nagad"
                         type="radio"
                         name="payment_opt"
-                        className="h-4 w-4 accent-[#9E2A2B]"
+                        className="h-4 w-4 accent-black"
                         checked={paymentOption === 'Nagad'}
                         onChange={() => setPaymentOption('Nagad')}
                       />
@@ -3011,12 +3011,12 @@ export default function App() {
                       </div>
                     </label>
 
-                    <label className={`flex items-center gap-3 p-3.5 border-2 cursor-pointer select-none transition-all ${paymentOption === 'SSLCommerz' ? 'border-[#9E2A2B] bg-[#9E2A2B]/10' : 'border-stone-900 bg-[#DCDCDC] hover:bg-stone-300'}`}>
+                    <label className={`flex items-center gap-3 p-3.5 border-2 cursor-pointer select-none transition-all ${paymentOption === 'SSLCommerz' ? 'border-black bg-stone-950/5' : 'border-stone-900 bg-[#DCDCDC] hover:bg-stone-300'}`}>
                       <input
                         id="pay-method-ssl"
                         type="radio"
                         name="payment_opt"
-                        className="h-4 w-4 accent-[#9E2A2B]"
+                        className="h-4 w-4 accent-black"
                         checked={paymentOption === 'SSLCommerz'}
                         onChange={() => setPaymentOption('SSLCommerz')}
                       />
@@ -3046,7 +3046,7 @@ export default function App() {
                     <button
                       id="place-order-submit-btn"
                       type="submit"
-                      className="w-full bg-[#9E2A2B] hover:bg-[#8D2B24] text-white font-extrabold py-3.5 text-center shadow cursor-pointer text-sm active:scale-95 transition-all uppercase tracking-wider flex items-center justify-center gap-2 border-2 border-stone-900 animate-pulse"
+                      className="w-full bg-black hover:bg-stone-900 text-[#FAFAFA] font-extrabold py-3.5 text-center shadow cursor-pointer text-sm active:scale-95 transition-all uppercase tracking-wider flex items-center justify-center gap-2 border-2 border-stone-900 animate-pulse"
                     >
                       ⚡ CONFIRM SECURE ORDER (অর্ডার নিশ্চিত করুন)
                     </button>
@@ -3061,7 +3061,7 @@ export default function App() {
                 
                 {/* Applied coupons vouchers info panel */}
                 <div className="bg-[#FAF5EE] border-2 border-stone-900 p-0 shadow-sm overflow-hidden text-sm">
-                  <div className="bg-[#9E2A2B] text-white px-4 py-2.5 font-bold text-xs uppercase tracking-wider border-b border-stone-900 select-none">
+                  <div className="bg-black text-[#FAFAFA] px-4 py-2.5 font-bold text-xs uppercase tracking-wider border-b border-stone-900 select-none">
                     🎟️ PROMOTIONAL VOUCHER (কুপন ডিসকাউন্ট)
                   </div>
                   
@@ -3075,7 +3075,7 @@ export default function App() {
                         value={enteredCoupon}
                         onChange={(e) => setEnteredCoupon(e.target.value)}
                       />
-                      <button type="submit" className="bg-[#9E2A2B] hover:bg-[#8D2B24] text-white font-bold px-4 text-xs transition-colors cursor-pointer border-2 border-stone-900">APPLY</button>
+                      <button type="submit" className="bg-black hover:bg-stone-900 text-[#FAFAFA] font-bold px-4 text-xs transition-colors cursor-pointer border-2 border-stone-900">APPLY</button>
                     </form>
 
                     {couponError && <p className="text-xs text-red-650 font-bold">{couponError}</p>}
@@ -3090,7 +3090,7 @@ export default function App() {
                       </div>
                     ) : (
                       <div className="bg-stone-200 border border-stone-300 p-2 text-stone-700 text-xs text-center font-bold leading-relaxed">
-                        💡 Use coupon <strong className="font-mono text-[#9E2A2B]">BAZAR15</strong> to save 15% flat!
+                        💡 Use coupon <strong className="font-mono text-black font-extrabold">BAZAR15</strong> to save 15% flat!
                       </div>
                     )}
                   </div>
@@ -3100,15 +3100,15 @@ export default function App() {
                 <div className="bg-[#FAF5EE] border-2 border-stone-900 p-0 shadow-sm overflow-hidden text-xs">
                   
                   {/* SEAT INFORMATION header styling */}
-                  <div className="bg-[#9E2A2B] text-white px-4 py-2.5 font-bold text-xs uppercase tracking-wider flex items-center justify-between border-b border-stone-900 select-none">
+                  <div className="bg-black text-[#FAFAFA] px-4 py-2.5 font-bold text-xs uppercase tracking-wider flex items-center justify-between border-b border-stone-900 select-none">
                     <span>🛒 SEAT / ITEM CHECKOUT INFO (পণ্য চেকআউট বিবরণ)</span>
-                    <span className="font-extrabold bg-[#781B1C] px-2 py-0.5 rounded text-[10px]">{cart.length} ITEMS</span>
+                    <span className="font-extrabold bg-neutral-800 px-2 py-0.5 rounded text-[10px]">{cart.length} ITEMS</span>
                   </div>
 
                   {/* Seat table columns matching: SEAT NO - FARE - REMOVE */}
                   <table className="w-full text-left border-collapse text-xs">
                     <thead>
-                      <tr className="bg-[#8D2B24] text-white text-[10px] font-bold uppercase tracking-wider text-center border-b border-stone-900">
+                      <tr className="bg-neutral-900 text-[#FAFAFA] text-[10px] font-bold uppercase tracking-wider text-center border-b border-stone-900">
                         <th className="py-2.5 px-3 border-r border-stone-900 text-left">ITEM NAME (আইটেম / পণ্য)</th>
                         <th className="py-2.5 px-3 border-r border-stone-900">QTY (পরিমাণ)</th>
                         <th className="py-2.5 px-3">FARE (TAKA)</th>
@@ -3201,7 +3201,7 @@ export default function App() {
                         <td colSpan={2} className="py-3.5 px-3 border-r border-stone-900 text-right text-[11px] uppercase tracking-wider font-extrabold">
                           NET FARE / PAYABLE AMOUNT (সর্বমোট প্রদেয়):
                         </td>
-                        <td className="py-3.5 px-3 text-right font-mono text-sm text-[#9E2A2B] font-black">
+                        <td className="py-3.5 px-3 text-right font-mono text-sm text-black font-black">
                           ৳ {
                             (
                               cart.reduce((acc, item) => acc + item.product.price * item.quantity, 0) 
