@@ -3274,7 +3274,7 @@ export default function App() {
 
         {/* VIEW 9.5: ORDER CONFIRMATION / SUCCESS PAGE */}
         {activeTab === 'order-confirmation' && latestPlacedOrder && (
-          <div className="max-w-xl mx-auto space-y-8 animate-fade-in text-slate-800 py-12 px-4 text-center">
+          <div className="max-w-xl mx-auto space-y-8 animate-slide-from-corner text-slate-800 py-12 px-4 text-center relative">
             
             {/* Celebration Sparkles background (pure CSS) */}
             <div className="absolute inset-x-0 top-0 pointer-events-none overflow-hidden z-0 h-96">

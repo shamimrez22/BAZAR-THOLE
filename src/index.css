@@ -83,6 +83,31 @@
   animation-play-state: paused;
 }
 
+/* Beautiful slide-in from the corner with bouncy elastic decay for a delightful, organic look */
+@keyframes slideFromCorner {
+  0% {
+    opacity: 0;
+    transform: translate(-300px, 300px) scale(0.1) rotate(-35deg);
+    filter: blur(10px);
+  }
+  65% {
+    opacity: 1;
+    transform: translate(12px, -12px) scale(1.04) rotate(2deg);
+    filter: blur(0);
+  }
+  85% {
+    transform: translate(-4px, 4px) scale(0.98) rotate(-1deg);
+  }
+  100% {
+    opacity: 1;
+    transform: translate(0, 0) scale(1) rotate(0deg);
+  }
+}
+
+.animate-slide-from-corner {
+  animation: slideFromCorner 0.95s cubic-bezier(0.175, 0.885, 0.32, 1.275) both;
+}
+
 /* --- HIGH LEGIBILITY TICKET STYLE FORM CONFIGURATIONS (matches user screenshot) --- */
 
 /* Globally scaled, tight, and sharp retro-ticket typography for compact elegance */
