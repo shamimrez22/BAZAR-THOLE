@@ -3,7 +3,8 @@ import {
   BarChart3, Plus, Edit2, Trash2, Tag, ShoppingBag, Users, Image as ImageIcon, 
   Settings, Code, AlertTriangle, FileSpreadsheet, CheckCircle2, TrendingUp, DollarSign, Clock, Truck, ShieldAlert,
   Bell, Search, Menu, ArrowUpRight, Power, ChevronDown, LogOut, Check,
-  User as UserIcon, Ticket, FileText, List, RefreshCw, Megaphone, Printer
+  User as UserIcon, Ticket, FileText, List, RefreshCw, Megaphone, Printer,
+  Eye, EyeOff
 } from 'lucide-react';
 import { ResponsiveContainer, AreaChart, Area, XAxis, YAxis, Tooltip, CartesianGrid } from 'recharts';
 import { Product, Category, Order, User, Coupon, Banner, StoreSettings } from '../types';
@@ -72,6 +73,12 @@ export default function AdminPanel({ onDataChanged, onClose }: AdminPanelProps) 
   const [adminUsername, setAdminUsername] = useState('');
   const [adminPassword, setAdminPassword] = useState('');
   const [authError, setAuthError] = useState('');
+  
+  // Password visibility states (user control to show/hide)
+  const [showLoginPassword, setShowLoginPassword] = useState<boolean>(true); // Let's default login password to visible, or we can use a toggle! Wait, the user said "PASSWORD HIDE THAKBE NA DEKHA JABE" - meaning they want them visible/showable. Let's make it toggleable but default it to visible or make it easy to toggle.
+  const [showAdminPassword, setShowAdminPassword] = useState<boolean>(true); // Default to true (visible) as requested
+  const [showSmsToken, setShowSmsToken] = useState<boolean>(true);
+  const [showGmailPassword, setShowGmailPassword] = useState<boolean>(true);
 
   const [activeTab, setActiveTab] = useState<'dashboard' | 'products' | 'categories' | 'orders' | 'customers' | 'coupons' | 'banners' | 'settings' | 'developer' | 'live_notices'>('dashboard');
   const [isRefreshingOrders, setIsRefreshingOrders] = useState(false);
@@ -192,6 +199,20 @@ export default function AdminPanel({ onDataChanged, onClose }: AdminPanelProps) 
       { id: 'sl-3', label: 'IG', url: 'https://instagram.com/bazar' }
     ];
   });
+
+  // Auto-save settings on change so that everything works and propagates immediately!
+  useEffect(() => {
+    const payload: StoreSettings = {
+      ...settingsForm,
+      quickLinks,
+      socialLinksExpanded
+    };
+    db.saveSettings(payload);
+    // Keep local settings in sync as well
+    setSettings(payload);
+    // Notify parent to load the latest settings and update live UI components instantly
+    onDataChanged();
+  }, [settingsForm, quickLinks, socialLinksExpanded]);
 
   // Orders filter and query states
   const [orderFilter, setOrderFilter] = useState<'All' | 'Pending' | 'Confirmed'>('All');
@@ -668,11 +689,7 @@ export default function AdminPanel({ onDataChanged, onClose }: AdminPanelProps) 
             const providedUser = adminUsername.trim().toUpperCase();
             const providedPass = adminPassword;
 
-            if (
-              (providedUser === configuredUser && providedPass === configuredPass) ||
-              (providedUser === 'SHAMIM' && providedPass === '321') ||
-              (providedUser === 'ADMIN' && providedPass === '123')
-            ) {
+            if (providedUser === configuredUser && providedPass === configuredPass) {
               setIsAuthenticated(true);
               localStorage.setItem('bt_admin_logged', 'true');
               setAuthError('');
@@ -700,14 +717,24 @@ export default function AdminPanel({ onDataChanged, onClose }: AdminPanelProps) 
               <label className="block text-xs font-black uppercase tracking-wider text-stone-700 mb-1">
                 PASSWORD (পাসওয়ার্ড):
               </label>
-              <input
-                type="password"
-                placeholder="••••••••"
-                required
-                className="w-full border-2 border-stone-900 bg-white rounded-lg px-4 py-3 text-xs font-bold focus:bg-stone-50 focus:outline-none tracking-widest"
-                value={adminPassword}
-                onChange={(e) => setAdminPassword(e.target.value)}
-              />
+              <div className="relative">
+                <input
+                  type={showLoginPassword ? "text" : "password"}
+                  placeholder="••••••••"
+                  required
+                  className={`w-full border-2 border-stone-900 bg-white rounded-lg pl-4 pr-12 py-3 text-xs font-bold focus:bg-stone-50 focus:outline-none ${!showLoginPassword ? 'tracking-widest' : ''}`}
+                  value={adminPassword}
+                  onChange={(e) => setAdminPassword(e.target.value)}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowLoginPassword(!showLoginPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-stone-600 hover:text-stone-900 focus:outline-none"
+                  title={showLoginPassword ? "Hide Password" : "Show Password"}
+                >
+                  {showLoginPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                </button>
+              </div>
             </div>
 
             {authError && (
@@ -3510,12 +3537,22 @@ VALUES ('exotics', 'Exotics (আজব ফল)', 'https://unsplash.com/...');`}
                       </div>
                       <div>
                         <label className="block text-xs font-bold text-slate-500 mb-1">SMS GATEWAY API TOKEN</label>
-                        <input
-                          type="password"
-                          className="w-full border border-slate-200 rounded-lg px-3 py-2 text-xs font-mono focus:outline-none focus:border-[#00796B]"
-                          value={settingsForm.smsApiToken || ''}
-                          onChange={(e) => setSettingsForm({ ...settingsForm, smsApiToken: e.target.value })}
-                        />
+                        <div className="relative">
+                          <input
+                            type={showSmsToken ? "text" : "password"}
+                            className="w-full border border-slate-200 rounded-lg pl-3 pr-10 py-2 text-xs font-mono focus:outline-none focus:border-[#00796B]"
+                            value={settingsForm.smsApiToken || ''}
+                            onChange={(e) => setSettingsForm({ ...settingsForm, smsApiToken: e.target.value })}
+                          />
+                          <button
+                            type="button"
+                            onClick={() => setShowSmsToken(!showSmsToken)}
+                            className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700 focus:outline-none"
+                            title={showSmsToken ? "Hide Secret" : "Show Secret"}
+                          >
+                            {showSmsToken ? <EyeOff size={14} /> : <Eye size={14} />}
+                          </button>
+                        </div>
                       </div>
                     </div>
 
@@ -3541,7 +3578,8 @@ VALUES ('exotics', 'Exotics (আজব ফল)', 'https://unsplash.com/...');`}
                           <input
                             type="text"
                             className="w-full border border-slate-200 rounded-lg px-3 py-2 text-xs font-mono"
-                            value={settingsForm.smtpHost || 'smtp.gmail.com'}
+                            value={settingsForm.smtpHost ?? ''}
+                            placeholder="smtp.gmail.com"
                             onChange={(e) => setSettingsForm({ ...settingsForm, smtpHost: e.target.value })}
                           />
                         </div>
@@ -3550,8 +3588,9 @@ VALUES ('exotics', 'Exotics (আজব ফল)', 'https://unsplash.com/...');`}
                           <input
                             type="number"
                             className="w-full border border-slate-200 rounded-lg px-3 py-2 text-xs font-mono"
-                            value={settingsForm.smtpPort || 465}
-                            onChange={(e) => setSettingsForm({ ...settingsForm, smtpPort: Number(e.target.value) })}
+                            value={settingsForm.smtpPort ?? ''}
+                            placeholder="465"
+                            onChange={(e) => setSettingsForm({ ...settingsForm, smtpPort: e.target.value === '' ? undefined : Number(e.target.value) })}
                           />
                         </div>
                       </div>
@@ -3563,20 +3602,30 @@ VALUES ('exotics', 'Exotics (আজব ফল)', 'https://unsplash.com/...');`}
                             type="text"
                             placeholder="e.g. shop@bazar.com.bd"
                             className="w-full border border-slate-200 rounded-lg px-3 py-2 text-xs font-mono"
-                            value={settingsForm.email}
-                            readOnly
+                            value={settingsForm.email ?? ''}
+                            onChange={(e) => setSettingsForm({ ...settingsForm, email: e.target.value })}
                           />
                           <span className="text-[10px] text-slate-400">Mirrors primary support contact email</span>
                         </div>
                         <div>
                           <label className="block text-[10px] font-bold text-slate-500 mb-1">GOOGLE MAIL APP PASSWORD (16-CHAR STACK)</label>
-                          <input
-                            type="password"
-                            placeholder="e.g. abcd efgh ijkl mnop"
-                            className="w-full border border-slate-200 rounded-lg px-3 py-2 text-xs font-mono"
-                            value={settingsForm.gmailAppPassword || ''}
-                            onChange={(e) => setSettingsForm({ ...settingsForm, gmailAppPassword: e.target.value })}
-                          />
+                          <div className="relative">
+                            <input
+                              type={showGmailPassword ? "text" : "password"}
+                              placeholder="e.g. abcd efgh ijkl mnop"
+                              className="w-full border border-slate-200 rounded-lg pl-3 pr-10 py-2 text-xs font-mono"
+                              value={settingsForm.gmailAppPassword || ''}
+                              onChange={(e) => setSettingsForm({ ...settingsForm, gmailAppPassword: e.target.value })}
+                            />
+                            <button
+                              type="button"
+                              onClick={() => setShowGmailPassword(!showGmailPassword)}
+                              className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700 focus:outline-none"
+                              title={showGmailPassword ? "Hide Secret" : "Show Secret"}
+                            >
+                              {showGmailPassword ? <EyeOff size={14} /> : <Eye size={14} />}
+                            </button>
+                          </div>
                         </div>
                       </div>
                     </div>
@@ -3793,19 +3842,31 @@ VALUES ('exotics', 'Exotics (আজব ফল)', 'https://unsplash.com/...');`}
                           type="text"
                           required
                           className="w-full border border-slate-200 rounded-lg px-3 py-2 text-xs focus:ring-1 focus:ring-[#00796B]"
-                          value={settingsForm.adminUsername || 'ADMIN'}
+                          value={settingsForm.adminUsername ?? ''}
+                          placeholder="ADMIN"
                           onChange={(e) => setSettingsForm({ ...settingsForm, adminUsername: e.target.value })}
                         />
                       </div>
                       <div>
                         <label className="block text-xs font-bold text-slate-500 mb-1">ADMIN PASSWORD</label>
-                        <input
-                          type="password"
-                          required
-                          className="w-full border border-slate-200 rounded-lg px-3 py-2 text-xs font-mono focus:ring-1 focus:ring-[#00796B]"
-                          value={settingsForm.adminPassword || '123'}
-                          onChange={(e) => setSettingsForm({ ...settingsForm, adminPassword: e.target.value })}
-                        />
+                        <div className="relative">
+                          <input
+                            type={showAdminPassword ? "text" : "password"}
+                            required
+                            className="w-full border border-slate-200 rounded-lg pl-3 pr-10 py-2 text-xs font-mono focus:ring-1 focus:ring-[#00796B]"
+                            value={settingsForm.adminPassword ?? ''}
+                            placeholder="123"
+                            onChange={(e) => setSettingsForm({ ...settingsForm, adminPassword: e.target.value })}
+                          />
+                          <button
+                            type="button"
+                            onClick={() => setShowAdminPassword(!showAdminPassword)}
+                            className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700 focus:outline-none"
+                            title={showAdminPassword ? "Hide Password" : "Show Password"}
+                          >
+                            {showAdminPassword ? <EyeOff size={14} /> : <Eye size={14} />}
+                          </button>
+                        </div>
                       </div>
                     </div>
 
@@ -3816,7 +3877,8 @@ VALUES ('exotics', 'Exotics (আজব ফল)', 'https://unsplash.com/...');`}
                           type="email"
                           required
                           className="w-full border border-slate-200 rounded-lg px-3 py-2 text-xs font-mono focus:ring-1 focus:ring-[#00796B]"
-                          value={settingsForm.recoveryEmail || 'demo@example.com'}
+                          value={settingsForm.recoveryEmail ?? ''}
+                          placeholder="demo@example.com"
                           onChange={(e) => setSettingsForm({ ...settingsForm, recoveryEmail: e.target.value })}
                         />
                       </div>
@@ -3826,7 +3888,8 @@ VALUES ('exotics', 'Exotics (আজব ফল)', 'https://unsplash.com/...');`}
                           type="text"
                           required
                           className="w-full border border-slate-200 rounded-lg px-3 py-2 text-xs font-mono focus:ring-1 focus:ring-[#00796B]"
-                          value={settingsForm.recoveryPhone || '01700-000000'}
+                          value={settingsForm.recoveryPhone ?? ''}
+                          placeholder="01700-000000"
                           onChange={(e) => setSettingsForm({ ...settingsForm, recoveryPhone: e.target.value })}
                         />
                       </div>

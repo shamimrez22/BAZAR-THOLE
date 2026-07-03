@@ -418,10 +418,10 @@ export const db = {
         parsed.storeName = 'BAZAR THOLE';
         changed = true;
       }
-      // Migrate default credentials from ADMIN / 123 to SHAMIM / 321
-      if (parsed && (!parsed.adminUsername || parsed.adminUsername === 'ADMIN') && (!parsed.adminPassword || parsed.adminPassword === '123')) {
-        parsed.adminUsername = 'SHAMIM';
-        parsed.adminPassword = '321';
+      // Ensure credentials exist, default to SHAMIM / 321 if completely missing
+      if (parsed && (!parsed.adminUsername || !parsed.adminPassword)) {
+        if (!parsed.adminUsername) parsed.adminUsername = 'SHAMIM';
+        if (!parsed.adminPassword) parsed.adminPassword = '321';
         changed = true;
       }
       if (changed) {
