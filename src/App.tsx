@@ -2029,40 +2029,210 @@ export default function App() {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BAZAR_THOLE_INVOICE_REPORT_${trackedOrder.id}</title>
+    <title>Invoice Report #${trackedOrder.id} - ${settings.storeName}</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Hind+Siliguri:wght@400;500;600;700&display=swap" rel="stylesheet" />
     <style>
-        body { font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; color: #1e293b; margin: 0; padding: 40px; background-color: #f8fafc; }
-        .invoice-card { max-width: 800px; margin: 0 auto; background: white; border: 1px solid #e2e8f0; padding: 40px; border-radius: 20px; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.05); }
-        .header { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 3px solid #00796B; padding-bottom: 24px; margin-bottom: 32px; }
-        .logo-section h1 { margin: 0; color: #00796B; font-size: 32px; font-weight: 900; letter-spacing: -1px; text-transform: uppercase; }
-        .logo-section p { margin: 6px 0 0; font-size: 11px; text-transform: uppercase; color: #64748b; font-family: monospace; font-weight: bold; letter-spacing: 2px; }
-        .invoice-meta { text-align: right; }
-        .invoice-meta h2 { margin: 0; font-size: 24px; color: #0f172a; font-weight: 850; letter-spacing: -0.5px; }
-        .invoice-meta p { margin: 6px 0 0; font-size: 12px; font-family: monospace; color: #475569; font-weight: bold; }
-        .grid-details { display: grid; grid-template-columns: 1.2fr 0.8fr; gap: 40px; margin-bottom: 32px; }
-        .col h3 { font-size: 11px; text-transform: uppercase; color: #00796B; margin: 0 0 12px; border-bottom: 2px solid #f1f5f9; padding-bottom: 6px; font-weight: 900; letter-spacing: 1px; }
-        .col p { margin: 6px 0; font-size: 13.5px; line-height: 1.6; color: #334155; }
-        .col p strong { color: #0f172a; font-weight: 600; }
-        .qr-section { text-align: center; border: 1px solid #e2e8f0; padding: 20px; border-radius: 16px; background: #f8fafc; display: inline-block; box-shadow: inset 0 2px 4px 0 rgba(0, 0, 0, 0.02); }
-        .qr-section img { display: block; margin: 0 auto 12px; width: 140px; height: 140px; border-radius: 8px; }
-        .qr-section span { font-size: 10px; font-family: monospace; color: #64748b; text-transform: uppercase; font-weight: 800; letter-spacing: 0.5px; }
-        table { width: 100%; border-collapse: collapse; margin-bottom: 32px; }
-        th { background-color: #00796B; color: white; text-align: left; padding: 12px; font-size: 11px; text-transform: uppercase; font-weight: 800; letter-spacing: 1px; }
-        td { padding: 14px 12px; border-bottom: 1px solid #f1f5f9; font-size: 13.5px; color: #334155; }
-        .text-right { text-align: right; }
-        .totals-block { float: right; width: 40%; margin-top: 16px; border-top: 1.5px solid #cbd5e1; padding-top: 15px; }
-        .totals-row { display: flex; justify-content: space-between; font-size: 13.5px; margin-bottom: 8px; color: #475569; }
-        .totals-row.grand { font-size: 18px; font-weight: 900; border-top: 2px solid #00796B; padding-top: 12px; margin-top: 12px; color: #00796B; }
-        .footer-note { clear: both; text-align: center; margin-top: 64px; font-size: 11px; color: #64748b; border-top: 1px dashed #cbd5e1; padding-top: 24px; line-height: 1.6; }
-        @media print {
-            body { background: white; padding: 0; color: black; }
-            .invoice-card { border: none; box-shadow: none; padding: 0; max-width: 100%; }
-            .totals-block { width: 50%; }
+        body {
+            font-family: 'Inter', 'Hind Siliguri', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            color: #334155;
+            margin: 0;
+            padding: 0;
+            background-color: #ffffff;
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+        .invoice-container {
+            width: 794px;
+            margin: 0;
+            background: #ffffff;
+            padding: 45px;
+            box-sizing: border-box;
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid #059669;
+            padding-bottom: 16px;
+            margin-bottom: 24px;
+        }
+        .logo-section h1 {
+            margin: 0;
+            color: #059669;
+            font-size: 32px;
+            font-weight: 900;
+            letter-spacing: -1px;
+            text-transform: uppercase;
+        }
+        .logo-section p {
+            margin: 4px 0 0;
+            font-size: 11px;
+            text-transform: uppercase;
+            color: #64748b;
+            font-weight: 700;
+            letter-spacing: 1.5px;
+        }
+        .invoice-meta {
+            text-align: right;
+        }
+        .invoice-meta h2 {
+            margin: 0;
+            font-size: 24px;
+            color: #1e293b;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+        }
+        .invoice-meta p {
+            margin: 4px 0 0;
+            font-size: 12px;
+            color: #475569;
+            font-weight: 500;
+        }
+        .grid-details {
+            display: grid;
+            grid-template-columns: 1.3fr 0.7fr;
+            gap: 20px;
+            margin-bottom: 24px;
+        }
+        .col-card {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 16px;
+        }
+        .col-card h3 {
+            font-size: 11px;
+            text-transform: uppercase;
+            color: #059669;
+            margin: 0 0 10px;
+            border-bottom: 1px solid #cbd5e1;
+            padding-bottom: 6px;
+            font-weight: 800;
+            letter-spacing: 0.5px;
+        }
+        .col-card p {
+            margin: 5px 0;
+            font-size: 12.5px;
+            line-height: 1.5;
+            color: #334155;
+        }
+        .col-card p strong {
+            color: #1e293b;
+            font-weight: 600;
+        }
+        .qr-section {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 16px;
+            text-align: center;
+        }
+        .qr-section img {
+            display: block;
+            margin-bottom: 6px;
+            width: 100px;
+            height: 100px;
+            border-radius: 4px;
+            border: 1px solid #e2e8f0;
+        }
+        .qr-section span {
+            font-size: 9px;
+            color: #64748b;
+            text-transform: uppercase;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 24px;
+        }
+        th {
+            background-color: #f1f5f9;
+            color: #334155;
+            text-align: left;
+            padding: 10px 12px;
+            font-size: 11px;
+            text-transform: uppercase;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            border-bottom: 2px solid #cbd5e1;
+        }
+        td {
+            padding: 10px 12px;
+            border-bottom: 1px solid #e2e8f0;
+            font-size: 12.5px;
+            color: #334155;
+        }
+        .text-right {
+            text-align: right;
+        }
+        .summary-container {
+            display: flex;
+            justify-content: flex-end;
+            margin-bottom: 24px;
+        }
+        .totals-block {
+            width: 300px;
+        }
+        .totals-row {
+            display: flex;
+            justify-content: space-between;
+            font-size: 12.5px;
+            margin-bottom: 6px;
+            color: #475569;
+        }
+        .totals-row strong {
+            color: #1e293b;
+        }
+        .totals-row.grand {
+            font-size: 15px;
+            font-weight: 800;
+            border-top: 2px solid #059669;
+            padding-top: 8px;
+            margin-top: 8px;
+            color: #059669;
+        }
+        .totals-row.grand strong {
+            color: #059669;
+            font-size: 17px;
+        }
+        .status-badge {
+            display: inline-block;
+            padding: 3px 8px;
+            font-size: 9px;
+            font-weight: 700;
+            text-transform: uppercase;
+            border-radius: 9999px;
+            letter-spacing: 0.5px;
+        }
+        .status-paid {
+            background-color: #d1fae5;
+            color: #065f46;
+        }
+        .status-pending {
+            background-color: #fef3c7;
+            color: #92400e;
+        }
+        .footer-note {
+            text-align: center;
+            margin-top: 40px;
+            font-size: 10.5px;
+            color: #64748b;
+            border-top: 1px dashed #cbd5e1;
+            padding-top: 16px;
+            line-height: 1.5;
         }
     </style>
 </head>
 <body>
-    <div class="invoice-card">
+    <div class="invoice-container">
         <div class="header">
             <div class="logo-section">
                 <h1>${cleanStoreName.toUpperCase()}</h1>
@@ -2071,12 +2241,12 @@ export default function App() {
             <div class="invoice-meta">
                 <h2>INVOICE #${trackedOrder.id}</h2>
                 <p>DATE: ${new Date(trackedOrder.orderDate).toLocaleString('en-US')}</p>
-                <p>TRACKING CODE: ${trackedOrder.trackingCode || 'NOT ASSIGNED'}</p>
+                <p>TRACKING CODE: <strong>${trackedOrder.trackingCode || 'NOT ASSIGNED'}</strong></p>
             </div>
         </div>
         
         <div class="grid-details">
-            <div class="col">
+            <div class="col-card">
                 <h3>SHIPPING & PACKAGING RECIPIENT</h3>
                 <p><strong>Customer Name:</strong> ${trackedOrder.customerName}</p>
                 <p><strong>Contact Phone:</strong> ${trackedOrder.phone}</p>
@@ -2084,121 +2254,173 @@ export default function App() {
                 <p><strong>City Region:</strong> ${trackedOrder.city.toUpperCase()}</p>
                 <p><strong>Street Address:</strong> ${trackedOrder.address}</p>
             </div>
-            <div class="col text-right" style="display: flex; flex-direction: column; align-items: flex-end;">
-                <h3>SECURE VERIFICATION QR</h3>
-                <div class="qr-section">
-                    <img src="${qrCodeUrl}" alt="Order Verification QR Code" />
-                    <span>Scan to Verify Invoice #${trackedOrder.id}</span>
-                </div>
+            <div class="qr-section">
+                <img src="${qrCodeUrl}" alt="Order Verification QR Code" />
+                <span>Scan to Verify Invoice #${trackedOrder.id}</span>
             </div>
         </div>
 
-        <h3>ORDERED ITEMS DETAILS</h3>
+        <h3 style="font-size: 11px; text-transform: uppercase; color: #059669; margin: 0 0 10px; font-weight: 800; letter-spacing: 0.5px;">ORDERED ITEMS DETAILS</h3>
         <table>
             <thead>
-                <tr style="background-color: #00796B; color: white;">
-                    <th style="padding: 12px; text-align: left;">Item Description</th>
-                    <th style="padding: 12px; text-align: right;" class="text-right">Unit Price</th>
-                    <th style="padding: 12px; text-align: right;" class="text-right">Quantity</th>
-                    <th style="padding: 12px; text-align: right;" class="text-right">Subtotal</th>
+                <tr>
+                    <th style="width: 50%;">Item Description</th>
+                    <th class="text-right" style="width: 15%;">Unit Price</th>
+                    <th class="text-right" style="width: 15%;">Quantity</th>
+                    <th class="text-right" style="width: 20%;">Subtotal</th>
                 </tr>
             </thead>
             <tbody>
-                ${trackedOrder.items.map(item => `
-                    <tr>
-                        <td style="padding: 12px; border-bottom: 1px solid #e2e8f0; text-align: left;">${item.productName} (${item.unit || '1 kg'})</td>
-                        <td style="padding: 12px; border-bottom: 1px solid #e2e8f0; text-align: right;" class="text-right">৳${item.price}</td>
-                        <td style="padding: 12px; border-bottom: 1px solid #e2e8f0; text-align: right;" class="text-right">${item.quantity}</td>
-                        <td style="padding: 12px; border-bottom: 1px solid #e2e8f0; text-align: right;" class="text-right">৳${item.price * item.quantity}</td>
-                    </tr>
+                ${trackedOrder.items.map(it => `
+                <tr>
+                    <td><strong style="color: #1e293b;">${it.productName}</strong> <span style="font-size: 11px; color: #64748b;">(${it.unit || '1 kg'})</span></td>
+                    <td class="text-right">৳${it.price}</td>
+                    <td class="text-right">${it.quantity}</td>
+                    <td class="text-right" style="font-weight: 600; color: #1e293b;">৳${it.price * it.quantity}</td>
+                </tr>
                 `).join('')}
             </tbody>
         </table>
-
-        <div class="totals-block">
-            <div class="totals-row">
-                <span>Subtotal:</span>
-                <span>৳${trackedOrder.subtotal}</span>
-            </div>
-            <div class="totals-row">
-                <span>Coupon Discount:</span>
-                <span>-৳${trackedOrder.discount}</span>
-            </div>
-            <div class="totals-row">
-                <span>Delivery Charge:</span>
-                <span>৳${trackedOrder.deliveryFee}</span>
-            </div>
-            <div class="totals-row grand">
-                <span>Grand Total:</span>
-                <span>৳${trackedOrder.total}</span>
-            </div>
-            <div class="totals-row" style="margin-top: 12px; font-size: 11px; color: #64748b;">
-                <span>Payment Method:</span>
-                <span>${trackedOrder.paymentMethod}</span>
-            </div>
-            <div class="totals-row" style="font-size: 11px; color: #64748b;">
-                <span>Payment Status:</span>
-                <strong style="color: ${trackedOrder.paymentStatus === 'Paid' ? '#00796B' : '#f59e0b'}">${trackedOrder.paymentStatus}</strong>
+ 
+        <div class="summary-container">
+            <div class="totals-block">
+                <div class="totals-row">
+                    <span>Subtotal:</span>
+                    <strong>৳${trackedOrder.subtotal}</strong>
+                </div>
+                ${trackedOrder.discount > 0 ? `
+                <div class="totals-row" style="color: #ef4444;">
+                    <span>Discounts Applied:</span>
+                    <strong style="color: #ef4444;">-৳${trackedOrder.discount}</strong>
+                </div>
+                ` : ''}
+                <div class="totals-row">
+                    <span>Delivery Charge:</span>
+                    <strong>৳${trackedOrder.deliveryFee}</strong>
+                </div>
+                <div class="totals-row grand">
+                    <span>GRAND TOTAL DUE:</span>
+                    <strong>৳${trackedOrder.total}</strong>
+                </div>
+                <div class="totals-row" style="margin-top: 15px; border-top: 1px solid #f1f5f9; padding-top: 10px;">
+                    <span>Payment Method:</span>
+                    <strong style="font-size: 11px;">${trackedOrder.paymentMethod}</strong>
+                </div>
+                <div class="totals-row">
+                    <span>Payment Status:</span>
+                    <span>
+                        <span class="status-badge ${trackedOrder.paymentStatus === 'Paid' ? 'status-paid' : 'status-pending'}">
+                            ${trackedOrder.paymentStatus}
+                        </span>
+                    </span>
+                </div>
             </div>
         </div>
-
+ 
         <div class="footer-note">
-            <p>Thank you for purchasing from ${cleanStoreName}. All fresh farm greens and grocery products are processed with verified hygienic packaging guidelines. For support, call: ${settings.phone}.</p>
-            <p style="font-family: monospace; font-size: 9px; margin-top: 12px; color: #94a3b8; letter-spacing: 0.5px;">Report Generated Safely via ${cleanStoreName} Merchant Analytics - Secure Merchant Report.</p>
+            <p style="font-weight: 500; margin-bottom: 8px;">Thank you for purchasing from ${cleanStoreName}.</p>
+            <p style="margin: 0; color: #64748b; font-size: 10.5px;">All fresh farm greens and grocery products are processed with verified hygienic packaging guidelines. For support, call: ${settings.phone}.</p>
+            <p style="font-size: 9px; margin-top: 15px; color: #94a3b8; font-weight: 500; letter-spacing: 0.5px;">Report Generated Safely via ${cleanStoreName} Merchant Analytics - Secure Merchant Report.</p>
         </div>
     </div>
 </body>
 </html>`;
 
-                            // Add auto-print script right before body ends to trigger printing as soon as the file is opened
-                            const printScript = `
-                            <script>
-                                window.onload = function() {
-                                    setTimeout(function() {
-                                        window.print();
-                                    }, 500);
+                            // Function to load html2pdf.js script and render the PDF
+                            const downloadPdf = async () => {
+                              try {
+                                const html2pdf = (window as any).html2pdf;
+                                if (!html2pdf) {
+                                  throw new Error('html2pdf script not loaded yet.');
+                                }
+
+                                // Create an isolated iframe to prevent mobile viewport scaling, clipping, and responsive styling issues.
+                                const iframe = document.createElement('iframe');
+                                iframe.style.position = 'fixed';
+                                iframe.style.left = '0';
+                                iframe.style.top = '0';
+                                iframe.style.width = '794px';  // A4 standard width at 96 DPI
+                                iframe.style.height = '1123px'; // A4 standard height
+                                iframe.style.opacity = '0.01';  // Keep it visible to DOM rendering but invisible to the user
+                                iframe.style.pointerEvents = 'none';
+                                iframe.style.zIndex = '-99999';
+                                document.body.appendChild(iframe);
+
+                                // Write the HTML report inside the iframe
+                                const doc = iframe.contentDocument || (iframe.contentWindow ? iframe.contentWindow.document : null);
+                                if (!doc) {
+                                  throw new Error('Iframe content document is not accessible.');
+                                }
+                                doc.open();
+                                doc.write(reportHtml);
+                                doc.close();
+
+                                // Wait for all resources (images, fonts, scripts) inside the iframe to load completely.
+                                // We add a short delay (1000ms) to ensure external resources like the QR Code and Hind Siliguri web font are fully rendered.
+                                await new Promise((resolve) => {
+                                  iframe.onload = resolve;
+                                  setTimeout(resolve, 1000);
+                                });
+
+                                // Query the invoice container inside the iframe for pixel-perfect targeting
+                                const targetElement = doc.querySelector('.invoice-container') || doc.body;
+
+                                // Options for highly optimized A4 portrait PDF format (strict bounds)
+                                const opt = {
+                                  margin: 0, // Since .invoice-container already contains 45px padding, we use 0 margin for a perfect layout fit.
+                                  filename: `BAZAR_THOLE_INVOICE_REPORT_${trackedOrder.id}.pdf`,
+                                  image: { type: 'jpeg', quality: 0.98 },
+                                  html2canvas: { 
+                                    scale: 2, 
+                                    useCORS: true, 
+                                    logging: false,
+                                    backgroundColor: '#ffffff',
+                                    scrollX: 0,
+                                    scrollY: 0,
+                                    windowWidth: 794
+                                  },
+                                  jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
                                 };
-                            </script>
-                            `;
-                            const finalReportHtml = reportHtml.replace('</body>', `${printScript}</body>`);
-                            
-                            // 1. HARD FORCE DOWNLOAD (Highly robust, bypasses security restrictions/sandboxing blocks)
-                            let downloadSuccess = false;
-                            try {
-                              const blob = new Blob([finalReportHtml], { type: 'text/html;charset=utf-8' });
-                              const url = URL.createObjectURL(blob);
-                              const link = document.createElement('a');
-                              link.href = url;
-                              link.download = `BAZAR_THOLE_INVOICE_REPORT_${trackedOrder.id}.html`;
-                              link.style.display = 'none';
-                              document.body.appendChild(link);
-                              link.click();
-                              setTimeout(() => {
-                                document.body.removeChild(link);
-                                URL.revokeObjectURL(url);
-                              }, 300);
-                              downloadSuccess = true;
-                            } catch (err) {
-                              console.error("Direct HTML download failed:", err);
-                            }
 
-                            // 2. Optional popup preview window as user convenience helper
-                            try {
-                              const win = window.open('', '_blank');
-                              if (win) {
-                                win.document.open();
-                                win.document.write(finalReportHtml);
-                                win.document.close();
+                                // Render PDF directly from the iframe's beautifully loaded element
+                                await html2pdf().from(targetElement).set(opt).save();
+
+                                // Remove the iframe from the DOM
+                                document.body.removeChild(iframe);
+
+                                triggerToast(`📥 Invoice PDF for Order #${trackedOrder.id} has been saved directly to your device.`);
+                              } catch (err) {
+                                console.error("PDF generation failed, falling back to instant print HTML:", err);
+                                
+                                // Dynamic fallback download if script isn't fully ready yet
+                                const printScript = `
+                                <script>
+                                    window.onload = function() {
+                                        setTimeout(function() {
+                                            window.print();
+                                        }, 500);
+                                    };
+                                </script>
+                                `;
+                                const fallbackHtml = reportHtml.replace('</body>', `${printScript}</body>`);
+                                const blob = new Blob([fallbackHtml], { type: 'text/html;charset=utf-8' });
+                                const url = URL.createObjectURL(blob);
+                                const link = document.createElement('a');
+                                link.href = url;
+                                link.download = `BAZAR_THOLE_INVOICE_REPORT_${trackedOrder.id}.html`;
+                                link.style.display = 'none';
+                                document.body.appendChild(link);
+                                link.click();
+                                setTimeout(() => {
+                                  document.body.removeChild(link);
+                                  URL.revokeObjectURL(url);
+                                }, 300);
+
+                                triggerToast(`📥 Saved printable HTML invoice fallback! Open it on your device to print.`);
                               }
-                            } catch (e) {
-                              console.warn("Browser blocked invoice popup, relying on direct file download.");
-                            }
+                            };
 
-                            if (downloadSuccess) {
-                              triggerToast(`📥 Invoice saved as 'BAZAR_THOLE_INVOICE_REPORT_${trackedOrder.id}.html'! Open it on your device to print.`);
-                            } else {
-                              triggerToast('⚠️ Please use the "Print Receipt" button above to view print options directly.');
-                            }
+                            downloadPdf();
                           }}
                           className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-xs flex items-center gap-1 cursor-pointer transition-colors shadow-xs"
                         >
