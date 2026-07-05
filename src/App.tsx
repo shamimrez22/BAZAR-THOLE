@@ -2021,8 +2021,13 @@ export default function App() {
                           type="button"
                           onClick={() => {
                             const cleanStoreName = 'BAZAR THOLE';
-                            const qrData = `ORDER-REPORT: #${trackedOrder.id}\nCustomer: ${trackedOrder.customerName}\nPhone: ${trackedOrder.phone}\nTotal Amount: ৳${trackedOrder.total}\nTracking Code: ${trackedOrder.trackingCode || 'N/A'}\nItems:\n${trackedOrder.items.map(it => ` - ${it.productName} (${it.quantity}x)`).join('\n')}`;
-                            const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(qrData)}`;
+                            const qrData = "ORDER-REPORT: #" + trackedOrder.id + "\n" +
+                                           "Customer: " + trackedOrder.customerName + "\n" +
+                                           "Phone: " + trackedOrder.phone + "\n" +
+                                           "Total Amount: ৳" + trackedOrder.total + "\n" +
+                                           "Tracking Code: " + (trackedOrder.trackingCode || "N/A") + "\n" +
+                                           "Items:\n" + trackedOrder.items.map(it => " - " + it.productName + " (" + it.quantity + "x)").join("\n");
+                            const qrCodeUrl = "https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=" + encodeURIComponent(qrData);
                             
                             const reportHtml = `<!DOCTYPE html>
 <html lang="en">
@@ -2032,301 +2037,290 @@ export default function App() {
     <title>Invoice Report #${trackedOrder.id} - ${settings.storeName}</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Hind+Siliguri:wght@400;500;600;700&display=swap" rel="stylesheet" />
     <style>
-        body {
-            font-family: 'Inter', 'Hind Siliguri', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-            color: #334155;
+        @page {
+            size: A4 portrait;
+            margin: 0 !important;
+        }
+        * {
+            box-sizing: border-box !important;
             margin: 0;
             padding: 0;
-            background-color: #ffffff;
-            -webkit-print-color-adjust: exact;
-            print-color-adjust: exact;
+        }
+        html, body {
+            margin: 0 !important;
+            padding: 0 !important;
+            font-family: 'Inter', 'Hind Siliguri', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
             -webkit-font-smoothing: antialiased;
             -moz-osx-font-smoothing: grayscale;
         }
-        .invoice-container {
-            width: 794px;
-            margin: 0;
-            background: #ffffff;
-            padding: 45px;
-            box-sizing: border-box;
+        
+        /* WEB ONLY: Gorgeous backdrop when viewed in browser */
+        @media screen {
+            html, body {
+                background-color: #05100B !important;
+                background-image: radial-gradient(circle at center, #0F2E1E 0%, #05100B 100%) !important;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                min-height: 100vh;
+                padding: 40px 15px;
+            }
+            .invoice-container {
+                box-shadow: 0 30px 60px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(212, 175, 55, 0.2) !important;
+                border-radius: 16px !important;
+                background-color: #FAF8F5 !important;
+                transform: scale(1);
+                transition: transform 0.2s ease;
+            }
         }
-        .header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-bottom: 2px solid #059669;
-            padding-bottom: 16px;
-            margin-bottom: 24px;
-        }
-        .logo-section h1 {
-            margin: 0;
-            color: #059669;
-            font-size: 32px;
-            font-weight: 900;
-            letter-spacing: -1px;
-            text-transform: uppercase;
-        }
-        .logo-section p {
-            margin: 4px 0 0;
-            font-size: 11px;
-            text-transform: uppercase;
-            color: #64748b;
-            font-weight: 700;
-            letter-spacing: 1.5px;
-        }
-        .invoice-meta {
-            text-align: right;
-        }
-        .invoice-meta h2 {
-            margin: 0;
-            font-size: 24px;
-            color: #1e293b;
-            font-weight: 800;
-            letter-spacing: -0.5px;
-        }
-        .invoice-meta p {
-            margin: 4px 0 0;
-            font-size: 12px;
-            color: #475569;
-            font-weight: 500;
-        }
-        .grid-details {
-            display: grid;
-            grid-template-columns: 1.3fr 0.7fr;
-            gap: 20px;
-            margin-bottom: 24px;
-        }
-        .col-card {
-            background: #f8fafc;
-            border: 1px solid #e2e8f0;
-            border-radius: 8px;
-            padding: 16px;
-        }
-        .col-card h3 {
-            font-size: 11px;
-            text-transform: uppercase;
-            color: #059669;
-            margin: 0 0 10px;
-            border-bottom: 1px solid #cbd5e1;
-            padding-bottom: 6px;
-            font-weight: 800;
-            letter-spacing: 0.5px;
-        }
-        .col-card p {
-            margin: 5px 0;
-            font-size: 12.5px;
-            line-height: 1.5;
-            color: #334155;
-        }
-        .col-card p strong {
-            color: #1e293b;
-            font-weight: 600;
-        }
-        .qr-section {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            background: #f8fafc;
-            border: 1px solid #e2e8f0;
-            border-radius: 8px;
-            padding: 16px;
-            text-align: center;
-        }
-        .qr-section img {
-            display: block;
-            margin-bottom: 6px;
-            width: 100px;
-            height: 100px;
-            border-radius: 4px;
-            border: 1px solid #e2e8f0;
-        }
-        .qr-section span {
-            font-size: 9px;
-            color: #64748b;
-            text-transform: uppercase;
-            font-weight: 700;
-            letter-spacing: 0.5px;
-        }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-bottom: 24px;
-        }
-        th {
-            background-color: #f1f5f9;
-            color: #334155;
-            text-align: left;
-            padding: 10px 12px;
-            font-size: 11px;
-            text-transform: uppercase;
-            font-weight: 700;
-            letter-spacing: 0.5px;
-            border-bottom: 2px solid #cbd5e1;
-        }
-        td {
-            padding: 10px 12px;
-            border-bottom: 1px solid #e2e8f0;
-            font-size: 12.5px;
-            color: #334155;
-        }
-        .text-right {
-            text-align: right;
-        }
-        .summary-container {
-            display: flex;
-            justify-content: flex-end;
-            margin-bottom: 24px;
-        }
-        .totals-block {
-            width: 300px;
-        }
-        .totals-row {
-            display: flex;
-            justify-content: space-between;
-            font-size: 12.5px;
-            margin-bottom: 6px;
-            color: #475569;
-        }
-        .totals-row strong {
-            color: #1e293b;
-        }
-        .totals-row.grand {
-            font-size: 15px;
-            font-weight: 800;
-            border-top: 2px solid #059669;
-            padding-top: 8px;
-            margin-top: 8px;
-            color: #059669;
-        }
-        .totals-row.grand strong {
-            color: #059669;
-            font-size: 17px;
-        }
-        .status-badge {
-            display: inline-block;
-            padding: 3px 8px;
-            font-size: 9px;
-            font-weight: 700;
-            text-transform: uppercase;
-            border-radius: 9999px;
-            letter-spacing: 0.5px;
-        }
-        .status-paid {
-            background-color: #d1fae5;
-            color: #065f46;
-        }
-        .status-pending {
-            background-color: #fef3c7;
-            color: #92400e;
-        }
-        .footer-note {
-            text-align: center;
-            margin-top: 40px;
-            font-size: 10.5px;
-            color: #64748b;
-            border-top: 1px dashed #cbd5e1;
-            padding-top: 16px;
-            line-height: 1.5;
+
+        /* PRINT ONLY: Clean layout mapping */
+        @media print {
+            html, body {
+                background-color: #ffffff !important;
+                width: 210mm !important;
+                height: 297mm !important;
+                overflow: hidden !important;
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+            }
+            .invoice-container {
+                width: 210mm !important;
+                height: 297mm !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                box-shadow: none !important;
+                border-radius: 0 !important;
+                border: 12px solid #071F13 !important;
+                page-break-inside: avoid !important;
+                page-break-after: avoid !important;
+                box-sizing: border-box !important;
+            }
         }
     </style>
 </head>
-<body>
-    <div class="invoice-container">
-        <div class="header">
-            <div class="logo-section">
-                <h1>${cleanStoreName.toUpperCase()}</h1>
-                <p>Official Verification Report & Invoice</p>
-            </div>
-            <div class="invoice-meta">
-                <h2>INVOICE #${trackedOrder.id}</h2>
-                <p>DATE: ${new Date(trackedOrder.orderDate).toLocaleString('en-US')}</p>
-                <p>TRACKING CODE: <strong>${trackedOrder.trackingCode || 'NOT ASSIGNED'}</strong></p>
-            </div>
-        </div>
+<body style="margin: 0; padding: 0; background-color: #05100B;">
+    <div class="invoice-container" style="width: 794px; height: 1120px; margin: 0; padding: 0; background-color: #FAF8F5; box-sizing: border-box; display: flex; flex-direction: column; justify-content: space-between; position: relative; font-family: 'Inter', 'Hind Siliguri', sans-serif; border: 12px solid #071F13; overflow: hidden;">
         
-        <div class="grid-details">
-            <div class="col-card">
-                <h3>SHIPPING & PACKAGING RECIPIENT</h3>
-                <p><strong>Customer Name:</strong> ${trackedOrder.customerName}</p>
-                <p><strong>Contact Phone:</strong> ${trackedOrder.phone}</p>
-                <p><strong>Email Address:</strong> ${trackedOrder.email || 'N/A'}</p>
-                <p><strong>City Region:</strong> ${trackedOrder.city.toUpperCase()}</p>
-                <p><strong>Street Address:</strong> ${trackedOrder.address}</p>
+        <!-- Luxury corner notch ornaments -->
+        <div style="position: absolute; top: 12px; left: 12px; width: 16px; height: 16px; border-top: 3px solid #D4AF37; border-left: 3px solid #D4AF37; z-index: 10;"></div>
+        <div style="position: absolute; top: 12px; right: 12px; width: 16px; height: 16px; border-top: 3px solid #D4AF37; border-right: 3px solid #D4AF37; z-index: 10;"></div>
+        <div style="position: absolute; bottom: 12px; left: 12px; width: 16px; height: 16px; border-bottom: 3px solid #D4AF37; border-left: 3px solid #D4AF37; z-index: 10;"></div>
+        <div style="position: absolute; bottom: 12px; right: 12px; width: 16px; height: 16px; border-bottom: 3px solid #D4AF37; border-right: 3px solid #D4AF37; z-index: 10;"></div>
+        
+        <!-- Double line border frame inside the outer border -->
+        <div style="position: absolute; top: 8px; left: 8px; right: 8px; bottom: 8px; border: 1px solid #D4AF37; pointer-events: none; z-index: 5;"></div>
+        
+        <!-- Top Luxury Header Block -->
+        <div class="top-header" style="background-color: #071F13; padding: 22px 45px; color: #ffffff; display: flex; justify-content: space-between; align-items: center; box-sizing: border-box; width: 100%; border-bottom: 3px solid #D4AF37; position: relative; z-index: 2;">
+            <div style="display: flex; align-items: center; gap: 15px;">
+                <div style="width: 44px; height: 44px; border: 2px solid #D4AF37; border-radius: 50%; display: flex; align-items: center; justify-content: center; background-color: rgba(212, 175, 55, 0.05);">
+                    <span style="font-family: 'Inter', sans-serif; font-size: 15px; font-weight: 900; color: #D4AF37; letter-spacing: -1px;">BT</span>
+                </div>
+                <div class="brand-title-group" style="display: flex; flex-direction: column; text-align: left;">
+                    <h1 style="margin: 0; font-size: 26px; font-weight: 900; letter-spacing: 1.5px; line-height: 1.0; text-transform: uppercase; color: #FCFBF9; font-family: 'Inter', sans-serif;">${cleanStoreName}</h1>
+                    <div class="brand-protocol-sub" style="font-size: 7.5px; font-weight: 700; color: #D4AF37; letter-spacing: 1.2px; text-transform: uppercase; margin-top: 4px; font-family: 'Inter', sans-serif;">PREMIUM ORGANIC FOODS // PLATINUM SECURED RECEIPT</div>
+                </div>
             </div>
-            <div class="qr-section">
-                <img src="${qrCodeUrl}" alt="Order Verification QR Code" />
-                <span>Scan to Verify Invoice #${trackedOrder.id}</span>
+            <div class="system-meta-details" style="text-align: right; font-family: monospace; font-size: 9px; line-height: 1.4; color: rgba(252, 251, 249, 0.85); font-weight: 500;">
+                <span style="color: #D4AF37;">STATION:</span> HUB_CENTRAL<br/>
+                <span style="color: #D4AF37;">TIME:</span> ${new Date(trackedOrder.orderDate).toLocaleTimeString('en-US', { hour12: false })}<br/>
+                <span style="color: #D4AF37;">CLIENT:</span> WEB_PORTAL_V2
             </div>
         </div>
 
-        <h3 style="font-size: 11px; text-transform: uppercase; color: #059669; margin: 0 0 10px; font-weight: 800; letter-spacing: 0.5px;">ORDERED ITEMS DETAILS</h3>
-        <table>
-            <thead>
-                <tr>
-                    <th style="width: 50%;">Item Description</th>
-                    <th class="text-right" style="width: 15%;">Unit Price</th>
-                    <th class="text-right" style="width: 15%;">Quantity</th>
-                    <th class="text-right" style="width: 20%;">Subtotal</th>
-                </tr>
-            </thead>
-            <tbody>
-                ${trackedOrder.items.map(it => `
-                <tr>
-                    <td><strong style="color: #1e293b;">${it.productName}</strong> <span style="font-size: 11px; color: #64748b;">(${it.unit || '1 kg'})</span></td>
-                    <td class="text-right">৳${it.price}</td>
-                    <td class="text-right">${it.quantity}</td>
-                    <td class="text-right" style="font-weight: 600; color: #1e293b;">৳${it.price * it.quantity}</td>
-                </tr>
-                `).join('')}
-            </tbody>
-        </table>
- 
-        <div class="summary-container">
-            <div class="totals-block">
-                <div class="totals-row">
-                    <span>Subtotal:</span>
-                    <strong>৳${trackedOrder.subtotal}</strong>
+        <!-- Middle Area -->
+        <div class="invoice-body-wrapper" style="flex: 1; padding: 24px 45px 15px 45px; display: flex; flex-direction: column; box-sizing: border-box; width: 100%; z-index: 2; position: relative;">
+            
+            <!-- Document sheet inner card with elegant background -->
+            <div class="document-sheet" style="background-color: #ffffff; border: 1px solid #E5DFD5; padding: 26px 30px; box-sizing: border-box; flex: 1; position: relative; display: flex; flex-direction: column; width: 100%; border-radius: 8px; box-shadow: 0 4px 12px rgba(15, 46, 30, 0.03);">
+                
+                <!-- Decorative Gold Watermark background -->
+                <div class="sheet-watermark" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) rotate(-15deg); font-size: 48px; font-weight: 950; color: rgba(212, 175, 55, 0.025); text-transform: uppercase; letter-spacing: 8px; pointer-events: none; white-space: nowrap; text-align: center; z-index: 1;">${cleanStoreName} ORIGINAL</div>
+
+                <!-- Gold certified seal badge (CSS only) -->
+                <div style="position: absolute; bottom: 85px; left: 35px; width: 75px; height: 75px; border: 1px dashed #D4AF37; border-radius: 50%; display: flex; align-items: center; justify-content: center; transform: rotate(-8deg); background-color: rgba(212, 175, 55, 0.02); z-index: 5; pointer-events: none;">
+                    <div style="width: 65px; height: 65px; border: 1px double #D4AF37; border-radius: 50%; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 2px; box-sizing: border-box;">
+                        <span style="font-size: 5.5px; font-weight: 900; color: #D4AF37; letter-spacing: 0.5px; text-transform: uppercase; line-height: 1;">100% PURE</span>
+                        <span style="font-size: 8px; font-weight: 950; color: #071F13; letter-spacing: 0.5px; margin: 1px 0; line-height: 1;">ORGANIC</span>
+                        <span style="font-size: 5px; font-weight: 800; color: #D4AF37; line-height: 1;">SECURED</span>
+                    </div>
                 </div>
-                ${trackedOrder.discount > 0 ? `
-                <div class="totals-row" style="color: #ef4444;">
-                    <span>Discounts Applied:</span>
-                    <strong style="color: #ef4444;">-৳${trackedOrder.discount}</strong>
-                </div>
-                ` : ''}
-                <div class="totals-row">
-                    <span>Delivery Charge:</span>
-                    <strong>৳${trackedOrder.deliveryFee}</strong>
-                </div>
-                <div class="totals-row grand">
-                    <span>GRAND TOTAL DUE:</span>
-                    <strong>৳${trackedOrder.total}</strong>
-                </div>
-                <div class="totals-row" style="margin-top: 15px; border-top: 1px solid #f1f5f9; padding-top: 10px;">
-                    <span>Payment Method:</span>
-                    <strong style="font-size: 11px;">${trackedOrder.paymentMethod}</strong>
-                </div>
-                <div class="totals-row">
-                    <span>Payment Status:</span>
-                    <span>
-                        <span class="status-badge ${trackedOrder.paymentStatus === 'Paid' ? 'status-paid' : 'status-pending'}">
-                            ${trackedOrder.paymentStatus}
-                        </span>
-                    </span>
+
+                <div class="sheet-content-inner" style="position: relative; z-index: 2; width: 100%; height: 100%; display: flex; flex-direction: column; flex: 1; box-sizing: border-box;">
+                    
+                    <!-- Header inside sheet -->
+                    <div class="invoice-section-title-wrapper" style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 18px; width: 100%; border-bottom: 1px solid #E5DFD5; padding-bottom: 10px;">
+                        <div class="invoice-title-block" style="text-align: left;">
+                            <h2 style="font-size: 19px; font-weight: 900; color: #071F13; text-transform: uppercase; letter-spacing: 0.5px; margin: 0 0 2px 0; font-family: 'Inter', sans-serif;">OFFICIAL STATEMENT</h2>
+                            <span style="font-size: 8.5px; color: #8A857C; font-weight: 600; text-transform: uppercase; letter-spacing: 0.8px;">TAX INVOICE AND TRANSACTION RECORD</span>
+                        </div>
+                        <div style="background-color: #071F13; color: #D4AF37; font-size: 8.5px; font-weight: 800; padding: 4px 8px; border-radius: 4px; letter-spacing: 1px; font-family: monospace;">ORIGINAL_COPY</div>
+                    </div>
+
+                    <!-- Details grid -->
+                    <div class="details-grid" style="display: flex; justify-content: space-between; gap: 20px; margin-bottom: 18px; width: 100%;">
+                        
+                        <!-- Invoice Metadata -->
+                        <div class="meta-details-list" style="display: flex; flex-direction: column; gap: 4px; font-size: 11px; line-height: 1.5; width: 50%; text-align: left; border-left: 3px solid #D4AF37; padding-left: 12px; box-sizing: border-box;">
+                            <div class="meta-detail-row" style="display: flex; align-items: center;">
+                                <span class="meta-detail-label" style="font-weight: 800; color: #8A857C; text-transform: uppercase; font-size: 9px; width: 100px; letter-spacing: 0.5px; display: inline-block;">INVOICE ID:</span>
+                                <span class="meta-detail-value" style="color: #071F13; font-weight: 800; font-family: 'Inter', sans-serif;">#ORD-${trackedOrder.id}</span>
+                            </div>
+                            <div class="meta-detail-row" style="display: flex; align-items: center;">
+                                <span class="meta-detail-label" style="font-weight: 800; color: #8A857C; text-transform: uppercase; font-size: 9px; width: 100px; letter-spacing: 0.5px; display: inline-block;">DATE ISSUED:</span>
+                                <span class="meta-detail-value" style="color: #1e293b; font-weight: 700;">${new Date(trackedOrder.orderDate).toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short' })}</span>
+                            </div>
+                            <div class="meta-detail-row" style="display: flex; align-items: center;">
+                                <span class="meta-detail-label" style="font-weight: 800; color: #8A857C; text-transform: uppercase; font-size: 9px; width: 100px; letter-spacing: 0.5px; display: inline-block;">TRACKING KEY:</span>
+                                <span class="meta-detail-value" style="color: #1e293b; font-weight: 700; font-family: monospace;">${trackedOrder.trackingCode || 'PROCESSING'}</span>
+                            </div>
+                            <div class="meta-detail-row" style="display: flex; align-items: center;">
+                                <span class="meta-detail-label" style="font-weight: 800; color: #8A857C; text-transform: uppercase; font-size: 9px; width: 100px; letter-spacing: 0.5px; display: inline-block;">PAY METHOD:</span>
+                                <span class="meta-detail-value" style="color: #1e293b; font-weight: 700;">${trackedOrder.paymentMethod}</span>
+                            </div>
+                        </div>
+
+                        <!-- Bill To Section -->
+                        <div class="bill-to-destination-card" style="width: 50%; text-align: right; display: flex; flex-direction: column; align-items: flex-end; border-right: 3px solid #071F13; padding-right: 12px; box-sizing: border-box;">
+                            <span class="bill-to-title-label" style="font-size: 9px; font-weight: 900; color: #071F13; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 3px; display: block;">SHIPPING RECIPIENT:</span>
+                            <span class="bill-to-info-line" style="font-size: 13px; color: #071F13; font-weight: 800; margin: 1px 0; line-height: 1.2; display: block; font-family: 'Inter', 'Hind Siliguri', sans-serif;">${trackedOrder.customerName}</span>
+                            <span class="bill-to-info-line" style="font-size: 11px; color: #475569; font-weight: 600; margin: 1px 0; display: block;">Phone: ${trackedOrder.phone}</span>
+                            ${trackedOrder.email ? '<span class="bill-to-info-line" style="font-size: 11px; color: #475569; font-weight: 600; margin: 1px 0; display: block;">Email: ' + trackedOrder.email + '</span>' : ''}
+                            <span class="bill-to-info-line" style="font-size: 11px; color: #475569; font-weight: 600; margin: 1px 0; line-height: 1.2; display: block; font-family: 'Inter', 'Hind Siliguri', sans-serif;">${trackedOrder.address}</span>
+                            <span class="bill-to-info-line" style="font-size: 11px; color: #071F13; font-weight: 700; margin: 1px 0; display: block; text-transform: uppercase; font-family: 'Inter', 'Hind Siliguri', sans-serif;">${trackedOrder.city}</span>
+                        </div>
+                    </div>
+
+                    <!-- Items Table -->
+                    <div class="manifest-table-wrapper" style="margin-bottom: 15px; width: 100%;">
+                        <table class="manifest-data-grid" style="width: 100%; border-collapse: collapse; font-family: 'Inter', 'Hind Siliguri', sans-serif;">
+                            <thead>
+                                <tr>
+                                    <th style="width: 50%; background-color: #071F13; color: #ffffff; font-weight: 700; font-size: 9.5px; text-transform: uppercase; letter-spacing: 0.8px; padding: 10px 14px; text-align: left; border: 1px solid #071F13; border-bottom: 3px solid #D4AF37;">Product Description</th>
+                                    <th style="width: 15%; background-color: #071F13; color: #ffffff; font-weight: 700; font-size: 9.5px; text-transform: uppercase; letter-spacing: 0.8px; padding: 10px 14px; text-align: right; border: 1px solid #071F13; border-bottom: 3px solid #D4AF37;">QTY</th>
+                                    <th style="width: 15%; background-color: #071F13; color: #ffffff; font-weight: 700; font-size: 9.5px; text-transform: uppercase; letter-spacing: 0.8px; padding: 10px 14px; text-align: right; border: 1px solid #071F13; border-bottom: 3px solid #D4AF37;">Unit Price</th>
+                                    <th style="width: 20%; background-color: #071F13; color: #ffffff; font-weight: 700; font-size: 9.5px; text-transform: uppercase; letter-spacing: 0.8px; padding: 10px 14px; text-align: right; border: 1px solid #071F13; border-bottom: 3px solid #D4AF37;">Subtotal</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${trackedOrder.items.map((it, i) => `
+                                    <tr style="background-color: ${i % 2 === 0 ? '#FAF9F6' : '#ffffff'};">
+                                        <td style="padding: 9px 14px; border: 1px solid #E5DFD5; font-size: 11.5px; color: #1e293b; vertical-align: middle; text-align: left;">
+                                            <strong style="color: #071F13; font-family: 'Inter', 'Hind Siliguri', sans-serif;">${it.productName}</strong>
+                                            <span style="color: #8A857C; font-size: 9.5px; font-weight: 600; margin-left: 5px;">(${it.unit})</span>
+                                        </td>
+                                        <td style="padding: 9px 14px; border: 1px solid #E5DFD5; font-size: 11.5px; color: #071F13; font-weight: 700; vertical-align: middle; text-align: right;">x${it.quantity}</td>
+                                        <td style="padding: 9px 14px; border: 1px solid #E5DFD5; font-size: 11.5px; color: #475569; vertical-align: middle; text-align: right;">৳${it.price}</td>
+                                        <td style="padding: 9px 14px; border: 1px solid #E5DFD5; font-size: 12px; color: #071F13; font-weight: 800; vertical-align: middle; text-align: right;">৳${it.price * it.quantity}</td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Verification & Trust Indicators (Fills the faka space beautifully using margin-top: auto) -->
+                    <div class="trust-signature-block" style="display: grid; grid-template-columns: 1.1fr 0.9fr; gap: 20px; margin-top: auto; margin-bottom: 15px; border-top: 1px dashed #E5DFD5; padding-top: 15px; box-sizing: border-box; width: 100%;">
+                        <!-- Organic Assurance Seals -->
+                        <div style="display: flex; flex-direction: column; gap: 5px; text-align: left; box-sizing: border-box;">
+                            <span style="font-size: 9px; font-weight: 900; color: #071F13; text-transform: uppercase; letter-spacing: 0.5px; display: block; margin-bottom: 3px;">BAZAR THOLE SAFE FOODS DECREE:</span>
+                            <div style="display: grid; grid-template-columns: 1fr; gap: 4px; font-size: 9px; font-weight: 700; color: #475569; font-family: 'Inter', 'Hind Siliguri', sans-serif;">
+                                <div style="display: flex; align-items: center; gap: 5px;"><span style="color: #D4AF37; font-size: 10px;">✔</span> 100% Formalin-Free Secured (শতভাগ ফরমালিন মুক্ত)</div>
+                                <div style="display: flex; align-items: center; gap: 5px;"><span style="color: #D4AF37; font-size: 10px;">✔</span> Sourced Directly from Local Farmers (কৃষক থেকে সরাসরি)</div>
+                                <div style="display: flex; align-items: center; gap: 5px;"><span style="color: #D4AF37; font-size: 10px;">✔</span> Strict Hygienic Sort & Deliver (নিরাপদ ও স্বাস্থ্যসম্মত বাছাই)</div>
+                            </div>
+                        </div>
+                        
+                        <!-- Authority Signatures -->
+                        <div style="display: flex; justify-content: flex-end; align-items: flex-end; gap: 20px; box-sizing: border-box;">
+                            <div style="text-align: center;">
+                                <div style="font-family: 'Georgia', serif; font-style: italic; font-size: 13px; color: #071F13; margin-bottom: 2px; border-bottom: 1px solid #D4AF37; padding-bottom: 2px; width: 95px; letter-spacing: 0.5px;">Bazar Thole</div>
+                                <span style="font-size: 7.5px; font-weight: 800; color: #8A857C; text-transform: uppercase; letter-spacing: 0.5px; display: block;">DISPATCH OFFICER</span>
+                            </div>
+                            <div style="text-align: center;">
+                                <div style="font-family: 'Georgia', serif; font-style: italic; font-size: 13px; color: #071F13; margin-bottom: 2px; border-bottom: 1px solid #D4AF37; padding-bottom: 2px; width: 95px; letter-spacing: 0.5px;">Verified Safe</div>
+                                <span style="font-size: 7.5px; font-weight: 800; color: #8A857C; text-transform: uppercase; letter-spacing: 0.5px; display: block;">QUALITY TRUSTEE</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Summary calculation area -->
+                    <div class="bottom-summary-container" style="display: flex; justify-content: space-between; align-items: flex-end; width: 100%; border-top: 1px solid #E5DFD5; padding-top: 12px; box-sizing: border-box;">
+                        
+                        <!-- Left QR code scanner -->
+                        <div class="qr-verification-box" style="display: flex; align-items: center; gap: 10px; background-color: #FAF9F6; border: 1px solid #E5DFD5; padding: 6px 12px; border-radius: 6px; border-left: 4px solid #071F13; box-sizing: border-box;">
+                            <img src="${qrCodeUrl}" alt="Order QR Code" style="width: 48px; height: 48px; border: 1px solid #E5DFD5; border-radius: 3px; background-color: #ffffff; padding: 1px;" />
+                            <div class="qr-verification-caption" style="font-size: 7.5px; font-weight: 700; color: #8A857C; text-transform: uppercase; letter-spacing: 0.5px; line-height: 1.3; max-width: 110px;">SCAN REGISTRY CODES TO VERIFY ORIGINAL STATEMENT</div>
+                        </div>
+
+                        <!-- Right Totals Calculations -->
+                        <div class="totals-calculation-block" style="width: 260px; display: flex; flex-direction: column; box-sizing: border-box;">
+                            <div class="summary-calculation-row" style="display: flex; justify-content: space-between; font-size: 11px; color: #475569; margin-bottom: 4px; font-weight: 700; text-transform: uppercase; width: 100%;">
+                                <span>Cart Subtotal:</span>
+                                <strong style="color: #071F13; font-weight: 700;">৳${trackedOrder.subtotal}</strong>
+                            </div>
+                            ${trackedOrder.discount > 0 ? `
+                                <div class="summary-calculation-row discount-subtraction" style="display: flex; justify-content: space-between; font-size: 11px; color: #b91c1c; margin-bottom: 4px; font-weight: 700; text-transform: uppercase; width: 100%;">
+                                    <span>Discounts:</span>
+                                    <strong style="color: #b91c1c; font-weight: 700;">-৳${trackedOrder.discount}</strong>
+                                </div>
+                            ` : ''}
+                            <div class="summary-calculation-row" style="display: flex; justify-content: space-between; font-size: 11px; color: #475569; margin-bottom: 4px; font-weight: 700; text-transform: uppercase; width: 100%;">
+                                <span>Delivery Cost:</span>
+                                <strong style="color: #071F13; font-weight: 700;">৳${trackedOrder.deliveryFee}</strong>
+                            </div>
+                            
+                            <!-- Premium Grand Total Banner -->
+                            <div class="grand-total-solid-banner" style="background-color: #071F13; color: #ffffff; padding: 9px 12px; display: flex; justify-content: space-between; align-items: center; margin-top: 6px; box-sizing: border-box; width: 100%; border-radius: 6px; border: 1px solid #D4AF37; box-shadow: 0 4px 10px rgba(15, 46, 30, 0.15);">
+                                <span style="font-weight: 900; font-size: 10px; letter-spacing: 0.8px; text-transform: uppercase; color: #D4AF37;">Amount Due:</span>
+                                <strong style="font-weight: 900; font-size: 15px; color: #FCFBF9;">৳${trackedOrder.total}</strong>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
- 
-        <div class="footer-note">
-            <p style="font-weight: 500; margin-bottom: 8px;">Thank you for purchasing from ${cleanStoreName}.</p>
-            <p style="margin: 0; color: #64748b; font-size: 10.5px;">All fresh farm greens and grocery products are processed with verified hygienic packaging guidelines. For support, call: ${settings.phone}.</p>
-            <p style="font-size: 9px; margin-top: 15px; color: #94a3b8; font-weight: 500; letter-spacing: 0.5px;">Report Generated Safely via ${cleanStoreName} Merchant Analytics - Secure Merchant Report.</p>
+
+        <!-- Footer Area -->
+        <div style="padding: 0 45px 22px 45px; box-sizing: border-box; width: 100%; z-index: 2; position: relative;">
+            <div class="footer-rule-accent" style="height: 1px; background-color: #D4AF37; margin-bottom: 8px; width: 100%;"></div>
+            <p class="footer-caps-note" style="text-align: center; font-size: 8.5px; font-weight: 700; color: #8A857C; text-transform: uppercase; letter-spacing: 1px; margin: 0; line-height: 1.4;">
+                ★ THANK YOU FOR BUYING HYGIENIC ORGANIC FOODS WITH ${cleanStoreName} ★<br/>
+                QUESTIONS OR ORDER ASSISTANCE? CALL: ${settings.phone} // EMAIL: ${settings.email || 'SUPPORT@BAZARTHOLE.COM'}
+            </p>
         </div>
     </div>
 </body>
-</html>`;
+</html>
+`;
 
-                            // Function to load html2pdf.js script and render the PDF
+                            const handleSaveHtml = () => {
+                              const printScript = `
+                              <script>
+                                  window.onload = function() {
+                                      setTimeout(function() {
+                                          window.print();
+                                      }, 500);
+                                  };
+                              </script>
+                              `;
+                              const fallbackHtml = reportHtml.replace('</body>', `${printScript}</body>`);
+                              const blob = new Blob([fallbackHtml], { type: 'text/html;charset=utf-8' });
+                              const url = URL.createObjectURL(blob);
+                              const link = document.createElement('a');
+                              link.href = url;
+                              link.download = "BAZAR_THOLE_INVOICE_REPORT_" + trackedOrder.id + ".html";
+                              link.style.display = 'none';
+                              document.body.appendChild(link);
+                              link.click();
+                              setTimeout(() => {
+                                document.body.removeChild(link);
+                                URL.revokeObjectURL(url);
+                              }, 300);
+
+                              triggerToast(`📥 saved clean BAZAR THOLE Web HTML invoice! Open it to print.`);
+                            };
+
                             const downloadPdf = async () => {
                               try {
                                 const html2pdf = (window as any).html2pdf;
@@ -2334,41 +2328,47 @@ export default function App() {
                                   throw new Error('html2pdf script not loaded yet.');
                                 }
 
-                                // Create an isolated iframe to prevent mobile viewport scaling, clipping, and responsive styling issues.
                                 const iframe = document.createElement('iframe');
                                 iframe.style.position = 'fixed';
                                 iframe.style.left = '0';
                                 iframe.style.top = '0';
-                                iframe.style.width = '794px';  // A4 standard width at 96 DPI
-                                iframe.style.height = '1123px'; // A4 standard height
-                                iframe.style.opacity = '0.01';  // Keep it visible to DOM rendering but invisible to the user
-                                iframe.style.pointerEvents = 'none';
+                                iframe.style.width = '794px';
+                                iframe.style.height = '1120px';
+                                iframe.style.border = 'none';
+                                iframe.style.margin = '0';
+                                iframe.style.padding = '0';
                                 iframe.style.zIndex = '-99999';
+                                iframe.style.visibility = 'hidden';
                                 document.body.appendChild(iframe);
 
-                                // Write the HTML report inside the iframe
-                                const doc = iframe.contentDocument || (iframe.contentWindow ? iframe.contentWindow.document : null);
-                                if (!doc) {
-                                  throw new Error('Iframe content document is not accessible.');
+                                const iframeDoc = iframe.contentDocument || iframe.contentWindow?.document;
+                                if (!iframeDoc) {
+                                  throw new Error('Failed to access iframe document');
                                 }
-                                doc.open();
-                                doc.write(reportHtml);
-                                doc.close();
 
-                                // Wait for all resources (images, fonts, scripts) inside the iframe to load completely.
-                                // We add a short delay (1000ms) to ensure external resources like the QR Code and Hind Siliguri web font are fully rendered.
-                                await new Promise((resolve) => {
-                                  iframe.onload = resolve;
-                                  setTimeout(resolve, 1000);
+                                iframeDoc.open();
+                                iframeDoc.write(reportHtml);
+                                iframeDoc.close();
+
+                                const images = iframeDoc.getElementsByTagName('img');
+                                const imgPromises = Array.from(images).map(img => {
+                                  if (img.complete) return Promise.resolve();
+                                  return new Promise(resolve => {
+                                    img.onload = resolve;
+                                    img.onerror = resolve;
+                                  });
                                 });
 
-                                // Query the invoice container inside the iframe for pixel-perfect targeting
-                                const targetElement = doc.querySelector('.invoice-container') || doc.body;
+                                await Promise.all([
+                                  ...imgPromises,
+                                  new Promise(resolve => setTimeout(resolve, 1000))
+                                ]);
 
-                                // Options for highly optimized A4 portrait PDF format (strict bounds)
-                                const opt = {
-                                  margin: 0, // Since .invoice-container already contains 45px padding, we use 0 margin for a perfect layout fit.
-                                  filename: `BAZAR_THOLE_INVOICE_REPORT_${trackedOrder.id}.pdf`,
+                                const targetElement = iframeDoc.querySelector('.invoice-container') || iframeDoc.body;
+
+                                 const opt = {
+                                  margin: 0,
+                                  filename: "BAZAR_THOLE_INVOICE_REPORT_" + trackedOrder.id + ".pdf",
                                   image: { type: 'jpeg', quality: 0.98 },
                                   html2canvas: { 
                                     scale: 2, 
@@ -2377,46 +2377,62 @@ export default function App() {
                                     backgroundColor: '#ffffff',
                                     scrollX: 0,
                                     scrollY: 0,
-                                    windowWidth: 794
+                                    windowWidth: 794,
+                                    width: 794,
+                                    height: 1120,
+                                    onclone: (clonedDoc: any) => {
+                                      const html = clonedDoc.documentElement;
+                                      const body = clonedDoc.body;
+                                      
+                                      if (html) {
+                                        html.style.width = '794px';
+                                        html.style.height = '1120px';
+                                        html.style.margin = '0';
+                                        html.style.padding = '0';
+                                        html.style.overflow = 'hidden';
+                                      }
+                                      
+                                      if (body) {
+                                        body.style.width = '794px';
+                                        body.style.minWidth = '794px';
+                                        body.style.maxWidth = '794px';
+                                        body.style.height = '1120px';
+                                        body.style.minHeight = '1120px';
+                                        body.style.maxHeight = '1120px';
+                                        body.style.margin = '0';
+                                        body.style.padding = '0';
+                                        body.style.overflow = 'hidden';
+                                        body.style.backgroundColor = '#ffffff';
+                                        body.style.display = 'block';
+                                        body.style.position = 'relative';
+                                      }
+                                      
+                                      const container = clonedDoc.querySelector('.invoice-container');
+                                      if (container) {
+                                        container.style.width = '794px';
+                                        container.style.height = '1120px';
+                                        container.style.position = 'absolute';
+                                        container.style.left = '0';
+                                        container.style.top = '0';
+                                        container.style.margin = '0';
+                                        container.style.padding = '0';
+                                        container.style.transform = 'none';
+                                        container.style.boxSizing = 'border-box';
+                                      }
+                                    }
                                   },
                                   jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
                                 };
 
-                                // Render PDF directly from the iframe's beautifully loaded element
+
                                 await html2pdf().from(targetElement).set(opt).save();
 
-                                // Remove the iframe from the DOM
                                 document.body.removeChild(iframe);
 
                                 triggerToast(`📥 Invoice PDF for Order #${trackedOrder.id} has been saved directly to your device.`);
                               } catch (err) {
                                 console.error("PDF generation failed, falling back to instant print HTML:", err);
-                                
-                                // Dynamic fallback download if script isn't fully ready yet
-                                const printScript = `
-                                <script>
-                                    window.onload = function() {
-                                        setTimeout(function() {
-                                            window.print();
-                                        }, 500);
-                                    };
-                                </script>
-                                `;
-                                const fallbackHtml = reportHtml.replace('</body>', `${printScript}</body>`);
-                                const blob = new Blob([fallbackHtml], { type: 'text/html;charset=utf-8' });
-                                const url = URL.createObjectURL(blob);
-                                const link = document.createElement('a');
-                                link.href = url;
-                                link.download = `BAZAR_THOLE_INVOICE_REPORT_${trackedOrder.id}.html`;
-                                link.style.display = 'none';
-                                document.body.appendChild(link);
-                                link.click();
-                                setTimeout(() => {
-                                  document.body.removeChild(link);
-                                  URL.revokeObjectURL(url);
-                                }, 300);
-
-                                triggerToast(`📥 Saved printable HTML invoice fallback! Open it on your device to print.`);
+                                handleSaveHtml();
                               }
                             };
 
@@ -2426,11 +2442,316 @@ export default function App() {
                         >
                           📥 Save PDF Invoice
                         </button>
-                      </div>
+
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const cleanStoreName = 'BAZAR THOLE';
+                            const qrData = "ORDER-REPORT: #" + trackedOrder.id + "\n" +
+                                           "Customer: " + trackedOrder.customerName + "\n" +
+                                           "Phone: " + trackedOrder.phone + "\n" +
+                                           "Total Amount: ৳" + trackedOrder.total + "\n" +
+                                           "Tracking Code: " + (trackedOrder.trackingCode || "N/A") + "\n" +
+                                           "Items:\n" + trackedOrder.items.map(it => " - " + it.productName + " (" + it.quantity + "x)").join("\n");
+                            const qrCodeUrl = "https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=" + encodeURIComponent(qrData);
+                            
+                            const reportHtml = `<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Invoice Report #${trackedOrder.id} - ${settings.storeName}</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Hind+Siliguri:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <style>
+        @page {
+            size: A4 portrait;
+            margin: 0 !important;
+        }
+        * {
+            box-sizing: border-box !important;
+            margin: 0;
+            padding: 0;
+        }
+        html, body {
+            margin: 0 !important;
+            padding: 0 !important;
+            font-family: 'Inter', 'Hind Siliguri', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+        
+        /* WEB ONLY: Gorgeous backdrop when viewed in browser */
+        @media screen {
+            html, body {
+                background-color: #05100B !important;
+                background-image: radial-gradient(circle at center, #0F2E1E 0%, #05100B 100%) !important;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                min-height: 100vh;
+                padding: 40px 15px;
+            }
+            .invoice-container {
+                box-shadow: 0 30px 60px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(212, 175, 55, 0.2) !important;
+                border-radius: 16px !important;
+                background-color: #FAF8F5 !important;
+                transform: scale(1);
+                transition: transform 0.2s ease;
+            }
+        }
+
+        /* PRINT ONLY: Clean layout mapping */
+        @media print {
+            html, body {
+                background-color: #ffffff !important;
+                width: 210mm !important;
+                height: 297mm !important;
+                overflow: hidden !important;
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+            }
+            .invoice-container {
+                width: 210mm !important;
+                height: 297mm !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                box-shadow: none !important;
+                border-radius: 0 !important;
+                border: 12px solid #071F13 !important;
+                page-break-inside: avoid !important;
+                page-break-after: avoid !important;
+                box-sizing: border-box !important;
+            }
+        }
+    </style>
+</head>
+<body style="margin: 0; padding: 0; background-color: #05100B;">
+    <div class="invoice-container" style="width: 794px; height: 1120px; margin: 0; padding: 0; background-color: #FAF8F5; box-sizing: border-box; display: flex; flex-direction: column; justify-content: space-between; position: relative; font-family: 'Inter', 'Hind Siliguri', sans-serif; border: 12px solid #071F13; overflow: hidden;">
+        
+        <!-- Luxury corner notch ornaments -->
+        <div style="position: absolute; top: 12px; left: 12px; width: 16px; height: 16px; border-top: 3px solid #D4AF37; border-left: 3px solid #D4AF37; z-index: 10;"></div>
+        <div style="position: absolute; top: 12px; right: 12px; width: 16px; height: 16px; border-top: 3px solid #D4AF37; border-right: 3px solid #D4AF37; z-index: 10;"></div>
+        <div style="position: absolute; bottom: 12px; left: 12px; width: 16px; height: 16px; border-bottom: 3px solid #D4AF37; border-left: 3px solid #D4AF37; z-index: 10;"></div>
+        <div style="position: absolute; bottom: 12px; right: 12px; width: 16px; height: 16px; border-bottom: 3px solid #D4AF37; border-right: 3px solid #D4AF37; z-index: 10;"></div>
+        
+        <!-- Double line border frame inside the outer border -->
+        <div style="position: absolute; top: 8px; left: 8px; right: 8px; bottom: 8px; border: 1px solid #D4AF37; pointer-events: none; z-index: 5;"></div>
+        
+        <!-- Top Luxury Header Block -->
+        <div class="top-header" style="background-color: #071F13; padding: 22px 45px; color: #ffffff; display: flex; justify-content: space-between; align-items: center; box-sizing: border-box; width: 100%; border-bottom: 3px solid #D4AF37; position: relative; z-index: 2;">
+            <div style="display: flex; align-items: center; gap: 15px;">
+                <div style="width: 44px; height: 44px; border: 2px solid #D4AF37; border-radius: 50%; display: flex; align-items: center; justify-content: center; background-color: rgba(212, 175, 55, 0.05);">
+                    <span style="font-family: 'Inter', sans-serif; font-size: 15px; font-weight: 900; color: #D4AF37; letter-spacing: -1px;">BT</span>
+                </div>
+                <div class="brand-title-group" style="display: flex; flex-direction: column; text-align: left;">
+                    <h1 style="margin: 0; font-size: 26px; font-weight: 900; letter-spacing: 1.5px; line-height: 1.0; text-transform: uppercase; color: #FCFBF9; font-family: 'Inter', sans-serif;">${cleanStoreName}</h1>
+                    <div class="brand-protocol-sub" style="font-size: 7.5px; font-weight: 700; color: #D4AF37; letter-spacing: 1.2px; text-transform: uppercase; margin-top: 4px; font-family: 'Inter', sans-serif;">PREMIUM ORGANIC FOODS // PLATINUM SECURED RECEIPT</div>
+                </div>
+            </div>
+            <div class="system-meta-details" style="text-align: right; font-family: monospace; font-size: 9px; line-height: 1.4; color: rgba(252, 251, 249, 0.85); font-weight: 500;">
+                <span style="color: #D4AF37;">STATION:</span> HUB_CENTRAL<br/>
+                <span style="color: #D4AF37;">TIME:</span> ${new Date(trackedOrder.orderDate).toLocaleTimeString('en-US', { hour12: false })}<br/>
+                <span style="color: #D4AF37;">CLIENT:</span> WEB_PORTAL_V2
+            </div>
+        </div>
+
+        <!-- Middle Area -->
+        <div class="invoice-body-wrapper" style="flex: 1; padding: 24px 45px 15px 45px; display: flex; flex-direction: column; box-sizing: border-box; width: 100%; z-index: 2; position: relative;">
+            
+            <!-- Document sheet inner card with elegant background -->
+            <div class="document-sheet" style="background-color: #ffffff; border: 1px solid #E5DFD5; padding: 26px 30px; box-sizing: border-box; flex: 1; position: relative; display: flex; flex-direction: column; width: 100%; border-radius: 8px; box-shadow: 0 4px 12px rgba(15, 46, 30, 0.03);">
+                
+                <!-- Decorative Gold Watermark background -->
+                <div class="sheet-watermark" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) rotate(-15deg); font-size: 48px; font-weight: 950; color: rgba(212, 175, 55, 0.025); text-transform: uppercase; letter-spacing: 8px; pointer-events: none; white-space: nowrap; text-align: center; z-index: 1;">${cleanStoreName} ORIGINAL</div>
+
+                <!-- Gold certified seal badge (CSS only) -->
+                <div style="position: absolute; bottom: 85px; left: 35px; width: 75px; height: 75px; border: 1px dashed #D4AF37; border-radius: 50%; display: flex; align-items: center; justify-content: center; transform: rotate(-8deg); background-color: rgba(212, 175, 55, 0.02); z-index: 5; pointer-events: none;">
+                    <div style="width: 65px; height: 65px; border: 1px double #D4AF37; border-radius: 50%; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 2px; box-sizing: border-box;">
+                        <span style="font-size: 5.5px; font-weight: 900; color: #D4AF37; letter-spacing: 0.5px; text-transform: uppercase; line-height: 1;">100% PURE</span>
+                        <span style="font-size: 8px; font-weight: 950; color: #071F13; letter-spacing: 0.5px; margin: 1px 0; line-height: 1;">ORGANIC</span>
+                        <span style="font-size: 5px; font-weight: 800; color: #D4AF37; line-height: 1;">SECURED</span>
+                    </div>
+                </div>
+
+                <div class="sheet-content-inner" style="position: relative; z-index: 2; width: 100%; height: 100%; display: flex; flex-direction: column; flex: 1; box-sizing: border-box;">
+                    
+                    <!-- Header inside sheet -->
+                    <div class="invoice-section-title-wrapper" style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 18px; width: 100%; border-bottom: 1px solid #E5DFD5; padding-bottom: 10px;">
+                        <div class="invoice-title-block" style="text-align: left;">
+                            <h2 style="font-size: 19px; font-weight: 900; color: #071F13; text-transform: uppercase; letter-spacing: 0.5px; margin: 0 0 2px 0; font-family: 'Inter', sans-serif;">OFFICIAL STATEMENT</h2>
+                            <span style="font-size: 8.5px; color: #8A857C; font-weight: 600; text-transform: uppercase; letter-spacing: 0.8px;">TAX INVOICE AND TRANSACTION RECORD</span>
+                        </div>
+                        <div style="background-color: #071F13; color: #D4AF37; font-size: 8.5px; font-weight: 800; padding: 4px 8px; border-radius: 4px; letter-spacing: 1px; font-family: monospace;">ORIGINAL_COPY</div>
                     </div>
 
-                  </div>
+                    <!-- Details grid -->
+                    <div class="details-grid" style="display: flex; justify-content: space-between; gap: 20px; margin-bottom: 18px; width: 100%;">
+                        
+                        <!-- Invoice Metadata -->
+                        <div class="meta-details-list" style="display: flex; flex-direction: column; gap: 4px; font-size: 11px; line-height: 1.5; width: 50%; text-align: left; border-left: 3px solid #D4AF37; padding-left: 12px; box-sizing: border-box;">
+                            <div class="meta-detail-row" style="display: flex; align-items: center;">
+                                <span class="meta-detail-label" style="font-weight: 800; color: #8A857C; text-transform: uppercase; font-size: 9px; width: 100px; letter-spacing: 0.5px; display: inline-block;">INVOICE ID:</span>
+                                <span class="meta-detail-value" style="color: #071F13; font-weight: 800; font-family: 'Inter', sans-serif;">#ORD-${trackedOrder.id}</span>
+                            </div>
+                            <div class="meta-detail-row" style="display: flex; align-items: center;">
+                                <span class="meta-detail-label" style="font-weight: 800; color: #8A857C; text-transform: uppercase; font-size: 9px; width: 100px; letter-spacing: 0.5px; display: inline-block;">DATE ISSUED:</span>
+                                <span class="meta-detail-value" style="color: #1e293b; font-weight: 700;">${new Date(trackedOrder.orderDate).toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short' })}</span>
+                            </div>
+                            <div class="meta-detail-row" style="display: flex; align-items: center;">
+                                <span class="meta-detail-label" style="font-weight: 800; color: #8A857C; text-transform: uppercase; font-size: 9px; width: 100px; letter-spacing: 0.5px; display: inline-block;">TRACKING KEY:</span>
+                                <span class="meta-detail-value" style="color: #1e293b; font-weight: 700; font-family: monospace;">${trackedOrder.trackingCode || 'PROCESSING'}</span>
+                            </div>
+                            <div class="meta-detail-row" style="display: flex; align-items: center;">
+                                <span class="meta-detail-label" style="font-weight: 800; color: #8A857C; text-transform: uppercase; font-size: 9px; width: 100px; letter-spacing: 0.5px; display: inline-block;">PAY METHOD:</span>
+                                <span class="meta-detail-value" style="color: #1e293b; font-weight: 700;">${trackedOrder.paymentMethod}</span>
+                            </div>
+                        </div>
 
+                        <!-- Bill To Section -->
+                        <div class="bill-to-destination-card" style="width: 50%; text-align: right; display: flex; flex-direction: column; align-items: flex-end; border-right: 3px solid #071F13; padding-right: 12px; box-sizing: border-box;">
+                            <span class="bill-to-title-label" style="font-size: 9px; font-weight: 900; color: #071F13; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 3px; display: block;">SHIPPING RECIPIENT:</span>
+                            <span class="bill-to-info-line" style="font-size: 13px; color: #071F13; font-weight: 800; margin: 1px 0; line-height: 1.2; display: block; font-family: 'Inter', 'Hind Siliguri', sans-serif;">${trackedOrder.customerName}</span>
+                            <span class="bill-to-info-line" style="font-size: 11px; color: #475569; font-weight: 600; margin: 1px 0; display: block;">Phone: ${trackedOrder.phone}</span>
+                            ${trackedOrder.email ? '<span class="bill-to-info-line" style="font-size: 11px; color: #475569; font-weight: 600; margin: 1px 0; display: block;">Email: ' + trackedOrder.email + '</span>' : ''}
+                            <span class="bill-to-info-line" style="font-size: 11px; color: #475569; font-weight: 600; margin: 1px 0; line-height: 1.2; display: block; font-family: 'Inter', 'Hind Siliguri', sans-serif;">${trackedOrder.address}</span>
+                            <span class="bill-to-info-line" style="font-size: 11px; color: #071F13; font-weight: 700; margin: 1px 0; display: block; text-transform: uppercase; font-family: 'Inter', 'Hind Siliguri', sans-serif;">${trackedOrder.city}</span>
+                        </div>
+                    </div>
+
+                    <!-- Items Table -->
+                    <div class="manifest-table-wrapper" style="margin-bottom: 15px; width: 100%;">
+                        <table class="manifest-data-grid" style="width: 100%; border-collapse: collapse; font-family: 'Inter', 'Hind Siliguri', sans-serif;">
+                            <thead>
+                                <tr>
+                                    <th style="width: 50%; background-color: #071F13; color: #ffffff; font-weight: 700; font-size: 9.5px; text-transform: uppercase; letter-spacing: 0.8px; padding: 10px 14px; text-align: left; border: 1px solid #071F13; border-bottom: 3px solid #D4AF37;">Product Description</th>
+                                    <th style="width: 15%; background-color: #071F13; color: #ffffff; font-weight: 700; font-size: 9.5px; text-transform: uppercase; letter-spacing: 0.8px; padding: 10px 14px; text-align: right; border: 1px solid #071F13; border-bottom: 3px solid #D4AF37;">QTY</th>
+                                    <th style="width: 15%; background-color: #071F13; color: #ffffff; font-weight: 700; font-size: 9.5px; text-transform: uppercase; letter-spacing: 0.8px; padding: 10px 14px; text-align: right; border: 1px solid #071F13; border-bottom: 3px solid #D4AF37;">Unit Price</th>
+                                    <th style="width: 20%; background-color: #071F13; color: #ffffff; font-weight: 700; font-size: 9.5px; text-transform: uppercase; letter-spacing: 0.8px; padding: 10px 14px; text-align: right; border: 1px solid #071F13; border-bottom: 3px solid #D4AF37;">Subtotal</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${trackedOrder.items.map((it, i) => `
+                                    <tr style="background-color: ${i % 2 === 0 ? '#FAF9F6' : '#ffffff'};">
+                                        <td style="padding: 9px 14px; border: 1px solid #E5DFD5; font-size: 11.5px; color: #1e293b; vertical-align: middle; text-align: left;">
+                                            <strong style="color: #071F13; font-family: 'Inter', 'Hind Siliguri', sans-serif;">${it.productName}</strong>
+                                            <span style="color: #8A857C; font-size: 9.5px; font-weight: 600; margin-left: 5px;">(${it.unit})</span>
+                                        </td>
+                                        <td style="padding: 9px 14px; border: 1px solid #E5DFD5; font-size: 11.5px; color: #071F13; font-weight: 700; vertical-align: middle; text-align: right;">x${it.quantity}</td>
+                                        <td style="padding: 9px 14px; border: 1px solid #E5DFD5; font-size: 11.5px; color: #475569; vertical-align: middle; text-align: right;">৳${it.price}</td>
+                                        <td style="padding: 9px 14px; border: 1px solid #E5DFD5; font-size: 12px; color: #071F13; font-weight: 800; vertical-align: middle; text-align: right;">৳${it.price * it.quantity}</td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Verification & Trust Indicators (Fills the faka space beautifully using margin-top: auto) -->
+                    <div class="trust-signature-block" style="display: grid; grid-template-columns: 1.1fr 0.9fr; gap: 20px; margin-top: auto; margin-bottom: 15px; border-top: 1px dashed #E5DFD5; padding-top: 15px; box-sizing: border-box; width: 100%;">
+                        <!-- Organic Assurance Seals -->
+                        <div style="display: flex; flex-direction: column; gap: 5px; text-align: left; box-sizing: border-box;">
+                            <span style="font-size: 9px; font-weight: 900; color: #071F13; text-transform: uppercase; letter-spacing: 0.5px; display: block; margin-bottom: 3px;">BAZAR THOLE SAFE FOODS DECREE:</span>
+                            <div style="display: grid; grid-template-columns: 1fr; gap: 4px; font-size: 9px; font-weight: 700; color: #475569; font-family: 'Inter', 'Hind Siliguri', sans-serif;">
+                                <div style="display: flex; align-items: center; gap: 5px;"><span style="color: #D4AF37; font-size: 10px;">✔</span> 100% Formalin-Free Secured (শতভাগ ফরমালিন মুক্ত)</div>
+                                <div style="display: flex; align-items: center; gap: 5px;"><span style="color: #D4AF37; font-size: 10px;">✔</span> Sourced Directly from Local Farmers (কৃষক থেকে সরাসরি)</div>
+                                <div style="display: flex; align-items: center; gap: 5px;"><span style="color: #D4AF37; font-size: 10px;">✔</span> Strict Hygienic Sort & Deliver (নিরাপদ ও স্বাস্থ্যসম্মত বাছাই)</div>
+                            </div>
+                        </div>
+                        
+                        <!-- Authority Signatures -->
+                        <div style="display: flex; justify-content: flex-end; align-items: flex-end; gap: 20px; box-sizing: border-box;">
+                            <div style="text-align: center;">
+                                <div style="font-family: 'Georgia', serif; font-style: italic; font-size: 13px; color: #071F13; margin-bottom: 2px; border-bottom: 1px solid #D4AF37; padding-bottom: 2px; width: 95px; letter-spacing: 0.5px;">Bazar Thole</div>
+                                <span style="font-size: 7.5px; font-weight: 800; color: #8A857C; text-transform: uppercase; letter-spacing: 0.5px; display: block;">DISPATCH OFFICER</span>
+                            </div>
+                            <div style="text-align: center;">
+                                <div style="font-family: 'Georgia', serif; font-style: italic; font-size: 13px; color: #071F13; margin-bottom: 2px; border-bottom: 1px solid #D4AF37; padding-bottom: 2px; width: 95px; letter-spacing: 0.5px;">Verified Safe</div>
+                                <span style="font-size: 7.5px; font-weight: 800; color: #8A857C; text-transform: uppercase; letter-spacing: 0.5px; display: block;">QUALITY TRUSTEE</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Summary calculation area -->
+                    <div class="bottom-summary-container" style="display: flex; justify-content: space-between; align-items: flex-end; width: 100%; border-top: 1px solid #E5DFD5; padding-top: 12px; box-sizing: border-box;">
+                        
+                        <!-- Left QR code scanner -->
+                        <div class="qr-verification-box" style="display: flex; align-items: center; gap: 10px; background-color: #FAF9F6; border: 1px solid #E5DFD5; padding: 6px 12px; border-radius: 6px; border-left: 4px solid #071F13; box-sizing: border-box;">
+                            <img src="${qrCodeUrl}" alt="Order QR Code" style="width: 48px; height: 48px; border: 1px solid #E5DFD5; border-radius: 3px; background-color: #ffffff; padding: 1px;" />
+                            <div class="qr-verification-caption" style="font-size: 7.5px; font-weight: 700; color: #8A857C; text-transform: uppercase; letter-spacing: 0.5px; line-height: 1.3; max-width: 110px;">SCAN REGISTRY CODES TO VERIFY ORIGINAL STATEMENT</div>
+                        </div>
+
+                        <!-- Right Totals Calculations -->
+                        <div class="totals-calculation-block" style="width: 260px; display: flex; flex-direction: column; box-sizing: border-box;">
+                            <div class="summary-calculation-row" style="display: flex; justify-content: space-between; font-size: 11px; color: #475569; margin-bottom: 4px; font-weight: 700; text-transform: uppercase; width: 100%;">
+                                <span>Cart Subtotal:</span>
+                                <strong style="color: #071F13; font-weight: 700;">৳${trackedOrder.subtotal}</strong>
+                            </div>
+                            ${trackedOrder.discount > 0 ? `
+                                <div class="summary-calculation-row discount-subtraction" style="display: flex; justify-content: space-between; font-size: 11px; color: #b91c1c; margin-bottom: 4px; font-weight: 700; text-transform: uppercase; width: 100%;">
+                                    <span>Discounts:</span>
+                                    <strong style="color: #b91c1c; font-weight: 700;">-৳${trackedOrder.discount}</strong>
+                                </div>
+                            ` : ''}
+                            <div class="summary-calculation-row" style="display: flex; justify-content: space-between; font-size: 11px; color: #475569; margin-bottom: 4px; font-weight: 700; text-transform: uppercase; width: 100%;">
+                                <span>Delivery Cost:</span>
+                                <strong style="color: #071F13; font-weight: 700;">৳${trackedOrder.deliveryFee}</strong>
+                            </div>
+                            
+                            <!-- Premium Grand Total Banner -->
+                            <div class="grand-total-solid-banner" style="background-color: #071F13; color: #ffffff; padding: 9px 12px; display: flex; justify-content: space-between; align-items: center; margin-top: 6px; box-sizing: border-box; width: 100%; border-radius: 6px; border: 1px solid #D4AF37; box-shadow: 0 4px 10px rgba(15, 46, 30, 0.15);">
+                                <span style="font-weight: 900; font-size: 10px; letter-spacing: 0.8px; text-transform: uppercase; color: #D4AF37;">Amount Due:</span>
+                                <strong style="font-weight: 900; font-size: 15px; color: #FCFBF9;">৳${trackedOrder.total}</strong>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer Area -->
+        <div style="padding: 0 45px 22px 45px; box-sizing: border-box; width: 100%; z-index: 2; position: relative;">
+            <div class="footer-rule-accent" style="height: 1px; background-color: #D4AF37; margin-bottom: 8px; width: 100%;"></div>
+            <p class="footer-caps-note" style="text-align: center; font-size: 8.5px; font-weight: 700; color: #8A857C; text-transform: uppercase; letter-spacing: 1px; margin: 0; line-height: 1.4;">
+                ★ THANK YOU FOR BUYING HYGIENIC ORGANIC FOODS WITH ${cleanStoreName} ★<br/>
+                QUESTIONS OR ORDER ASSISTANCE? CALL: ${settings.phone} // EMAIL: ${settings.email || 'SUPPORT@BAZARTHOLE.COM'}
+            </p>
+        </div>
+    </div>
+</body>
+</html>
+`;
+
+                            const printScript = `
+                            <script>
+                                window.onload = function() {
+                                    setTimeout(function() {
+                                        window.print();
+                                    }, 500);
+                                };
+                            </script>
+                            `;
+                            const fallbackHtml = reportHtml.replace('</body>', `${printScript}</body>`);
+                            const blob = new Blob([fallbackHtml], { type: 'text/html;charset=utf-8' });
+                            const url = URL.createObjectURL(blob);
+                            const link = document.createElement('a');
+                            link.href = url;
+                            link.download = "BAZAR_THOLE_INVOICE_REPORT_" + trackedOrder.id + ".html";
+                            link.style.display = 'none';
+                            document.body.appendChild(link);
+                            link.click();
+                            setTimeout(() => {
+                              document.body.removeChild(link);
+                              URL.revokeObjectURL(url);
+                            }, 300);
+
+                            triggerToast(`📥 Saved Web HTML Invoice! Open this file to print or save.`);
+                          }}
+                          className="px-4 py-2 bg-slate-700 hover:bg-slate-800 text-white font-bold rounded-xl text-xs flex items-center gap-1 cursor-pointer transition-colors shadow-xs"
+                        >
+                          🌐 Save Web File (ওয়েব ফাইল)
+                        </button>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               );
             })()}

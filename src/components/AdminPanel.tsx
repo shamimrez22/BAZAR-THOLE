@@ -369,10 +369,16 @@ export default function AdminPanel({ onDataChanged, onClose }: AdminPanelProps) 
     syncLists();
   };
 
-  const handleDownloadReport = (order: Order) => {
-    const qrData = `ORDER-REPORT: #${order.id}\nCustomer: ${order.customerName}\nPhone: ${order.phone}\nTotal Amount: ৳${order.total}\nTracking Code: ${order.trackingCode || 'N/A'}\nItems:\n${order.items.map(it => ` - ${it.productName} (${it.quantity}x)`).join('\n')}`;
-    const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(qrData)}`;
-       const cleanStoreName = 'BAZAR THOLE';
+  const handleDownloadReport = (order: Order, forceHtml = false) => {
+    const qrData = "ORDER-REPORT: #" + order.id + "\n" +
+                   "Customer: " + order.customerName + "\n" +
+                   "Phone: " + order.phone + "\n" +
+                   "Total Amount: ৳" + order.total + "\n" +
+                   "Tracking Code: " + (order.trackingCode || "N/A") + "\n" +
+                   "Items:\n" + order.items.map(it => " - " + it.productName + " (" + it.quantity + "x)").join("\n");
+    const qrCodeUrl = "https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=" + encodeURIComponent(qrData);
+    const cleanStoreName = 'BAZAR THOLE';
+    
     const reportHtml = `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -381,300 +387,198 @@ export default function AdminPanel({ onDataChanged, onClose }: AdminPanelProps) 
     <title>Invoice Report #${order.id} - ${settings.storeName}</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Hind+Siliguri:wght@400;500;600;700&display=swap" rel="stylesheet" />
     <style>
-        body {
-            font-family: 'Inter', 'Hind Siliguri', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-            color: #334155;
+        @page {
+            size: A4 portrait;
+            margin: 0 !important;
+        }
+        @media print {
+            html, body {
+                margin: 0 !important;
+                padding: 0 !important;
+                height: 1120px !important;
+                overflow: hidden !important;
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+            }
+            .invoice-container {
+                width: 794px !important;
+                height: 1120px !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                page-break-inside: avoid !important;
+                page-break-after: avoid !important;
+                box-sizing: border-box !important;
+            }
+        }
+        * {
+            box-sizing: border-box !important;
             margin: 0;
             padding: 0;
+        }
+        body {
+            font-family: 'Inter', 'Hind Siliguri', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            color: #1e293b;
             background-color: #ffffff;
             -webkit-print-color-adjust: exact;
             print-color-adjust: exact;
             -webkit-font-smoothing: antialiased;
-            -moz-osx-font-smoothing: grayscale;
-        }
-        .invoice-container {
-            width: 794px;
-            margin: 0;
-            background: #ffffff;
-            padding: 45px;
-            box-sizing: border-box;
-        }
-        .header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-bottom: 2px solid #059669;
-            padding-bottom: 16px;
-            margin-bottom: 24px;
-        }
-        .logo-section h1 {
-            margin: 0;
-            color: #059669;
-            font-size: 32px;
-            font-weight: 900;
-            letter-spacing: -1px;
-            text-transform: uppercase;
-        }
-        .logo-section p {
-            margin: 4px 0 0;
-            font-size: 11px;
-            text-transform: uppercase;
-            color: #64748b;
-            font-weight: 700;
-            letter-spacing: 1.5px;
-        }
-        .invoice-meta {
-            text-align: right;
-        }
-        .invoice-meta h2 {
-            margin: 0;
-            font-size: 24px;
-            color: #1e293b;
-            font-weight: 800;
-            letter-spacing: -0.5px;
-        }
-        .invoice-meta p {
-            margin: 4px 0 0;
-            font-size: 12px;
-            color: #475569;
-            font-weight: 500;
-        }
-        .grid-details {
-            display: grid;
-            grid-template-columns: 1.3fr 0.7fr;
-            gap: 20px;
-            margin-bottom: 24px;
-        }
-        .col-card {
-            background: #f8fafc;
-            border: 1px solid #e2e8f0;
-            border-radius: 8px;
-            padding: 16px;
-        }
-        .col-card h3 {
-            font-size: 11px;
-            text-transform: uppercase;
-            color: #059669;
-            margin: 0 0 10px;
-            border-bottom: 1px solid #cbd5e1;
-            padding-bottom: 6px;
-            font-weight: 800;
-            letter-spacing: 0.5px;
-        }
-        .col-card p {
-            margin: 5px 0;
-            font-size: 12.5px;
-            line-height: 1.5;
-            color: #334155;
-        }
-        .col-card p strong {
-            color: #1e293b;
-            font-weight: 600;
-        }
-        .qr-section {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            background: #f8fafc;
-            border: 1px solid #e2e8f0;
-            border-radius: 8px;
-            padding: 16px;
-            text-align: center;
-        }
-        .qr-section img {
-            display: block;
-            margin-bottom: 6px;
-            width: 100px;
-            height: 100px;
-            border-radius: 4px;
-            border: 1px solid #e2e8f0;
-        }
-        .qr-section span {
-            font-size: 9px;
-            color: #64748b;
-            text-transform: uppercase;
-            font-weight: 700;
-            letter-spacing: 0.5px;
-        }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-bottom: 24px;
-        }
-        th {
-            background-color: #f1f5f9;
-            color: #334155;
-            text-align: left;
-            padding: 10px 12px;
-            font-size: 11px;
-            text-transform: uppercase;
-            font-weight: 700;
-            letter-spacing: 0.5px;
-            border-bottom: 2px solid #cbd5e1;
-        }
-        td {
-            padding: 10px 12px;
-            border-bottom: 1px solid #e2e8f0;
-            font-size: 12.5px;
-            color: #334155;
-        }
-        .text-right {
-            text-align: right;
-        }
-        .summary-container {
-            display: flex;
-            justify-content: flex-end;
-            margin-bottom: 24px;
-        }
-        .totals-block {
-            width: 300px;
-        }
-        .totals-row {
-            display: flex;
-            justify-content: space-between;
-            font-size: 12.5px;
-            margin-bottom: 6px;
-            color: #475569;
-        }
-        .totals-row strong {
-            color: #1e293b;
-        }
-        .totals-row.grand {
-            font-size: 15px;
-            font-weight: 800;
-            border-top: 2px solid #059669;
-            padding-top: 8px;
-            margin-top: 8px;
-            color: #059669;
-        }
-        .totals-row.grand strong {
-            color: #059669;
-            font-size: 17px;
-        }
-        .status-badge {
-            display: inline-block;
-            padding: 3px 8px;
-            font-size: 9px;
-            font-weight: 700;
-            text-transform: uppercase;
-            border-radius: 9999px;
-            letter-spacing: 0.5px;
-        }
-        .status-paid {
-            background-color: #d1fae5;
-            color: #065f46;
-        }
-        .status-pending {
-            background-color: #fef3c7;
-            color: #92400e;
-        }
-        .footer-note {
-            text-align: center;
-            margin-top: 40px;
-            font-size: 10.5px;
-            color: #64748b;
-            border-top: 1px dashed #cbd5e1;
-            padding-top: 16px;
-            line-height: 1.5;
         }
     </style>
 </head>
-<body>
-    <div class="invoice-container">
-        <div class="header">
-            <div class="logo-section">
-                <h1>${cleanStoreName.toUpperCase()}</h1>
-                <p>Official Verification Report & Invoice</p>
+<body style="margin: 0; padding: 0; background-color: #ffffff;">
+    <div class="invoice-container" style="width: 794px; min-height: 1120px; height: 1120px; margin: 0; padding: 0; background-color: #EFE8E1; box-sizing: border-box; display: flex; flex-direction: column; justify-content: space-between; position: relative; font-family: 'Inter', 'Hind Siliguri', sans-serif;">
+        <!-- Top Colored Header Block -->
+        <div class="top-header" style="background-color: #8C1F1F; padding: 24px 40px; color: #ffffff; display: flex; justify-content: space-between; align-items: center; box-sizing: border-box; width: 100%;">
+            <div class="brand-title-group" style="display: flex; flex-direction: column;">
+                <h1 style="margin: 0; font-size: 28px; font-weight: 900; letter-spacing: 1.5px; line-height: 1.1; text-transform: uppercase; color: #ffffff; font-family: 'Inter', sans-serif;">${cleanStoreName}</h1>
+                <div class="brand-protocol-sub" style="font-size: 8.5px; font-weight: 700; color: rgba(255, 255, 255, 0.7); letter-spacing: 1px; text-transform: uppercase; margin-top: 4px; font-family: 'Inter', sans-serif;">PREMIUM_MANIFEST // BZD-V1.0 // PROTOCOL_SECURED</div>
             </div>
-            <div class="invoice-meta">
-                <h2>INVOICE #${order.id}</h2>
-                <p>DATE: ${new Date(order.orderDate).toLocaleString('en-US')}</p>
-                <p>TRACKING CODE: <strong>${order.trackingCode || 'NOT ASSIGNED'}</strong></p>
-            </div>
-        </div>
-        
-        <div class="grid-details">
-            <div class="col-card">
-                <h3>SHIPPING & PACKAGING RECIPIENT</h3>
-                <p><strong>Customer Name:</strong> ${order.customerName}</p>
-                <p><strong>Contact Phone:</strong> ${order.phone}</p>
-                <p><strong>Email Address:</strong> ${order.email || 'N/A'}</p>
-                <p><strong>City Region:</strong> ${order.city.toUpperCase()}</p>
-                <p><strong>Street Address:</strong> ${order.address}</p>
-            </div>
-            <div class="qr-section">
-                <img src="${qrCodeUrl}" alt="Order Verification QR Code" />
-                <span>Scan to Verify Invoice #${order.id}</span>
+            <div class="system-meta-details" style="text-align: right; font-family: monospace; font-size: 9.5px; line-height: 1.6; color: rgba(255, 255, 255, 0.85); font-weight: 600;">
+                ISSUED_BY: SYSTEM_CLIENT<br/>
+                TIMESTAMP: ${new Date(order.orderDate).toLocaleTimeString('en-US', { hour12: false })}<br/>
+                LOCATION: ${order.city.toUpperCase()}_CENTRAL
             </div>
         </div>
 
-        <h3 style="font-size: 11px; text-transform: uppercase; color: #059669; margin: 0 0 10px; font-weight: 800; letter-spacing: 0.5px;">ORDERED ITEMS DETAILS</h3>
-        <table>
-            <thead>
-                <tr>
-                    <th style="width: 50%;">Item Description</th>
-                    <th class="text-right" style="width: 15%;">Unit Price</th>
-                    <th class="text-right" style="width: 15%;">Quantity</th>
-                    <th class="text-right" style="width: 20%;">Subtotal</th>
-                </tr>
-            </thead>
-            <tbody>
-                ${order.items.map(it => `
-                <tr>
-                    <td><strong style="color: #1e293b;">${it.productName}</strong> <span style="font-size: 11px; color: #64748b;">(${it.unit})</span></td>
-                    <td class="text-right">৳${it.price}</td>
-                    <td class="text-right">${it.quantity}</td>
-                    <td class="text-right" style="font-weight: 600; color: #1e293b;">৳${it.price * it.quantity}</td>
-                </tr>
-                `).join('')}
-            </tbody>
-        </table>
- 
-        <div class="summary-container">
-            <div class="totals-block">
-                <div class="totals-row">
-                    <span>Subtotal:</span>
-                    <strong>৳${order.subtotal}</strong>
-                </div>
-                ${order.discount > 0 ? `
-                <div class="totals-row" style="color: #ef4444;">
-                    <span>Discounts Applied:</span>
-                    <strong style="color: #ef4444;">-৳${order.discount}</strong>
-                </div>
-                ` : ''}
-                <div class="totals-row">
-                    <span>Delivery Charge:</span>
-                    <strong>৳${order.deliveryFee}</strong>
-                </div>
-                <div class="totals-row grand">
-                    <span>GRAND TOTAL DUE:</span>
-                    <strong>৳${order.total}</strong>
-                </div>
-                <div class="totals-row" style="margin-top: 15px; border-top: 1px solid #f1f5f9; padding-top: 10px;">
-                    <span>Payment Method:</span>
-                    <strong style="font-size: 11px;">${order.paymentMethod}</strong>
-                </div>
-                <div class="totals-row">
-                    <span>Payment Status:</span>
-                    <span>
-                        <span class="status-badge ${order.paymentStatus === 'Paid' ? 'status-paid' : 'status-pending'}">
-                            ${order.paymentStatus}
-                        </span>
-                    </span>
+        <!-- Middle Document Sheet Area -->
+        <div class="invoice-body-wrapper" style="flex: 1; padding: 30px 40px; display: flex; flex-direction: column; box-sizing: border-box; width: 100%;">
+            <div class="document-sheet" style="background-color: #ffffff; border: 1px solid #D6CDC5; padding: 35px 40px; box-sizing: border-box; flex: 1; position: relative; display: flex; flex-direction: column; justify-content: space-between; overflow: hidden; width: 100%;">
+                <!-- Decorative Watermark background -->
+                <div class="sheet-watermark" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) rotate(-25deg); font-size: 42px; font-weight: 950; color: rgba(140, 31, 31, 0.035); text-transform: uppercase; letter-spacing: 6px; pointer-events: none; white-space: nowrap; text-align: center; z-index: 1;">${cleanStoreName} APPROVED</div>
+
+                <div class="sheet-content-inner" style="position: relative; z-index: 2; width: 100%; height: 100%; display: flex; flex-direction: column; justify-content: space-between; flex: 1;">
+                    <!-- Title block -->
+                    <div class="invoice-section-title-wrapper" style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 25px; width: 100%;">
+                        <div class="invoice-title-block" style="text-align: left;">
+                            <h2 style="font-size: 20px; font-weight: 900; color: #1e293b; text-transform: uppercase; letter-spacing: -0.5px; margin: 0 0 6px 0; font-family: 'Inter', sans-serif;">ORDER INVOICE</h2>
+                            <div class="invoice-title-underline" style="height: 4px; width: 50px; background-color: #8C1F1F;"></div>
+                        </div>
+                    </div>
+
+                    <!-- Metadata details grid -->
+                    <div class="details-grid" style="display: flex; justify-content: space-between; gap: 20px; margin-bottom: 25px; width: 100%;">
+                        <div class="meta-details-list" style="display: flex; flex-direction: column; gap: 6px; font-size: 11.5px; line-height: 1.6; width: 50%; text-align: left;">
+                            <div class="meta-detail-row" style="display: flex; align-items: center; margin-bottom: 4px;">
+                                <span class="meta-detail-label" style="font-weight: 800; color: #64748b; text-transform: uppercase; font-size: 10px; width: 115px; letter-spacing: 0.5px; display: inline-block; font-family: 'Inter', sans-serif;">ORDER ID:</span>
+                                <span class="meta-detail-value" style="color: #0f172a; font-weight: 700; font-family: 'Inter', sans-serif;">#ORD-${order.id}</span>
+                            </div>
+                            <div class="meta-detail-row" style="display: flex; align-items: center; margin-bottom: 4px;">
+                                <span class="meta-detail-label" style="font-weight: 800; color: #64748b; text-transform: uppercase; font-size: 10px; width: 115px; letter-spacing: 0.5px; display: inline-block; font-family: 'Inter', sans-serif;">ORDER DATE:</span>
+                                <span class="meta-detail-value" style="color: #0f172a; font-weight: 700; font-family: 'Inter', sans-serif;">${new Date(order.orderDate).toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short' })}</span>
+                            </div>
+                            <div class="meta-detail-row" style="display: flex; align-items: center; margin-bottom: 4px;">
+                                <span class="meta-detail-label" style="font-weight: 800; color: #64748b; text-transform: uppercase; font-size: 10px; width: 115px; letter-spacing: 0.5px; display: inline-block; font-family: 'Inter', sans-serif;">TRACKING CODE:</span>
+                                <span class="meta-detail-value" style="color: #0f172a; font-weight: 700; font-family: monospace;">${order.trackingCode || 'NOT ASSIGNED'}</span>
+                            </div>
+                            <div class="meta-detail-row" style="display: flex; align-items: center; margin-bottom: 4px;">
+                                <span class="meta-detail-label" style="font-weight: 800; color: #64748b; text-transform: uppercase; font-size: 10px; width: 115px; letter-spacing: 0.5px; display: inline-block; font-family: 'Inter', sans-serif;">PAYMENT METHOD:</span>
+                                <span class="meta-detail-value" style="color: #0f172a; font-weight: 700; font-family: 'Inter', sans-serif;">${order.paymentMethod}</span>
+                            </div>
+                        </div>
+
+                        <!-- Bill To Section -->
+                        <div class="bill-to-destination-card" style="width: 50%; text-align: right; display: flex; flex-direction: column; align-items: flex-end;">
+                            <span class="bill-to-title-label" style="font-size: 11px; font-weight: 900; color: #8C1F1F; text-transform: uppercase; letter-spacing: 0.75px; margin-bottom: 6px; display: block; font-family: 'Inter', sans-serif;">BILL TO:</span>
+                            <span class="bill-to-info-line" style="font-size: 12px; color: #0f172a; font-weight: 800; margin: 2px 0; line-height: 1.4; display: block; font-family: 'Inter', 'Hind Siliguri', sans-serif;">${order.customerName}</span>
+                            <span class="bill-to-info-line" style="font-size: 12px; color: #334155; font-weight: 600; margin: 2px 0; line-height: 1.4; display: block; font-family: 'Inter', sans-serif;">Phone: ${order.phone}</span>
+                            ${order.email ? '<span class="bill-to-info-line" style="font-size: 12px; color: #334155; font-weight: 600; margin: 2px 0; line-height: 1.4; display: block; font-family: \'Inter\', sans-serif;">Email: ' + order.email + '</span>' : ''}
+                            <span class="bill-to-info-line" style="font-size: 12px; color: #334155; font-weight: 600; margin: 2px 0; line-height: 1.4; display: block; font-family: 'Inter', 'Hind Siliguri', sans-serif;">${order.address}</span>
+                            <span class="bill-to-info-line" style="font-size: 12px; color: #334155; font-weight: 600; margin: 2px 0; line-height: 1.4; display: block; text-transform: uppercase; font-family: 'Inter', 'Hind Siliguri', sans-serif;">${order.city}</span>
+                        </div>
+                    </div>
+
+                    <!-- Items Table -->
+                    <div class="manifest-table-wrapper" style="margin-bottom: 25px; width: 100%;">
+                        <div class="manifest-table-header" style="font-size: 10px; font-weight: 900; color: #0f172a; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; font-family: 'Inter', sans-serif; text-align: left;">Ordered Items Details</div>
+                        <table class="manifest-data-grid" style="width: 100%; border-collapse: collapse; border: 1.5px solid #000000; font-family: 'Inter', 'Hind Siliguri', sans-serif;">
+                            <thead>
+                                <tr>
+                                    <th style="width: 50%; background-color: #1e293b; color: #ffffff; font-weight: 700; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; padding: 10px 12px; text-align: left; border: 1.5px solid #000000; font-family: 'Inter', sans-serif;">Product Description</th>
+                                    <th style="width: 15%; background-color: #1e293b; color: #ffffff; font-weight: 700; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; padding: 10px 12px; text-align: right; border: 1.5px solid #000000; font-family: 'Inter', sans-serif;">QTY</th>
+                                    <th style="width: 15%; background-color: #1e293b; color: #ffffff; font-weight: 700; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; padding: 10px 12px; text-align: right; border: 1.5px solid #000000; font-family: 'Inter', sans-serif;">Unit Price</th>
+                                    <th style="width: 20%; background-color: #1e293b; color: #ffffff; font-weight: 700; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; padding: 10px 12px; text-align: right; border: 1.5px solid #000000; font-family: 'Inter', sans-serif;">Subtotal</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${order.items.map(it => '<tr><td style="padding: 10px 12px; border: 1.5px solid #000000; font-size: 12px; color: #1e293b; vertical-align: middle; font-weight: 600; text-align: left;"><span style="color: #0f172a; font-weight: 800; display: inline-block;">' + it.productName + '</span><span style="color: #64748b; font-size: 10.5px; font-weight: 500; margin-left: 4px; display: inline-block;">(' + it.unit + ')</span></td><td style="padding: 10px 12px; border: 1.5px solid #000000; font-size: 12px; color: #1e293b; vertical-align: middle; font-weight: 600; text-align: right;">x' + it.quantity + '</td><td style="padding: 10px 12px; border: 1.5px solid #000000; font-size: 12px; color: #1e293b; vertical-align: middle; font-weight: 600; text-align: right;">BDT ' + it.price + '</td><td style="padding: 10px 12px; border: 1.5px solid #000000; font-size: 12px; color: #0f172a; vertical-align: middle; font-weight: 800; text-align: right;">BDT ' + (it.price * it.quantity) + '</td></tr>').join('')}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Summary calculation area -->
+                    <div class="bottom-summary-container" style="display: flex; justify-content: space-between; align-items: flex-end; margin-top: 15px; width: 100%;">
+                        <!-- Left QR code scanner -->
+                        <div class="qr-verification-box" style="display: flex; align-items: center; gap: 12px; background-color: #f8fafc; border: 1px solid #cbd5e1; padding: 8px 12px; border-radius: 4px;">
+                            <img src="${qrCodeUrl}" alt="Order QR Code" style="width: 50px; height: 50px; border: 1px solid #e2e8f0; border-radius: 2px; background-color: #ffffff; padding: 2px;" />
+                            <div class="qr-verification-caption" style="font-size: 8px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; line-height: 1.4; max-width: 100px; font-family: 'Inter', sans-serif;">Scan to Verify Invoice Validity</div>
+                        </div>
+
+                        <!-- Right Totals Calculations -->
+                        <div class="totals-calculation-block" style="width: 280px; display: flex; flex-direction: column;">
+                            <div style="border-top: 2px solid #94a3b8; margin-bottom: 8px; width: 100%;"></div>
+                            <div class="summary-calculation-row" style="display: flex; justify-content: space-between; font-size: 11.5px; color: #475569; margin-bottom: 5px; font-weight: 700; text-transform: uppercase; width: 100%; font-family: 'Inter', sans-serif;">
+                                <span>Subtotal:</span>
+                                <strong style="color: #0f172a; font-weight: 700;">BDT ${order.subtotal}</strong>
+                            </div>
+                            ${order.discount > 0 ? '<div class="summary-calculation-row discount-subtraction" style="display: flex; justify-content: space-between; font-size: 11.5px; color: #b91c1c; margin-bottom: 5px; font-weight: 700; text-transform: uppercase; width: 100%; font-family: \'Inter\', sans-serif;"><span>Discount:</span><strong style="color: #b91c1c; font-weight: 700;">-BDT ' + order.discount + '</strong></div>' : ''}
+                            <div class="summary-calculation-row" style="display: flex; justify-content: space-between; font-size: 11.5px; color: #475569; margin-bottom: 5px; font-weight: 700; text-transform: uppercase; width: 100%; font-family: 'Inter', sans-serif;">
+                                <span>Delivery Fee:</span>
+                                <strong style="color: #0f172a; font-weight: 700;">BDT ${order.deliveryFee}</strong>
+                            </div>
+                            <div class="grand-total-solid-banner" style="background-color: #8C1F1F; color: #ffffff; padding: 10px 12px; display: flex; justify-content: space-between; align-items: center; margin-top: 8px; box-sizing: border-box; width: 100%; font-family: 'Inter', sans-serif;">
+                                <span style="font-weight: 900; font-size: 11px; letter-spacing: 0.5px; text-transform: uppercase; color: #ffffff;">Grand Total:</span>
+                                <strong style="font-weight: 900; font-size: 15px; color: #ffffff;">BDT ${order.total}</strong>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
- 
-        <div class="footer-note">
-            <p style="font-weight: 500; margin-bottom: 8px;">Thank you for purchasing from ${cleanStoreName}.</p>
-            <p style="margin: 0; color: #64748b; font-size: 10.5px;">All fresh farm greens and grocery products are processed with verified hygienic packaging guidelines. For support, call: ${settings.phone}.</p>
-            <p style="font-size: 9px; margin-top: 15px; color: #94a3b8; font-weight: 500; letter-spacing: 0.5px;">Report Generated Safely via ${cleanStoreName} Merchant Analytics - Secure Merchant Report.</p>
+
+        <!-- Footer Area -->
+        <div style="padding: 0 40px 24px 40px; box-sizing: border-box; width: 100%;">
+            <div class="footer-rule-accent" style="height: 6px; background-color: #8C1F1F; margin-bottom: 8px; width: 100%;"></div>
+            <p class="footer-caps-note" style="text-align: center; font-size: 9px; font-weight: 700; color: #8C7F75; text-transform: uppercase; letter-spacing: 1px; margin: 0; line-height: 1.4; font-family: 'Inter', sans-serif;">
+                ${cleanStoreName} OPERATIONS // TERMINAL INVOICE // THIS RECEIPT IS ELECTRONICALLY GENERATED.<br/>
+                QUESTIONS? SUPPORT LINE: ${settings.phone} // EMAIL: ${settings.email || 'SUPPORT@BAZARTHOLE.COM'}
+            </p>
         </div>
     </div>
 </body>
-</html>`;
-    
+</html>
+`;
+
+    if (forceHtml) {
+      const printScript = `
+      <script>
+          window.onload = function() {
+              setTimeout(function() {
+                  window.print();
+              }, 500);
+          };
+      </script>
+      `;
+      const fallbackHtml = reportHtml.replace('</body>', `${printScript}</body>`);
+      const blob = new Blob([fallbackHtml], { type: 'text/html;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `BAZAR_THOLE_INVOICE_REPORT_${order.id}.html`;
+      link.style.display = 'none';
+      document.body.appendChild(link);
+      link.click();
+      setTimeout(() => {
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+      }, 300);
+
+      triggerAlert(
+        '🌐 DOWNLOAD COMPLETED (Web File / HTML)',
+        `We have saved the official Web File (BAZAR_THOLE_INVOICE_REPORT_${order.id}.html) directly to your device. Open this file on your device to print or view.`
+      );
+      return;
+    }
+
     // Function to load html2pdf.js script and render the PDF
     const downloadPdf = async () => {
       try {
@@ -683,40 +587,39 @@ export default function AdminPanel({ onDataChanged, onClose }: AdminPanelProps) 
           throw new Error('html2pdf script not loaded yet.');
         }
 
-        // Create an isolated iframe to prevent mobile viewport scaling, clipping, and responsive styling issues.
-        const iframe = document.createElement('iframe');
-        iframe.style.position = 'fixed';
-        iframe.style.left = '0';
-        iframe.style.top = '0';
-        iframe.style.width = '794px';  // A4 standard width at 96 DPI
-        iframe.style.height = '1123px'; // A4 standard height
-        iframe.style.opacity = '0.01';  // Keep it visible to DOM rendering but invisible to the user
-        iframe.style.pointerEvents = 'none';
-        iframe.style.zIndex = '-99999';
-        document.body.appendChild(iframe);
+        // Create a temporary off-screen container in the main document body (current frame)
+        // This is 100% robust and bypasses any nested iframe scaling or style resolution bugs!
+        const tempContainer = document.createElement('div');
+        tempContainer.style.position = 'fixed';
+        tempContainer.style.left = '0';
+        tempContainer.style.top = '0';
+        tempContainer.style.width = '794px';
+        tempContainer.style.height = '1120px';
+        tempContainer.style.overflow = 'hidden';
+        tempContainer.style.boxSizing = 'border-box';
+        tempContainer.style.zIndex = '-99999';
+        tempContainer.innerHTML = reportHtml;
+        document.body.appendChild(tempContainer);
 
-        // Write the HTML report inside the iframe
-        const doc = iframe.contentDocument || (iframe.contentWindow ? iframe.contentWindow.document : null);
-        if (!doc) {
-          throw new Error('Iframe content document is not accessible.');
-        }
-        doc.open();
-        doc.write(reportHtml);
-        doc.close();
-
-        // Wait for all resources (images, fonts, scripts) inside the iframe to load completely.
-        // We add a short delay (1000ms) to ensure external resources like the QR Code and Hind Siliguri web font are fully rendered.
-        await new Promise((resolve) => {
-          iframe.onload = resolve;
-          setTimeout(resolve, 1000);
+        // Wait a short delay to ensure assets are fully loaded and rendered
+        const images = tempContainer.getElementsByTagName('img');
+        const imgPromises = Array.from(images).map(img => {
+          if (img.complete) return Promise.resolve();
+          return new Promise(resolve => {
+            img.onload = resolve;
+            img.onerror = resolve;
+          });
         });
 
-        // Query the invoice container inside the iframe for pixel-perfect targeting
-        const targetElement = doc.querySelector('.invoice-container') || doc.body;
+        await Promise.all([
+          ...imgPromises,
+          new Promise(resolve => setTimeout(resolve, 1000))
+        ]);
 
-        // Options for highly optimized A4 portrait PDF format (strict bounds)
+        const targetElement = tempContainer.querySelector('.invoice-container') || tempContainer;
+
         const opt = {
-          margin: 0, // Since .invoice-container already contains 45px padding, we use 0 margin for a perfect layout fit.
+          margin: 0,
           filename: `BAZAR_THOLE_INVOICE_REPORT_${order.id}.pdf`,
           image: { type: 'jpeg', quality: 0.98 },
           html2canvas: { 
@@ -726,16 +629,57 @@ export default function AdminPanel({ onDataChanged, onClose }: AdminPanelProps) 
             backgroundColor: '#ffffff',
             scrollX: 0,
             scrollY: 0,
-            windowWidth: 794
+            windowWidth: 794,
+            width: 794,
+            height: 1120,
+            onclone: (clonedDoc: any) => {
+              const html = clonedDoc.documentElement;
+              const body = clonedDoc.body;
+              
+              if (html) {
+                html.style.width = '794px';
+                html.style.height = '1120px';
+                html.style.margin = '0';
+                html.style.padding = '0';
+                html.style.overflow = 'hidden';
+              }
+              
+              if (body) {
+                body.style.width = '794px';
+                body.style.minWidth = '794px';
+                body.style.maxWidth = '794px';
+                body.style.height = '1120px';
+                body.style.minHeight = '1120px';
+                body.style.maxHeight = '1120px';
+                body.style.margin = '0';
+                body.style.padding = '0';
+                body.style.overflow = 'hidden';
+                body.style.backgroundColor = '#ffffff';
+                body.style.display = 'block';
+                body.style.position = 'relative';
+              }
+              
+              const container = clonedDoc.querySelector('.invoice-container');
+              if (container) {
+                container.style.width = '794px';
+                container.style.height = '1120px';
+                container.style.position = 'absolute';
+                container.style.left = '0';
+                container.style.top = '0';
+                container.style.margin = '0';
+                container.style.padding = '0';
+                container.style.transform = 'none';
+                container.style.boxSizing = 'border-box';
+              }
+            }
           },
           jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
         };
 
-        // Render PDF directly from the iframe's beautifully loaded element
         await html2pdf().from(targetElement).set(opt).save();
 
-        // Remove the iframe from the DOM
-        document.body.removeChild(iframe);
+        // Clean up
+        document.body.removeChild(tempContainer);
 
         triggerAlert(
           '📥 PDF DOWNLOADED SUCCESSFULLY',
@@ -744,7 +688,6 @@ export default function AdminPanel({ onDataChanged, onClose }: AdminPanelProps) 
       } catch (err) {
         console.error("PDF generation failed, falling back to instant print HTML:", err);
         
-        // Dynamic fallback download if script isn't fully ready yet
         const printScript = `
         <script>
             window.onload = function() {
@@ -784,9 +727,7 @@ export default function AdminPanel({ onDataChanged, onClose }: AdminPanelProps) 
     syncLists();
   };
 
-  // Coupon submissions
   const handleCouponSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
     if (!couponForm.code) return;
     const newCoupon: Coupon = {
       id: `cp-${Math.floor(100 + Math.random() * 900)}`,
@@ -2822,6 +2763,14 @@ VALUES ('exotics', 'Exotics (আজব ফল)', 'https://unsplash.com/...');`}
                               className="px-4 py-2 bg-[#00796B] hover:bg-[#005B52] text-white font-black rounded-lg text-xs cursor-pointer flex items-center gap-1.5 transition-all shadow-sm shadow-teal-700/10"
                             >
                               📥 DOWNLOAD REPORT
+                            </button>
+
+                            <button
+                              type="button"
+                              onClick={() => handleDownloadReport(selectedReportOrder, true)}
+                              className="px-4 py-2 bg-slate-700 hover:bg-slate-800 text-white font-black rounded-lg text-xs cursor-pointer flex items-center gap-1.5 transition-all shadow-sm shadow-slate-700/10"
+                            >
+                              🌐 WEB FILE (ওয়েব ফাইল)
                             </button>
                           </div>
                         </div>
