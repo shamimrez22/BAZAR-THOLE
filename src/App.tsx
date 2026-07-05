@@ -2059,18 +2059,52 @@ export default function App() {
             html, body {
                 background-color: #05100B !important;
                 background-image: radial-gradient(circle at center, #0F2E1E 0%, #05100B 100%) !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                min-height: 100vh !important;
+                display: flex !important;
+                flex-direction: column !important;
+                align-items: center !important;
+                justify-content: flex-start !important;
+            }
+            .invoice-wrapper {
                 display: flex;
-                justify-content: center;
-                align-items: center;
-                min-height: 100vh;
                 padding: 40px 15px;
+                box-sizing: border-box;
+                min-height: 100vh;
+                width: 100%;
+                overflow-x: auto;
             }
             .invoice-container {
+                margin: auto !important;
                 box-shadow: 0 30px 60px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(212, 175, 55, 0.2) !important;
                 border-radius: 16px !important;
                 background-color: #FAF8F5 !important;
-                transform: scale(1);
-                transition: transform 0.2s ease;
+                flex-shrink: 0 !important;
+                transform-origin: top center;
+                transition: transform 0.2s ease, zoom 0.2s ease;
+            }
+            /* Responsive scaling for PC and mobile browser viewports */
+            @media (max-width: 840px) {
+                .invoice-container { zoom: 0.9 !important; }
+            }
+            @media (max-width: 760px) {
+                .invoice-container { zoom: 0.8 !important; }
+            }
+            @media (max-width: 680px) {
+                .invoice-container { zoom: 0.7 !important; }
+            }
+            @media (max-width: 600px) {
+                .invoice-container { zoom: 0.6 !important; }
+            }
+            @media (max-width: 520px) {
+                .invoice-container { zoom: 0.5 !important; }
+            }
+            @media (max-width: 440px) {
+                .invoice-container { zoom: 0.42 !important; }
+            }
+            @media (max-width: 360px) {
+                .invoice-container { zoom: 0.36 !important; }
             }
         }
 
@@ -2084,6 +2118,14 @@ export default function App() {
                 -webkit-print-color-adjust: exact !important;
                 print-color-adjust: exact !important;
             }
+            .invoice-wrapper {
+                padding: 0 !important;
+                margin: 0 !important;
+                width: 100% !important;
+                height: 100% !important;
+                display: block !important;
+                overflow: visible !important;
+            }
             .invoice-container {
                 width: 210mm !important;
                 height: 297mm !important;
@@ -2095,12 +2137,14 @@ export default function App() {
                 page-break-inside: avoid !important;
                 page-break-after: avoid !important;
                 box-sizing: border-box !important;
+                zoom: 1 !important;
             }
         }
     </style>
 </head>
 <body style="margin: 0; padding: 0; background-color: #05100B;">
-    <div class="invoice-container" style="width: 794px; height: 1120px; margin: 0; padding: 0; background-color: #FAF8F5; box-sizing: border-box; display: flex; flex-direction: column; justify-content: space-between; position: relative; font-family: 'Inter', 'Hind Siliguri', sans-serif; border: 12px solid #071F13; overflow: hidden;">
+    <div class="invoice-wrapper">
+        <div class="invoice-container" style="width: 794px; height: 1120px; margin: 0; padding: 0; background-color: #FAF8F5; box-sizing: border-box; display: flex; flex-direction: column; justify-content: space-between; position: relative; font-family: 'Inter', 'Hind Siliguri', sans-serif; border: 12px solid #071F13; overflow: hidden;">
         
         <!-- Luxury corner notch ornaments -->
         <div style="position: absolute; top: 12px; left: 12px; width: 16px; height: 16px; border-top: 3px solid #D4AF37; border-left: 3px solid #D4AF37; z-index: 10;"></div>
@@ -2290,6 +2334,7 @@ export default function App() {
             </p>
         </div>
     </div>
+</div>
 </body>
 </html>
 `;
@@ -2485,18 +2530,52 @@ export default function App() {
             html, body {
                 background-color: #05100B !important;
                 background-image: radial-gradient(circle at center, #0F2E1E 0%, #05100B 100%) !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                min-height: 100vh !important;
+                display: flex !important;
+                flex-direction: column !important;
+                align-items: center !important;
+                justify-content: flex-start !important;
+            }
+            .invoice-wrapper {
                 display: flex;
-                justify-content: center;
-                align-items: center;
-                min-height: 100vh;
                 padding: 40px 15px;
+                box-sizing: border-box;
+                min-height: 100vh;
+                width: 100%;
+                overflow-x: auto;
             }
             .invoice-container {
+                margin: auto !important;
                 box-shadow: 0 30px 60px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(212, 175, 55, 0.2) !important;
                 border-radius: 16px !important;
                 background-color: #FAF8F5 !important;
-                transform: scale(1);
-                transition: transform 0.2s ease;
+                flex-shrink: 0 !important;
+                transform-origin: top center;
+                transition: transform 0.2s ease, zoom 0.2s ease;
+            }
+            /* Responsive scaling for PC and mobile browser viewports */
+            @media (max-width: 840px) {
+                .invoice-container { zoom: 0.9 !important; }
+            }
+            @media (max-width: 760px) {
+                .invoice-container { zoom: 0.8 !important; }
+            }
+            @media (max-width: 680px) {
+                .invoice-container { zoom: 0.7 !important; }
+            }
+            @media (max-width: 600px) {
+                .invoice-container { zoom: 0.6 !important; }
+            }
+            @media (max-width: 520px) {
+                .invoice-container { zoom: 0.5 !important; }
+            }
+            @media (max-width: 440px) {
+                .invoice-container { zoom: 0.42 !important; }
+            }
+            @media (max-width: 360px) {
+                .invoice-container { zoom: 0.36 !important; }
             }
         }
 
@@ -2510,6 +2589,14 @@ export default function App() {
                 -webkit-print-color-adjust: exact !important;
                 print-color-adjust: exact !important;
             }
+            .invoice-wrapper {
+                padding: 0 !important;
+                margin: 0 !important;
+                width: 100% !important;
+                height: 100% !important;
+                display: block !important;
+                overflow: visible !important;
+            }
             .invoice-container {
                 width: 210mm !important;
                 height: 297mm !important;
@@ -2521,12 +2608,14 @@ export default function App() {
                 page-break-inside: avoid !important;
                 page-break-after: avoid !important;
                 box-sizing: border-box !important;
+                zoom: 1 !important;
             }
         }
     </style>
 </head>
 <body style="margin: 0; padding: 0; background-color: #05100B;">
-    <div class="invoice-container" style="width: 794px; height: 1120px; margin: 0; padding: 0; background-color: #FAF8F5; box-sizing: border-box; display: flex; flex-direction: column; justify-content: space-between; position: relative; font-family: 'Inter', 'Hind Siliguri', sans-serif; border: 12px solid #071F13; overflow: hidden;">
+    <div class="invoice-wrapper">
+        <div class="invoice-container" style="width: 794px; height: 1120px; margin: 0; padding: 0; background-color: #FAF8F5; box-sizing: border-box; display: flex; flex-direction: column; justify-content: space-between; position: relative; font-family: 'Inter', 'Hind Siliguri', sans-serif; border: 12px solid #071F13; overflow: hidden;">
         
         <!-- Luxury corner notch ornaments -->
         <div style="position: absolute; top: 12px; left: 12px; width: 16px; height: 16px; border-top: 3px solid #D4AF37; border-left: 3px solid #D4AF37; z-index: 10;"></div>
@@ -2716,6 +2805,7 @@ export default function App() {
             </p>
         </div>
     </div>
+</div>
 </body>
 </html>
 `;
