@@ -2062,21 +2062,21 @@ export default function App() {
                 margin: 0 !important;
                 padding: 0 !important;
                 min-height: 100vh !important;
-                display: flex !important;
-                flex-direction: column !important;
-                align-items: center !important;
-                justify-content: flex-start !important;
+                display: block !important;
             }
             .invoice-wrapper {
-                display: flex;
+                display: block;
                 padding: 40px 15px;
                 box-sizing: border-box;
                 min-height: 100vh;
                 width: 100%;
                 overflow-x: auto;
+                text-align: center;
             }
             .invoice-container {
-                margin: auto !important;
+                display: inline-flex !important;
+                text-align: left;
+                margin: 0 auto !important;
                 box-shadow: 0 30px 60px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(212, 175, 55, 0.2) !important;
                 border-radius: 16px !important;
                 background-color: #FAF8F5 !important;
@@ -2462,8 +2462,47 @@ export default function App() {
                                         container.style.margin = '0';
                                         container.style.padding = '0';
                                         container.style.transform = 'none';
+                                        container.style.zoom = '1';
+                                        container.style.webkitZoom = '1';
                                         container.style.boxSizing = 'border-box';
                                       }
+
+                                      // Inject style to strip all responsive zoom & overflow scaling from PDF capture
+                                      const pdfStyle = clonedDoc.createElement('style');
+                                      pdfStyle.innerHTML = `
+                                        @media screen, print {
+                                          html, body {
+                                            width: 794px !important;
+                                            height: 1120px !important;
+                                            margin: 0 !important;
+                                            padding: 0 !important;
+                                            overflow: hidden !important;
+                                            background-color: #ffffff !important;
+                                          }
+                                          .invoice-wrapper {
+                                            width: 794px !important;
+                                            height: 1120px !important;
+                                            padding: 0 !important;
+                                            margin: 0 !important;
+                                            overflow: hidden !important;
+                                            display: block !important;
+                                          }
+                                          .invoice-container {
+                                            width: 794px !important;
+                                            height: 1120px !important;
+                                            zoom: 1 !important;
+                                            -moz-transform: none !important;
+                                            transform: none !important;
+                                            position: absolute !important;
+                                            left: 0 !important;
+                                            top: 0 !important;
+                                            margin: 0 !important;
+                                            padding: 0 !important;
+                                            box-sizing: border-box !important;
+                                          }
+                                        }
+                                      `;
+                                      clonedDoc.head.appendChild(pdfStyle);
                                     }
                                   },
                                   jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
@@ -2533,21 +2572,21 @@ export default function App() {
                 margin: 0 !important;
                 padding: 0 !important;
                 min-height: 100vh !important;
-                display: flex !important;
-                flex-direction: column !important;
-                align-items: center !important;
-                justify-content: flex-start !important;
+                display: block !important;
             }
             .invoice-wrapper {
-                display: flex;
+                display: block;
                 padding: 40px 15px;
                 box-sizing: border-box;
                 min-height: 100vh;
                 width: 100%;
                 overflow-x: auto;
+                text-align: center;
             }
             .invoice-container {
-                margin: auto !important;
+                display: inline-flex !important;
+                text-align: left;
+                margin: 0 auto !important;
                 box-shadow: 0 30px 60px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(212, 175, 55, 0.2) !important;
                 border-radius: 16px !important;
                 background-color: #FAF8F5 !important;
