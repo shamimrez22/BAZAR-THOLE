@@ -471,8 +471,8 @@ export const DEFAULT_SETTINGS: StoreSettings = {
   specialOfferMinutes: 45,
 
   // Default scrolling notices configurations
-  enableTopNotice: false,
+  enableTopNotice: true,
   topNoticeText: '🔥 বিশেষ ছাড়! সকল শাক-সবজি ও ফলমূলে পেয়ে যান ১০% পর্যন্ত ক্যাশব্যাক! বিস্তারিত জানতে পেজটি স্ক্রোল করুন অথবা সাপোর্ট হেল্পলাইনে কল করুন। BAZAR THOLE-এ আপনাকে স্বাগতম।',
-  enableBottomNotice: false,
+  enableBottomNotice: true,
   bottomNoticeText: '📢 ঢাকা সিটির ভিতরে ডেলিভারি চার্জ মাত্র ৫০ টাকা! ৮০০ টাকার উপরে অর্ডারে পাচ্ছেন সম্পূর্ণ ফ্রি ডেলিভারি! নিরাপদ শপিং-এর একমাত্র বিশ্বস্ত ও নির্ভরযোগ্য প্রতিষ্ঠান BAZAR THOLE।'
 };

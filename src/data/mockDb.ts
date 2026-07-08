@@ -424,6 +424,13 @@ export const db = {
         if (!parsed.adminPassword) parsed.adminPassword = '321';
         changed = true;
       }
+      // Force-enable top and bottom notices exactly once for existing devices with old state
+      if (parsed && !parsed.noticeMigrationApplied2) {
+        parsed.enableTopNotice = true;
+        parsed.enableBottomNotice = true;
+        parsed.noticeMigrationApplied2 = true;
+        changed = true;
+      }
       if (changed) {
         localStorage.setItem(KEYS.SETTINGS, JSON.stringify(parsed));
       }

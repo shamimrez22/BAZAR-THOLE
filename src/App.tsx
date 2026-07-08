@@ -728,7 +728,7 @@ export default function App() {
                   NOTICE
                 </span>
                 <div className="relative w-full overflow-hidden flex items-center">
-                  <div className="animate-notice-marquee font-sans font-medium text-xs sm:text-sm tracking-wide">
+                  <div className="animate-notice-marquee font-sans font-medium text-xs sm:text-sm tracking-wide whitespace-nowrap shrink-0 min-w-max">
                     {settings.topNoticeText}
                   </div>
                 </div>
@@ -907,7 +907,7 @@ export default function App() {
                   ANNOUNCEMENT
                 </span>
                 <div className="relative w-full overflow-hidden flex items-center">
-                  <div className="animate-notice-marquee font-sans font-bold text-xs sm:text-sm tracking-wider">
+                  <div className="animate-notice-marquee font-sans font-bold text-xs sm:text-sm tracking-wider whitespace-nowrap shrink-0 min-w-max">
                     {settings.bottomNoticeText}
                   </div>
                 </div>
@@ -2335,6 +2335,34 @@ export default function App() {
         </div>
     </div>
 </div>
+
+<script>
+    function adjustScale() {
+        const container = document.querySelector('.invoice-container');
+        const wrapper = document.querySelector('.invoice-wrapper');
+        if (!container || !wrapper) return;
+        
+        const designWidth = 794;
+        const designHeight = 1120;
+        const availableWidth = window.innerWidth - 30;
+        
+        if (availableWidth < designWidth) {
+            const scale = availableWidth / designWidth;
+            container.style.transform = 'scale(' + scale + ')';
+            container.style.transformOrigin = 'top center';
+            container.style.zoom = '1';
+            container.style.webkitZoom = '1';
+            const offset = designHeight * (1 - scale);
+            container.style.marginBottom = '-' + offset + 'px';
+        } else {
+            container.style.transform = 'none';
+            container.style.marginBottom = '0px';
+        }
+    }
+    window.addEventListener('load', adjustScale);
+    window.addEventListener('resize', adjustScale);
+    document.addEventListener('DOMContentLoaded', adjustScale);
+</script>
 </body>
 </html>
 `;
@@ -2845,6 +2873,34 @@ export default function App() {
         </div>
     </div>
 </div>
+
+<script>
+    function adjustScale() {
+        const container = document.querySelector('.invoice-container');
+        const wrapper = document.querySelector('.invoice-wrapper');
+        if (!container || !wrapper) return;
+        
+        const designWidth = 794;
+        const designHeight = 1120;
+        const availableWidth = window.innerWidth - 30;
+        
+        if (availableWidth < designWidth) {
+            const scale = availableWidth / designWidth;
+            container.style.transform = 'scale(' + scale + ')';
+            container.style.transformOrigin = 'top center';
+            container.style.zoom = '1';
+            container.style.webkitZoom = '1';
+            const offset = designHeight * (1 - scale);
+            container.style.marginBottom = '-' + offset + 'px';
+        } else {
+            container.style.transform = 'none';
+            container.style.marginBottom = '0px';
+        }
+    }
+    window.addEventListener('load', adjustScale);
+    window.addEventListener('resize', adjustScale);
+    document.addEventListener('DOMContentLoaded', adjustScale);
+</script>
 </body>
 </html>
 `;
