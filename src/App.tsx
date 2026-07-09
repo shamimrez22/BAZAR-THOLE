@@ -190,7 +190,17 @@ export default function App() {
           
           // Only update React state if there is a real difference or if forceUpdateState is true
           setSettings((current) => {
-            if (forceUpdateState || JSON.stringify(current) !== JSON.stringify(serverSettings)) {
+            const hasChanged = 
+              !current ||
+              current.enableTopNotice !== serverSettings.enableTopNotice ||
+              current.topNoticeText !== serverSettings.topNoticeText ||
+              current.enableBottomNotice !== serverSettings.enableBottomNotice ||
+              current.bottomNoticeText !== serverSettings.bottomNoticeText ||
+              current.storeName !== serverSettings.storeName ||
+              current.deliveryFee !== serverSettings.deliveryFee ||
+              current.freeDeliveryThreshold !== serverSettings.freeDeliveryThreshold;
+
+            if (forceUpdateState || hasChanged) {
               return serverSettings;
             }
             return current;
@@ -210,10 +220,10 @@ export default function App() {
     // Fetch live settings on mount
     fetchServerSettings(true);
     
-    // Poll the server for settings every 5 seconds so live updates/notices sync immediately
+    // Poll the server for settings every 3 seconds so live updates/notices sync immediately
     const settingsInterval = setInterval(() => {
       fetchServerSettings(false);
-    }, 5000);
+    }, 3000);
     
     // Auto sync current user sessions if recorded
     const savedUser = db.getCurrentUser();

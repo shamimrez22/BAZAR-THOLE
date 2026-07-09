@@ -424,23 +424,14 @@ export const db = {
         if (!parsed.adminPassword) parsed.adminPassword = '321';
         changed = true;
       }
-      // Force-enable top and bottom notices and set text exactly once for existing devices with old state
-      if (parsed && !parsed.noticeMigrationApplied3) {
-        parsed.enableTopNotice = true;
-        parsed.enableBottomNotice = true;
-        parsed.topNoticeText = '🔥 বিশেষ ছাড়! সকল শাক-সবজি ও ফলমূলে পেয়ে যান ১০% পর্যন্ত ক্যাশব্যাক! বিস্তারিত জানতে পেজটি স্ক্রোল করুন অথবা সাপোর্ট হেল্পলাইনে কল করুন। BAZAR THOLE-এ আপনাকে স্বাগতম।';
-        parsed.bottomNoticeText = '📢 ঢাকা সিটির ভিতরে ডেলিভারি চার্জ মাত্র ৫০ টাকা! ৮০০ টাকার উপরে অর্ডারে পাচ্ছেন সম্পূর্ণ ফ্রি ডেলিভারি! নিরাপদ শপিং-এর একমাত্র বিশ্বস্ত ও নির্ভরযোগ্য প্রতিষ্ঠান BAZAR THOLE।';
-        parsed.noticeMigrationApplied3 = true;
-        changed = true;
-      }
-      // Ensure notice text and status are never undefined/empty on any browser load
+      // Fill fallback values only if they are completely missing (undefined) so we do not override false/disabled states
       if (parsed) {
         if (parsed.enableTopNotice === undefined) {
           parsed.enableTopNotice = true;
           changed = true;
         }
         if (!parsed.topNoticeText || parsed.topNoticeText.trim() === '') {
-          parsed.topNoticeText = '🔥 বিশেষ ছাড়! সকল শাক-সবজি ও ফলমূলে পেয়ে যান ১০% পর্যন্ত ক্যাশব্যাক! বিস্তারিত জানতে পেজটি স্ক্রোল করুন অথবা সাপোর্ট হেল্পলাইনে কল করুন। BAZAR THOLE-এ আপনাকে স্বাগতম।';
+          parsed.topNoticeText = DEFAULT_SETTINGS.topNoticeText;
           changed = true;
         }
         if (parsed.enableBottomNotice === undefined) {
@@ -448,7 +439,7 @@ export const db = {
           changed = true;
         }
         if (!parsed.bottomNoticeText || parsed.bottomNoticeText.trim() === '') {
-          parsed.bottomNoticeText = '📢 ঢাকা সিটির ভিতরে ডেলিভারি চার্জ মাত্র ৫০ টাকা! ৮০০ টাকার উপরে অর্ডারে পাচ্ছেন সম্পূর্ণ ফ্রি ডেলিভারি! নিরাপদ শপিং-এর একমাত্র বিশ্বস্ত ও নির্ভরযোগ্য প্রতিষ্ঠান BAZAR THOLE।';
+          parsed.bottomNoticeText = DEFAULT_SETTINGS.bottomNoticeText;
           changed = true;
         }
       }
