@@ -168,6 +168,7 @@ export interface StoreSettings {
   enableBottomNotice?: boolean;
   bottomNoticeText?: string;
   noticeMigrationApplied2?: boolean;
+  noticeMigrationApplied3?: boolean;
 }
 
 export const BANGLADESH_DISTRICTS = [
