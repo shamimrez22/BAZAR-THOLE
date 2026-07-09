@@ -462,6 +462,12 @@ export const db = {
   },
   saveSettings(settings: StoreSettings): StoreSettings {
     localStorage.setItem(KEYS.SETTINGS, JSON.stringify(settings));
+    // Asynchronously update the server settings so all other devices are synced
+    fetch('/api/settings', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(settings)
+    }).catch(err => console.error('Failed to update server settings:', err));
     return settings;
   }
 };

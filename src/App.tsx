@@ -173,10 +173,47 @@ export default function App() {
   // Ref for Categories horizontal slider
   const categoriesContainerRef = React.useRef<HTMLDivElement>(null);
 
+  // Fetch settings from server
+  const fetchServerSettings = async (forceUpdateState = false) => {
+    try {
+      const res = await fetch('/api/settings');
+      if (res.ok) {
+        const serverSettings = await res.json();
+        if (serverSettings && serverSettings.storeName) {
+          // If the store name needs migration
+          if (serverSettings.storeName.toUpperCase().includes('E-COMMERCE') || serverSettings.storeName.toUpperCase() === 'BAZAR' || serverSettings.storeName.toUpperCase() === 'BAZAR DHAKA') {
+            serverSettings.storeName = 'BAZAR THOLE';
+          }
+          
+          // Save to localStorage so it is available synchronously on subsequent reloads
+          window.localStorage?.setItem('bazar_settings_v1', JSON.stringify(serverSettings));
+          
+          // Only update React state if there is a real difference or if forceUpdateState is true
+          setSettings((current) => {
+            if (forceUpdateState || JSON.stringify(current) !== JSON.stringify(serverSettings)) {
+              return serverSettings;
+            }
+            return current;
+          });
+        }
+      }
+    } catch (err) {
+      console.error('Failed to fetch store settings from server:', err);
+    }
+  };
+
   // Initial Seed loading
   useEffect(() => {
     initDb();
     loadAllDbValues();
+    
+    // Fetch live settings on mount
+    fetchServerSettings(true);
+    
+    // Poll the server for settings every 5 seconds so live updates/notices sync immediately
+    const settingsInterval = setInterval(() => {
+      fetchServerSettings(false);
+    }, 5000);
     
     // Auto sync current user sessions if recorded
     const savedUser = db.getCurrentUser();
@@ -189,6 +226,10 @@ export default function App() {
       setBillingAddress(savedUser.address);
       setBillingCity(savedUser.city);
     }
+
+    return () => {
+      clearInterval(settingsInterval);
+    };
   }, []);
 
   // Reset visible products pagination count to protect memory on filter shifts
