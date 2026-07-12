@@ -1,7 +1,41 @@
 import { Product, Category, Order, User, Coupon, Banner, Review, StoreSettings } from '../types';
 import { INITIAL_PRODUCTS, INITIAL_CATEGORIES, INITIAL_COUPONS, INITIAL_BANNERS, INITIAL_REVIEWS, DEFAULT_SETTINGS } from './initialData';
-import { collection, doc, setDoc, deleteDoc, onSnapshot } from "firebase/firestore";
+import { collection, doc, setDoc as firestoreSetDoc, deleteDoc, onSnapshot } from "firebase/firestore";
 import { firestoreDb, OperationType, handleFirestoreError } from "./firebase";
+
+// Recursively strips out undefined properties to prevent Firestore crashes (Unsupported field value: undefined)
+export function sanitizeForFirestore<T>(obj: T): T {
+  if (obj === undefined) {
+    return null as any;
+  }
+  if (obj === null || typeof obj !== 'object') {
+    return obj;
+  }
+  if (obj instanceof Date) {
+    return obj.toISOString() as any;
+  }
+  if (Array.isArray(obj)) {
+    return obj.map(sanitizeForFirestore) as any;
+  }
+  const sanitized: any = {};
+  for (const key in obj) {
+    if (Object.prototype.hasOwnProperty.call(obj, key)) {
+      const val = (obj as any)[key];
+      if (val !== undefined) {
+        sanitized[key] = sanitizeForFirestore(val);
+      }
+    }
+  }
+  return sanitized;
+}
+
+// Wrapper to automatically sanitize all documents written to Firestore
+const setDoc = (reference: any, data: any, options?: any) => {
+  if (options) {
+    return firestoreSetDoc(reference, sanitizeForFirestore(data), options);
+  }
+  return firestoreSetDoc(reference, sanitizeForFirestore(data));
+};
 
 let originalLocalStorage: Storage | null = null;
 try {

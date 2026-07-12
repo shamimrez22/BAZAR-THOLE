@@ -118,6 +118,7 @@ export default function App() {
   const [billingEmail, setBillingEmail] = useState<string>('');
   const [billingCity, setBillingCity] = useState<string>('Dhaka');
   const [billingAddress, setBillingAddress] = useState<string>('');
+  const [billingErrors, setBillingErrors] = useState<{ name?: string; phone?: string; address?: string }>({});
   const [paymentOption, setPaymentOption] = useState<'Cash on Delivery' | 'bKash' | 'Nagad' | 'SSLCommerz'>('Cash on Delivery');
   
   // Auto-fallback if the currently selected paymentOption is disabled from Admin Panel settings
@@ -137,6 +138,7 @@ export default function App() {
   // Payment simulator visual display
   const [paySimulator, setPaySimulator] = useState<{ active: boolean; method: typeof paymentOption; amount: number } | null>(null);
   const [latestPlacedOrder, setLatestPlacedOrder] = useState<Order | null>(null);
+  const [showThankYouPopup, setShowThankYouPopup] = useState<boolean>(false);
   const [successCountdown, setSuccessCountdown] = useState<number>(10);
 
   // Order tracking page search parameters
@@ -260,14 +262,15 @@ export default function App() {
   // Success screen redirection timer effect
   useEffect(() => {
     let interval: NodeJS.Timeout | undefined;
-    if (activeTab === 'order-confirmation' && latestPlacedOrder) {
+    if (showThankYouPopup && latestPlacedOrder) {
       setSuccessCountdown(10);
       interval = setInterval(() => {
         setSuccessCountdown(p => {
           if (p <= 1) {
             clearInterval(interval);
-            setActiveTab('home');
+            setShowThankYouPopup(false);
             setLatestPlacedOrder(null);
+            setActiveTab('home');
             return 10;
           }
           return p - 1;
@@ -277,7 +280,7 @@ export default function App() {
     return () => {
       if (interval) clearInterval(interval);
     };
-  }, [activeTab, latestPlacedOrder]);
+  }, [showThankYouPopup, latestPlacedOrder]);
 
   // Home Page Slider Autoplay Loop
   useEffect(() => {
@@ -522,31 +525,110 @@ export default function App() {
   };
 
   // Checkout submission
-  const handleCheckoutSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!billingName || !billingPhone || !billingAddress) {
-      alert('Please fill out Name, Phone and Delivery address coordinates.');
+  const handleCheckoutSubmit = (e?: any) => {
+    if (e) {
+      try {
+        e.preventDefault();
+        e.stopPropagation();
+      } catch (err) {
+        console.warn('Event preventDefault/stopPropagation omitted:', err);
+      }
+    }
+
+    console.log('[Checkout] Placing secure order with details:', {
+      name: billingName,
+      phone: billingPhone,
+      city: billingCity,
+      address: billingAddress,
+      paymentOption,
+      cartCount: cart.length
+    });
+
+    // Explicit client-side JS validation to bypass native hidden iframe blocking
+    const errors: { name?: string; phone?: string; address?: string } = {};
+    if (!billingName || !billingName.trim()) {
+      errors.name = 'দয়া করে আপনার সম্পূর্ণ নাম লিখুন (Please enter your recipient name)';
+    }
+    if (!billingPhone || !billingPhone.trim()) {
+      errors.phone = 'দয়া করে আপনার সঠিক মোবাইল নম্বর দিন (Please enter your mobile number)';
+    } else {
+      const cleanPhone = billingPhone.trim();
+      if (cleanPhone.length < 11) {
+        errors.phone = 'মোবাইল নম্বরটি অবশ্যই ১১ ডিজিটের হতে হবে (Must be a valid 11-digit mobile number)';
+      }
+    }
+    if (!billingAddress || !billingAddress.trim()) {
+      errors.address = 'দয়া করে আপনার বিস্তারিত ডেলিভারি ঠিকানা দিন (Please enter your shipping address)';
+    }
+
+    if (Object.keys(errors).length > 0) {
+      setBillingErrors(errors);
+      triggerToast('⚠️ দয়া করে ফর্মের লাল চিহ্নিত ঘরগুলো সঠিকভাবে পূরণ করুন।');
       return;
     }
+
+    setBillingErrors({});
 
     if (cart.length === 0) {
-      alert('Your e-cart is currently empty.');
+      triggerToast('⚠️ আপনার কার্টটি খালি! অনুগ্রহ করে কিছু পণ্য যোগ করুন।');
       return;
     }
 
-    const subtotal = cart.reduce((acc, item) => acc + item.product.price * item.quantity, 0);
-    const discountVal = appliedCoupon ? Math.round((subtotal * appliedCoupon.discountPercent) / 100) : 0;
-    const baseFee = subtotal >= settings.freeDeliveryThreshold ? 0 : settings.deliveryFee;
-    const productDeliveryFees = cart.reduce((acc, item) => acc + (item.product.deliveryFee || 0) * item.quantity, 0);
-    const totalDeliveryFee = baseFee + productDeliveryFees;
-    const finalAmount = subtotal - discountVal + totalDeliveryFee;
+    try {
+      const subtotal = cart.reduce((acc, item) => acc + (item.product?.price || 0) * (item.quantity || 1), 0);
+      const discountVal = appliedCoupon ? Math.round((subtotal * appliedCoupon.discountPercent) / 100) : 0;
+      const baseFee = subtotal >= (settings?.freeDeliveryThreshold ?? 800) ? 0 : (settings?.deliveryFee ?? 50);
+      const productDeliveryFees = cart.reduce((acc, item) => acc + (item.product?.deliveryFee || 0) * (item.quantity || 1), 0);
+      const totalDeliveryFee = baseFee + productDeliveryFees;
+      const finalAmount = subtotal - discountVal + totalDeliveryFee;
 
-    // Direct placing of order or launch payments processor modal
-    setPaySimulator({
-      active: true,
-      method: paymentOption,
-      amount: finalAmount
-    });
+      const orderMeta = {
+        customerName: billingName.trim(),
+        email: billingEmail || 'guest@bazar.com.bd',
+        phone: billingPhone.trim(),
+        address: billingAddress.trim(),
+        city: billingCity,
+        items: cart.map(item => ({
+          productId: item.product?.id || 'unknown',
+          productName: item.product?.name || 'Sourced Product',
+          price: item.product?.price || 0,
+          quantity: item.quantity || 1,
+          unit: item.product?.unit || 'pcs',
+          image: item.product?.image || '',
+          selectedSize: item.selectedSize || (item.product?.sizes && item.product.sizes.length > 0 ? item.product.sizes[0] : undefined)
+        })),
+        subtotal,
+        discount: discountVal,
+        deliveryFee: totalDeliveryFee,
+        total: finalAmount,
+        paymentMethod: paymentOption,
+        paymentStatus: paymentOption === 'Cash on Delivery' ? 'Pending' as const : 'Paid' as const,
+        status: 'Pending' as const,
+      };
+
+      console.log('[Checkout] Saving order schema metadata:', orderMeta);
+
+      const placed = db.addOrder(orderMeta);
+      console.log('[Checkout] Order added successfully:', placed);
+
+      setLatestPlacedOrder(placed);
+      setCart([]); // Clear cart
+      setAppliedCoupon(null);
+      setEnteredCoupon('');
+      setPaySimulator(null);
+      
+      // Direct thank you popup trigger!
+      setShowThankYouPopup(true);
+      
+      // Switch background tab to home so closing the modal places them on home
+      setActiveTab('home');
+      
+      loadAllDbValues(); // refresh stocks state
+      triggerToast(`🎉 আলহামদুলিল্লাহ! আপনার অর্ডারটি #${placed.id} সফলভাবে সম্পন্ন হয়েছে।`);
+    } catch (dbErr: any) {
+      console.error('[Checkout Critical Error] Failed to place order:', dbErr);
+      alert(`অর্ডারটি সম্পন্ন করতে সমস্যা হয়েছে: ${dbErr?.message || dbErr}`);
+    }
   };
 
   // Payment simulator success handler
@@ -3686,29 +3768,43 @@ export default function App() {
                         <input
                           id="bill-name"
                           type="text"
-                          required
-                          placeholder="e.g. John Doe"
-                          className="w-full font-sans"
+                          placeholder="আপনার সম্পূর্ণ নাম লিখুন"
+                          className={`w-full bg-white border-2 rounded-none px-4 py-2.5 text-sm font-sans text-stone-900 focus:outline-none focus:ring-2 h-11 shadow-sm ${billingErrors.name ? 'border-red-600 focus:ring-red-650' : 'border-stone-900 focus:ring-[#0E6C57]'}`}
                           value={billingName}
-                          onChange={(e) => setBillingName(e.target.value)}
+                          onChange={(e) => {
+                            setBillingName(e.target.value);
+                            if (e.target.value.trim()) {
+                              setBillingErrors(prev => ({ ...prev, name: undefined }));
+                            }
+                          }}
                         />
+                        {billingErrors.name && (
+                          <p className="text-red-650 text-xs font-bold mt-1.5 animate-pulse">❌ {billingErrors.name}</p>
+                        )}
                       </div>
                       <div>
                         <label className="block text-xs font-bold text-stone-700 mb-1.5 uppercase tracking-wide">MOBILE NUMBER (মোবাইল নম্বর) :*</label>
-                        <div className="flex items-stretch">
-                          <span className="inline-flex items-center px-3 bg-stone-300 border-2 border-r-0 border-stone-900 text-stone-900 font-bold text-sm select-none">
+                        <div className="flex items-stretch h-11">
+                          <span className={`inline-flex items-center px-4 bg-stone-200 border-2 border-r-0 text-stone-900 font-bold text-sm select-none ${billingErrors.phone ? 'border-red-600' : 'border-stone-900'}`}>
                             88
                           </span>
                           <input
                             id="bill-phone"
                             type="text"
-                            required
-                            placeholder="e.g. 01700000000"
-                            className="w-full font-mono flex-1"
+                            placeholder="যেমন: 01712345678"
+                            className={`w-full bg-white border-2 border-l-0 rounded-none px-4 py-2.5 text-sm font-mono text-stone-900 focus:outline-none focus:ring-2 flex-1 shadow-sm ${billingErrors.phone ? 'border-red-600 focus:ring-red-650' : 'border-stone-900 focus:ring-[#0E6C57]'}`}
                             value={billingPhone}
-                            onChange={(e) => setBillingPhone(e.target.value)}
+                            onChange={(e) => {
+                              setBillingPhone(e.target.value);
+                              if (e.target.value.trim().length >= 11) {
+                                setBillingErrors(prev => ({ ...prev, phone: undefined }));
+                              }
+                            }}
                           />
                         </div>
+                        {billingErrors.phone && (
+                          <p className="text-red-650 text-xs font-bold mt-1.5 animate-pulse">❌ {billingErrors.phone}</p>
+                        )}
                       </div>
                     </div>
 
@@ -3717,7 +3813,7 @@ export default function App() {
                         <label className="block text-xs font-bold text-stone-700 mb-1.5 uppercase tracking-wide">DISTRICT / DIVISION (জেলা / বিভাগ) :*</label>
                         <select
                           id="bill-city"
-                          className="w-full cursor-pointer h-11"
+                          className="w-full bg-white border-2 border-stone-900 rounded-none px-4 py-2 text-sm text-stone-900 focus:outline-none focus:ring-2 focus:ring-[#0E6C57] font-sans cursor-pointer h-11 shadow-sm"
                           value={billingCity}
                           onChange={(e) => setBillingCity(e.target.value)}
                         >
@@ -3734,13 +3830,20 @@ export default function App() {
                       <label className="block text-xs font-bold text-stone-700 mb-1.5 uppercase tracking-wide">DETAILED ADDRESS COORDINATES (বিস্তারিত ঠিকানা) :*</label>
                       <textarea
                         id="bill-address"
-                        rows={2.5}
-                        required
-                        placeholder="e.g. Appt 4B, House 12, Road 4, Section 11, Uttara"
-                        className="w-full p-3 text-sm focus:outline-none"
+                        rows={3}
+                        placeholder="যেমন: গ্রাম, ডাকঘর, থানা বা হাউজ নং, রোড নং, এলাকা..."
+                        className={`w-full bg-white border-2 rounded-none p-3 text-sm text-stone-900 focus:outline-none focus:ring-2 font-sans shadow-sm ${billingErrors.address ? 'border-red-600 focus:ring-red-650' : 'border-stone-900 focus:ring-[#0E6C57]'}`}
                         value={billingAddress}
-                        onChange={(e) => setBillingAddress(e.target.value)}
+                        onChange={(e) => {
+                          setBillingAddress(e.target.value);
+                          if (e.target.value.trim()) {
+                            setBillingErrors(prev => ({ ...prev, address: undefined }));
+                          }
+                        }}
                       />
+                      {billingErrors.address && (
+                        <p className="text-red-650 text-xs font-bold mt-1.5 animate-pulse">❌ {billingErrors.address}</p>
+                      )}
                     </div>
 
                   {/* BLACK BANNER HEAD 2 */}
@@ -3851,7 +3954,7 @@ export default function App() {
                           {settings.enableCOD === false && settings.enableBkash === false && settings.enableNagad === false && settings.enableSSLCommerz === false && (
                             <div className="p-4 bg-red-50 border-2 border-red-500 text-red-700 text-xs text-center font-bold">
                               ⚠️ NO ACTIVE GATEWAYS AVAILABLE AT THE MOMENT.
-                            </div>
+                              </div>
                           )}
 
                         </div>
@@ -3864,6 +3967,7 @@ export default function App() {
                       <button
                         id="place-order-submit-btn"
                         type="submit"
+                        onClick={handleCheckoutSubmit}
                         className="w-full bg-black hover:bg-stone-900 text-[#FAFAFA] font-extrabold py-4 text-center shadow cursor-pointer text-sm active:scale-95 transition-all uppercase tracking-wider flex items-center justify-center gap-2 border-2 border-stone-900 animate-pulse"
                       >
                         ⚡ CONFIRM SECURE ORDER (অর্ডার নিশ্চিত করুন)
@@ -4042,64 +4146,7 @@ export default function App() {
           </div>
         )}
 
-        {/* VIEW 9.5: ORDER CONFIRMATION / SUCCESS PAGE */}
-        {activeTab === 'order-confirmation' && latestPlacedOrder && (
-          <div className="max-w-xl mx-auto space-y-8 animate-slide-from-corner text-slate-800 py-12 px-4 text-center relative">
-            
-            {/* Celebration Sparkles background (pure CSS) */}
-            <div className="absolute inset-x-0 top-0 pointer-events-none overflow-hidden z-0 h-96">
-              <div className="absolute top-10 left-1/4 w-2 h-2 bg-yellow-400 rounded-full animate-ping" style={{ animationDuration: '3s' }}></div>
-              <div className="absolute top-20 right-1/4 w-3 h-3 bg-[#F97316] rounded-full animate-ping" style={{ animationDuration: '4s' }}></div>
-              <div className="absolute top-40 left-10 w-2.5 h-2.5 bg-emerald-400 rounded-full animate-ping" style={{ animationDuration: '2.5s' }}></div>
-              <div className="absolute top-60 right-12 w-2 h-2 bg-indigo-400 rounded-full animate-ping" style={{ animationDuration: '5s' }}></div>
-            </div>
 
-            <div className="inline-flex items-center justify-center h-24 w-24 rounded-full bg-emerald-50 text-emerald-600 border-4 border-emerald-500/20 shadow-md animate-bounce relative z-10">
-              <CheckCircle2 className="h-12 w-12 text-emerald-600 animate-pulse" />
-            </div>
-
-            <div className="bg-white border-2 border-stone-900 p-8 rounded-3xl shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] space-y-6 relative overflow-hidden z-10">
-              <div className="space-y-4">
-                <h2 className="font-sans font-black text-2xl sm:text-3xl text-stone-950 leading-tight">
-                  আলহামদুলিল্লাহ! আপনার অর্ডারটি কনফার্ম হয়েছে।
-                </h2>
-                <p className="text-sm font-semibold text-emerald-700 font-sans leading-relaxed max-w-sm mx-auto">
-                  আমাদের একজন প্রতিনিধি যত দ্রুত সম্ভব আপনার সাথে যোগাযোগ করবে।
-                </p>
-              </div>
-
-              {/* Dynamic Tracking Code Block */}
-              <div className="bg-stone-50 border-2 border-dashed border-stone-300 p-5 rounded-2xl space-y-3">
-                <span className="text-[10px] font-black text-stone-400 block uppercase tracking-widest leading-none">YOUR TRACKING ID (ট্র্যাকিং আইডি):</span>
-                <div className="flex items-center justify-center gap-2 mt-2">
-                  <strong className="text-stone-950 font-mono text-base tracking-widest uppercase bg-white border border-stone-300 px-3 py-1.5 rounded">
-                    {latestPlacedOrder.trackingCode}
-                  </strong>
-                  <button
-                    onClick={() => {
-                      navigator.clipboard.writeText(latestPlacedOrder.trackingCode);
-                      triggerToast('📋 Tracking ID copied safely to device!');
-                    }}
-                    className="p-2.5 bg-white hover:bg-stone-50 border border-stone-350 rounded-xl text-emerald-650 text-emerald-600 transition-colors cursor-pointer active:scale-95 shadow-sm flex items-center justify-center"
-                    title="Copy Tracking ID"
-                    type="button"
-                  >
-                    <Copy className="h-4 w-4" />
-                  </button>
-                </div>
-              </div>
-
-              {/* Redirection countdown clock */}
-              <div className="pt-2">
-                <div className="inline-flex items-center gap-2.5 bg-[#FAF5EE] border-2 border-stone-900 px-4 py-2 rounded-full text-xs font-black uppercase tracking-widest text-[#0E6C57] shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] select-none">
-                  <span>⏱️ REDIRECTING TO HOME IN</span>
-                  <span className="bg-[#0E6C57] text-[#FAF5EE] px-1.5 py-0.5 rounded text-xs font-mono font-black">{successCountdown}</span>
-                  <span>SECONDS</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
 
       </main>
 
@@ -4475,6 +4522,114 @@ export default function App() {
           onDataChanged={loadAllDbValues}
           onClose={() => setIsAdminOpen(false)}
         />
+      )}
+
+      {/* VIEW 14: THANK YOU POPUP MODAL (DIRECT CONFRIME POPUP) */}
+      {showThankYouPopup && latestPlacedOrder && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
+          <div className="bg-white border-2 border-stone-900 w-full max-w-lg rounded-3xl shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] relative overflow-hidden animate-scale-up">
+            
+            {/* Top decorative accent */}
+            <div className="h-3 bg-[#0E6C57] w-full" />
+            
+            {/* Close button */}
+            <button
+              onClick={() => {
+                setShowThankYouPopup(false);
+                setLatestPlacedOrder(null);
+                setActiveTab('home');
+              }}
+              className="absolute top-5 right-5 p-2 bg-stone-100 hover:bg-stone-200 border border-stone-300 rounded-full text-stone-700 transition-colors cursor-pointer active:scale-95"
+              title="Close"
+              type="button"
+            >
+              <X className="h-5 w-5" />
+            </button>
+
+            {/* Content Container */}
+            <div className="p-6 sm:p-8 text-center space-y-6">
+              
+              {/* Check Icon with dynamic scale */}
+              <div className="inline-flex items-center justify-center h-20 w-20 rounded-full bg-emerald-50 text-emerald-600 border-4 border-emerald-500/20 shadow-md animate-bounce">
+                <CheckCircle2 className="h-10 w-10 text-emerald-600 animate-pulse" />
+              </div>
+
+              {/* Success Greetings */}
+              <div className="space-y-2">
+                <h2 className="font-sans font-black text-2xl sm:text-3xl text-stone-950 leading-tight">
+                  ধন্যবাদ! অর্ডার কনফার্ম হয়েছে
+                </h2>
+                <p className="text-sm font-semibold text-emerald-700 font-sans leading-relaxed">
+                  আলহামদুলিল্লাহ! আপনার অর্ডারটি সফলভাবে সম্পন্ন হয়েছে।
+                </p>
+              </div>
+
+              {/* Order Info & Tracking Card */}
+              <div className="bg-stone-50 border-2 border-stone-900 p-4 rounded-2xl space-y-3 text-left">
+                <div className="flex justify-between items-center border-b border-stone-200 pb-2">
+                  <span className="text-xs font-bold text-stone-500">অর্ডার নম্বর (Order ID):</span>
+                  <span className="text-xs font-bold text-stone-950 font-mono">#{latestPlacedOrder.id}</span>
+                </div>
+                
+                <div className="flex justify-between items-center border-b border-stone-200 pb-2">
+                  <span className="text-xs font-bold text-stone-500">মোট মূল্য (Total Amount):</span>
+                  <span className="text-sm font-black text-[#0E6C57] font-sans">৳ {latestPlacedOrder.total.toLocaleString('en-US')}</span>
+                </div>
+
+                <div className="flex justify-between items-center border-b border-stone-200 pb-2">
+                  <span className="text-xs font-bold text-stone-500">পেমেন্ট পদ্ধতি (Payment):</span>
+                  <span className="text-xs font-semibold text-stone-800 font-sans">{latestPlacedOrder.paymentMethod}</span>
+                </div>
+
+                {/* Tracking Code with copy button */}
+                <div className="pt-1">
+                  <span className="text-[10px] font-black text-stone-400 block uppercase tracking-widest leading-none mb-1.5">YOUR TRACKING ID (ট্র্যাকিং আইডি):</span>
+                  <div className="flex items-center gap-2">
+                    <strong className="text-stone-950 font-mono text-sm tracking-wider uppercase bg-white border border-stone-300 px-3 py-1.5 rounded flex-1 text-center">
+                      {latestPlacedOrder.trackingCode}
+                    </strong>
+                    <button
+                      onClick={() => {
+                        navigator.clipboard.writeText(latestPlacedOrder.trackingCode);
+                        triggerToast('📋 Tracking ID copied safely to device!');
+                      }}
+                      className="p-2 bg-white hover:bg-stone-50 border border-stone-300 rounded-lg text-emerald-600 transition-colors cursor-pointer active:scale-95 shadow-sm"
+                      title="Copy Tracking ID"
+                      type="button"
+                    >
+                      <Copy className="h-4 w-4" />
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <p className="text-xs text-stone-500 leading-relaxed font-sans px-4">
+                আমাদের প্রতিনিধি অতি শীঘ্রই আপনার নাম্বারে কল করে অর্ডারটি নিশ্চিত করে ডেলিভারি প্রক্রিয়া শুরু করবেন।
+              </p>
+
+              {/* Action Buttons */}
+              <div className="flex flex-col sm:flex-row gap-3 pt-2 justify-center">
+                <button
+                  onClick={() => {
+                    setShowThankYouPopup(false);
+                    setLatestPlacedOrder(null);
+                    setActiveTab('home');
+                  }}
+                  className="w-full sm:w-auto px-6 py-3 bg-[#0E6C57] hover:bg-[#0b5443] text-white border-2 border-stone-900 font-black text-sm uppercase tracking-widest rounded-full shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-transform active:translate-y-0.5 cursor-pointer flex items-center justify-center gap-2"
+                >
+                  <ShoppingBag className="h-4 w-4" />
+                  কেনাকাটা চালিয়ে যান
+                </button>
+              </div>
+
+              {/* Auto close message */}
+              <div className="text-[10px] font-bold text-stone-400 uppercase tracking-widest pt-2">
+                ⏱️ {successCountdown} সেকেন্ডের মধ্যে হোমপেজে নিয়ে যাওয়া হবে...
+              </div>
+
+            </div>
+          </div>
+        </div>
       )}
 
     </div>
