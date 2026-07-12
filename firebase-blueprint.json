@@ -1,0 +1,185 @@
+{
+  "entities": {
+    "Product": {
+      "title": "Product",
+      "description": "An e-commerce product item",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "price": { "type": "number" },
+        "unit": { "type": "string" },
+        "category": { "type": "string" },
+        "image": { "type": "string" },
+        "stock": { "type": "number" },
+        "description": { "type": "string" },
+        "isPopular": { "type": "boolean" },
+        "isOffer": { "type": "boolean" }
+      },
+      "required": ["id", "name", "price", "unit", "category", "image", "stock"]
+    },
+    "Category": {
+      "title": "Category",
+      "description": "Product category",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "slug": { "type": "string" },
+        "icon": { "type": "string" },
+        "image": { "type": "string" }
+      },
+      "required": ["name", "slug", "icon"]
+    },
+    "Order": {
+      "title": "Order",
+      "description": "A customer checkout order",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "trackingCode": { "type": "string" },
+        "customerName": { "type": "string" },
+        "email": { "type": "string" },
+        "phone": { "type": "string" },
+        "address": { "type": "string" },
+        "city": { "type": "string" },
+        "items": { "type": "array" },
+        "subtotal": { "type": "number" },
+        "discount": { "type": "number" },
+        "deliveryFee": { "type": "number" },
+        "total": { "type": "number" },
+        "paymentMethod": { "type": "string" },
+        "paymentStatus": { "type": "string" },
+        "status": { "type": "string" },
+        "orderDate": { "type": "string" }
+      },
+      "required": ["id", "trackingCode", "customerName", "phone", "address", "city", "items", "subtotal", "total", "status", "orderDate"]
+    },
+    "User": {
+      "title": "User",
+      "description": "A registered customer or user profile",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "email": { "type": "string" },
+        "name": { "type": "string" },
+        "phone": { "type": "string" },
+        "address": { "type": "string" },
+        "city": { "type": "string" },
+        "registeredDate": { "type": "string" },
+        "status": { "type": "string" }
+      },
+      "required": ["id", "email", "name"]
+    },
+    "Coupon": {
+      "title": "Coupon",
+      "description": "A promotional discount coupon",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "code": { "type": "string" },
+        "discountType": { "type": "string" },
+        "discountValue": { "type": "number" },
+        "minPurchase": { "type": "number" },
+        "maxDiscount": { "type": "number" },
+        "expiryDate": { "type": "string" },
+        "status": { "type": "string" }
+      },
+      "required": ["id", "code", "discountType", "discountValue", "minPurchase", "expiryDate", "status"]
+    },
+    "Banner": {
+      "title": "Banner",
+      "description": "A promotion slider banner",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "title": { "type": "string" },
+        "subtitle": { "type": "string" },
+        "image": { "type": "string" },
+        "link": { "type": "string" },
+        "badge": { "type": "string" },
+        "isActive": { "type": "boolean" }
+      },
+      "required": ["id", "title", "image", "isActive"]
+    },
+    "Review": {
+      "title": "Review",
+      "description": "Customer feedback and product reviews",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "productName": { "type": "string" },
+        "customerName": { "type": "string" },
+        "feedback": { "type": "string" },
+        "rating": { "type": "number" },
+        "date": { "type": "string" },
+        "avatar": { "type": "string" }
+      },
+      "required": ["id", "productName", "customerName", "feedback", "rating", "date"]
+    },
+    "StoreSettings": {
+      "title": "StoreSettings",
+      "description": "System configuration and store settings",
+      "type": "object",
+      "properties": {
+        "storeName": { "type": "string" },
+        "email": { "type": "string" },
+        "phone": { "type": "string" },
+        "address": { "type": "string" },
+        "deliveryFee": { "type": "number" },
+        "freeDeliveryThreshold": { "type": "number" },
+        "operatingHours": { "type": "string" },
+        "siteDescEnglish": { "type": "string" },
+        "siteDescBengali": { "type": "string" },
+        "phone2": { "type": "string" },
+        "adminUsername": { "type": "string" },
+        "adminPassword": { "type": "string" },
+        "enableTopNotice": { "type": "boolean" },
+        "topNoticeText": { "type": "string" },
+        "enableBottomNotice": { "type": "boolean" },
+        "bottomNoticeText": { "type": "string" },
+        "quickLinks": { "type": "array" },
+        "socialLinksExpanded": { "type": "array" },
+        "specialOfferTitle": { "type": "string" },
+        "specialOfferDesc": { "type": "string" },
+        "specialOfferHours": { "type": "number" },
+        "specialOfferMinutes": { "type": "number" },
+        "specialOfferImage": { "type": "string" }
+      },
+      "required": ["storeName", "email", "phone", "address", "deliveryFee", "freeDeliveryThreshold", "adminUsername", "adminPassword"]
+    }
+  },
+  "firestore": {
+    "products": {
+      "schema": { "$ref": "#/entities/Product" },
+      "description": "E-commerce products"
+    },
+    "categories": {
+      "schema": { "$ref": "#/entities/Category" },
+      "description": "Product categories"
+    },
+    "orders": {
+      "schema": { "$ref": "#/entities/Order" },
+      "description": "Checkout orders"
+    },
+    "users": {
+      "schema": { "$ref": "#/entities/User" },
+      "description": "User profiles"
+    },
+    "coupons": {
+      "schema": { "$ref": "#/entities/Coupon" },
+      "description": "Promotional coupons"
+    },
+    "banners": {
+      "schema": { "$ref": "#/entities/Banner" },
+      "description": "Slider promo banners"
+    },
+    "reviews": {
+      "schema": { "$ref": "#/entities/Review" },
+      "description": "Customer product reviews"
+    },
+    "settings": {
+      "schema": { "$ref": "#/entities/StoreSettings" },
+      "description": "Global settings store config"
+    }
+  }
+}

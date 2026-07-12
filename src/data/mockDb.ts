@@ -1,5 +1,7 @@
 import { Product, Category, Order, User, Coupon, Banner, Review, StoreSettings } from '../types';
 import { INITIAL_PRODUCTS, INITIAL_CATEGORIES, INITIAL_COUPONS, INITIAL_BANNERS, INITIAL_REVIEWS, DEFAULT_SETTINGS } from './initialData';
+import { collection, doc, setDoc, deleteDoc, onSnapshot } from "firebase/firestore";
+import { firestoreDb, OperationType, handleFirestoreError } from "./firebase";
 
 let originalLocalStorage: Storage | null = null;
 try {
@@ -203,11 +205,19 @@ export const db = {
       products.push(product);
     }
     localStorage.setItem(KEYS.PRODUCTS, JSON.stringify(products));
+
+    setDoc(doc(firestoreDb, "products", product.id), product)
+      .catch(err => handleFirestoreError(err, OperationType.WRITE, `products/${product.id}`));
+
     return products;
   },
   deleteProduct(id: string): Product[] {
     const products = this.getProducts().filter(p => p.id !== id);
     localStorage.setItem(KEYS.PRODUCTS, JSON.stringify(products));
+
+    deleteDoc(doc(firestoreDb, "products", id))
+      .catch(err => handleFirestoreError(err, OperationType.DELETE, `products/${id}`));
+
     return products;
   },
   updateStock(id: string, newStock: number) {
@@ -216,6 +226,10 @@ export const db = {
     if (index >= 0) {
       products[index].stock = Math.max(0, newStock);
       localStorage.setItem(KEYS.PRODUCTS, JSON.stringify(products));
+
+      const product = products[index];
+      setDoc(doc(firestoreDb, "products", id), product)
+        .catch(err => handleFirestoreError(err, OperationType.WRITE, `products/${id}`));
     }
   },
 
@@ -233,11 +247,19 @@ export const db = {
       categories.push(category);
     }
     localStorage.setItem(KEYS.CATEGORIES, JSON.stringify(categories));
+
+    setDoc(doc(firestoreDb, "categories", category.slug), category)
+      .catch(err => handleFirestoreError(err, OperationType.WRITE, `categories/${category.slug}`));
+
     return categories;
   },
   deleteCategory(slug: string): Category[] {
     const categories = this.getCategories().filter(c => c.slug !== slug);
     localStorage.setItem(KEYS.CATEGORIES, JSON.stringify(categories));
+
+    deleteDoc(doc(firestoreDb, "categories", slug))
+      .catch(err => handleFirestoreError(err, OperationType.DELETE, `categories/${slug}`));
+
     return categories;
   },
 
@@ -266,8 +288,15 @@ export const db = {
       if (matchIdx >= 0) {
         products[matchIdx].stock = Math.max(0, products[matchIdx].stock - item.quantity);
         localStorage.setItem(KEYS.PRODUCTS, JSON.stringify(products));
+
+        // Sync stock update to Firestore
+        setDoc(doc(firestoreDb, "products", item.productId), products[matchIdx])
+          .catch(err => handleFirestoreError(err, OperationType.WRITE, `products/${item.productId}`));
       }
     });
+
+    setDoc(doc(firestoreDb, "orders", id), newOrder)
+      .catch(err => handleFirestoreError(err, OperationType.WRITE, `orders/${id}`));
 
     return newOrder;
   },
@@ -280,6 +309,10 @@ export const db = {
         orders[index].paymentStatus = paymentStatus;
       }
       localStorage.setItem(KEYS.ORDERS, JSON.stringify(orders));
+
+      const order = orders[index];
+      setDoc(doc(firestoreDb, "orders", orderId), order)
+        .catch(err => handleFirestoreError(err, OperationType.WRITE, `orders/${orderId}`));
     }
     return orders;
   },
@@ -287,6 +320,10 @@ export const db = {
     const orders = this.getOrders();
     const filtered = orders.filter(o => o.id !== orderId);
     localStorage.setItem(KEYS.ORDERS, JSON.stringify(filtered));
+
+    deleteDoc(doc(firestoreDb, "orders", orderId))
+      .catch(err => handleFirestoreError(err, OperationType.DELETE, `orders/${orderId}`));
+
     return filtered;
   },
   updateOrder(updatedOrder: Order): Order[] {
@@ -295,6 +332,9 @@ export const db = {
     if (index >= 0) {
       orders[index] = updatedOrder;
       localStorage.setItem(KEYS.ORDERS, JSON.stringify(orders));
+
+      setDoc(doc(firestoreDb, "orders", updatedOrder.id), updatedOrder)
+        .catch(err => handleFirestoreError(err, OperationType.WRITE, `orders/${updatedOrder.id}`));
     }
     return orders;
   },
@@ -306,7 +346,7 @@ export const db = {
     // Guarantee demo@example.com exists in list for seamless user testing
     const hasDemo = users.some(u => u.email.toLowerCase() === 'demo@example.com');
     if (!hasDemo) {
-      users.push({
+      const demoUser: User = {
         id: 'usr-demo-custom',
         email: 'demo@example.com',
         name: 'Demo Customer',
@@ -315,20 +355,30 @@ export const db = {
         city: 'Dhaka',
         registeredDate: new Date().toISOString(),
         status: 'Active'
-      });
+      };
+      users.push(demoUser);
       localStorage.setItem(KEYS.USERS, JSON.stringify(users));
+
+      setDoc(doc(firestoreDb, "users", demoUser.id), demoUser)
+        .catch(err => handleFirestoreError(err, OperationType.WRITE, `users/${demoUser.id}`));
     }
     return users;
   },
   saveUser(user: User): User[] {
     const users = this.getUsers();
     const index = users.findIndex(u => u.id === user.id || u.email.toLowerCase() === user.email.toLowerCase());
+    let targetUser = user;
     if (index >= 0) {
       users[index] = { ...users[index], ...user };
+      targetUser = users[index];
     } else {
       users.push(user);
     }
     localStorage.setItem(KEYS.USERS, JSON.stringify(users));
+
+    setDoc(doc(firestoreDb, "users", targetUser.id), targetUser)
+      .catch(err => handleFirestoreError(err, OperationType.WRITE, `users/${targetUser.id}`));
+
     return users;
   },
   getCurrentUser(): User | null {
@@ -363,11 +413,19 @@ export const db = {
       coupons.push(coupon);
     }
     localStorage.setItem(KEYS.COUPONS, JSON.stringify(coupons));
+
+    setDoc(doc(firestoreDb, "coupons", coupon.id), coupon)
+      .catch(err => handleFirestoreError(err, OperationType.WRITE, `coupons/${coupon.id}`));
+
     return coupons;
   },
   deleteCoupon(id: string): Coupon[] {
     const coupons = this.getCoupons().filter(c => c.id !== id);
     localStorage.setItem(KEYS.COUPONS, JSON.stringify(coupons));
+
+    deleteDoc(doc(firestoreDb, "coupons", id))
+      .catch(err => handleFirestoreError(err, OperationType.DELETE, `coupons/${id}`));
+
     return coupons;
   },
 
@@ -385,11 +443,19 @@ export const db = {
       banners.push(banner);
     }
     localStorage.setItem(KEYS.BANNERS, JSON.stringify(banners));
+
+    setDoc(doc(firestoreDb, "banners", banner.id), banner)
+      .catch(err => handleFirestoreError(err, OperationType.WRITE, `banners/${banner.id}`));
+
     return banners;
   },
   deleteBanner(id: string): Banner[] {
     const banners = this.getBanners().filter(b => b.id !== id);
     localStorage.setItem(KEYS.BANNERS, JSON.stringify(banners));
+
+    deleteDoc(doc(firestoreDb, "banners", id))
+      .catch(err => handleFirestoreError(err, OperationType.DELETE, `banners/${id}`));
+
     return banners;
   },
 
@@ -402,6 +468,10 @@ export const db = {
     const reviews = this.getReviews();
     reviews.unshift(review);
     localStorage.setItem(KEYS.REVIEWS, JSON.stringify(reviews));
+
+    setDoc(doc(firestoreDb, "reviews", review.id), review)
+      .catch(err => handleFirestoreError(err, OperationType.WRITE, `reviews/${review.id}`));
+
     return reviews;
   },
 
@@ -459,6 +529,169 @@ export const db = {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(settings)
     }).catch(err => console.error('Failed to update server settings:', err));
+
+    setDoc(doc(firestoreDb, "settings", "store_config"), settings)
+      .catch(err => handleFirestoreError(err, OperationType.WRITE, `settings/store_config`));
+
     return settings;
   }
+};
+
+// Real-time synchronization module with Firestore
+export const syncWithFirestore = (onUpdate: () => void) => {
+  // Products listener
+  onSnapshot(collection(firestoreDb, "products"), (snapshot) => {
+    if (snapshot.empty) {
+      // Seed initial products from local storage
+      const items = db.getProducts();
+      items.forEach(item => {
+        setDoc(doc(firestoreDb, "products", item.id), item)
+          .catch(err => console.error("Products seed failed:", err));
+      });
+    } else {
+      const items: Product[] = [];
+      snapshot.forEach(doc => {
+        items.push(doc.data() as Product);
+      });
+      localStorage.setItem(KEYS.PRODUCTS, JSON.stringify(items));
+      onUpdate();
+    }
+  }, (error) => {
+    console.error("Products live sync failed:", error);
+  });
+
+  // Categories listener
+  onSnapshot(collection(firestoreDb, "categories"), (snapshot) => {
+    if (snapshot.empty) {
+      const items = db.getCategories();
+      items.forEach(item => {
+        setDoc(doc(firestoreDb, "categories", item.slug), item)
+          .catch(err => console.error("Categories seed failed:", err));
+      });
+    } else {
+      const items: Category[] = [];
+      snapshot.forEach(doc => {
+        items.push(doc.data() as Category);
+      });
+      localStorage.setItem(KEYS.CATEGORIES, JSON.stringify(items));
+      onUpdate();
+    }
+  }, (error) => {
+    console.error("Categories live sync failed:", error);
+  });
+
+  // Orders listener
+  onSnapshot(collection(firestoreDb, "orders"), (snapshot) => {
+    if (snapshot.empty) {
+      const items = db.getOrders();
+      items.forEach(item => {
+        setDoc(doc(firestoreDb, "orders", item.id), item)
+          .catch(err => console.error("Orders seed failed:", err));
+      });
+    } else {
+      const items: Order[] = [];
+      snapshot.forEach(doc => {
+        items.push(doc.data() as Order);
+      });
+      localStorage.setItem(KEYS.ORDERS, JSON.stringify(items));
+      onUpdate();
+    }
+  }, (error) => {
+    console.error("Orders live sync failed:", error);
+  });
+
+  // Users listener
+  onSnapshot(collection(firestoreDb, "users"), (snapshot) => {
+    if (snapshot.empty) {
+      const items = db.getUsers();
+      items.forEach(item => {
+        setDoc(doc(firestoreDb, "users", item.id), item)
+          .catch(err => console.error("Users seed failed:", err));
+      });
+    } else {
+      const items: User[] = [];
+      snapshot.forEach(doc => {
+        items.push(doc.data() as User);
+      });
+      localStorage.setItem(KEYS.USERS, JSON.stringify(items));
+      onUpdate();
+    }
+  }, (error) => {
+    console.error("Users live sync failed:", error);
+  });
+
+  // Coupons listener
+  onSnapshot(collection(firestoreDb, "coupons"), (snapshot) => {
+    if (snapshot.empty) {
+      const items = db.getCoupons();
+      items.forEach(item => {
+        setDoc(doc(firestoreDb, "coupons", item.id), item)
+          .catch(err => console.error("Coupons seed failed:", err));
+      });
+    } else {
+      const items: Coupon[] = [];
+      snapshot.forEach(doc => {
+        items.push(doc.data() as Coupon);
+      });
+      localStorage.setItem(KEYS.COUPONS, JSON.stringify(items));
+      onUpdate();
+    }
+  }, (error) => {
+    console.error("Coupons live sync failed:", error);
+  });
+
+  // Banners listener
+  onSnapshot(collection(firestoreDb, "banners"), (snapshot) => {
+    if (snapshot.empty) {
+      const items = db.getBanners();
+      items.forEach(item => {
+        setDoc(doc(firestoreDb, "banners", item.id), item)
+          .catch(err => console.error("Banners seed failed:", err));
+      });
+    } else {
+      const items: Banner[] = [];
+      snapshot.forEach(doc => {
+        items.push(doc.data() as Banner);
+      });
+      localStorage.setItem(KEYS.BANNERS, JSON.stringify(items));
+      onUpdate();
+    }
+  }, (error) => {
+    console.error("Banners live sync failed:", error);
+  });
+
+  // Reviews listener
+  onSnapshot(collection(firestoreDb, "reviews"), (snapshot) => {
+    if (snapshot.empty) {
+      const items = db.getReviews();
+      items.forEach(item => {
+        setDoc(doc(firestoreDb, "reviews", item.id), item)
+          .catch(err => console.error("Reviews seed failed:", err));
+      });
+    } else {
+      const items: Review[] = [];
+      snapshot.forEach(doc => {
+        items.push(doc.data() as Review);
+      });
+      localStorage.setItem(KEYS.REVIEWS, JSON.stringify(items));
+      onUpdate();
+    }
+  }, (error) => {
+    console.error("Reviews live sync failed:", error);
+  });
+
+  // Settings listener
+  onSnapshot(doc(firestoreDb, "settings", "store_config"), (snapshot) => {
+    if (!snapshot.exists()) {
+      const config = db.getSettings();
+      setDoc(doc(firestoreDb, "settings", "store_config"), config)
+        .catch(err => console.error("Settings seed failed:", err));
+    } else {
+      const config = snapshot.data() as StoreSettings;
+      localStorage.setItem(KEYS.SETTINGS, JSON.stringify(config));
+      onUpdate();
+    }
+  }, (error) => {
+    console.error("Settings live sync failed:", error);
+  });
 };

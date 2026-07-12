@@ -6,7 +6,7 @@ import {
   ChevronDown, SlidersHorizontal, TrendingUp, Zap, Printer
 } from 'lucide-react';
 import { Product, Category, Order, User as ProfileUser, Coupon, Banner, Review, StoreSettings, CartItem, BANGLADESH_DISTRICTS } from './types';
-import { db, initDb } from './data/mockDb';
+import { db, initDb, syncWithFirestore } from './data/mockDb';
 import Header from './components/Header';
 import Footer from './components/Footer';
 import PayProcess from './components/PayProcess';
@@ -212,18 +212,13 @@ export default function App() {
     }
   };
 
-  // Initial Seed loading
+  // Initial Seed loading and Firestore synchronization
   useEffect(() => {
     initDb();
     loadAllDbValues();
     
-    // Fetch live settings on mount
-    fetchServerSettings(true);
-    
-    // Poll the server for settings every 3 seconds so live updates/notices sync immediately
-    const settingsInterval = setInterval(() => {
-      fetchServerSettings(false);
-    }, 3000);
+    // Start real-time Firestore synchronization
+    syncWithFirestore(loadAllDbValues);
     
     // Auto sync current user sessions if recorded
     const savedUser = db.getCurrentUser();
@@ -236,10 +231,6 @@ export default function App() {
       setBillingAddress(savedUser.address);
       setBillingCity(savedUser.city);
     }
-
-    return () => {
-      clearInterval(settingsInterval);
-    };
   }, []);
 
   // Reset visible products pagination count to protect memory on filter shifts
