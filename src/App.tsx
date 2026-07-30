@@ -3756,9 +3756,9 @@ export default function App() {
                 <form id="checkout-billing-form" onSubmit={handleCheckoutSubmit} className="bg-[#FAF5EE] border-2 border-stone-900 p-0 shadow-sm space-y-0 text-sm overflow-hidden">
                   
                   {/* Black Banner Head like user screenshot: "PERSONAL INFORMATION:" style */}
-                  <div className="bg-black text-[#FAFAFA] px-5 py-3 font-bold text-sm uppercase tracking-wider border-b border-stone-900 select-none flex items-center justify-between">
+                  <div className="bg-[#249D8F] text-white px-5 py-3 font-bold text-sm uppercase tracking-wider border-b border-stone-900 select-none flex items-center justify-between shadow-xs">
                     <span>📋 RECIPIENT & PERSONAL DETAILS (ব্যক্তিগত এবং ডেলিভারি তথ্য)</span>
-                    <span className="text-xs bg-neutral-800 px-2 py-0.5 border border-neutral-700 font-mono font-bold">SECTIONS: ALL</span>
+                    <span className="text-xs bg-[#1a776c] px-2 py-0.5 border border-[#145d55] font-mono font-bold text-white">SECTIONS: ALL</span>
                   </div>
                   
                   <div className="p-6 space-y-5">
@@ -3769,7 +3769,7 @@ export default function App() {
                           id="bill-name"
                           type="text"
                           placeholder="আপনার সম্পূর্ণ নাম লিখুন"
-                          className={`w-full bg-white border-2 rounded-none px-4 py-2.5 text-sm font-sans text-stone-900 focus:outline-none focus:ring-2 h-11 shadow-sm ${billingErrors.name ? 'border-red-600 focus:ring-red-650' : 'border-stone-900 focus:ring-[#0E6C57]'}`}
+                          className={`w-full bg-white border-2 rounded-none px-4 py-2.5 text-sm font-sans text-stone-900 focus:outline-none focus:ring-2 h-11 shadow-sm ${billingErrors.name ? 'border-red-600 focus:ring-red-650' : 'border-stone-900 focus:ring-[#249D8F]'}`}
                           value={billingName}
                           onChange={(e) => {
                             setBillingName(e.target.value);
@@ -3792,7 +3792,7 @@ export default function App() {
                             id="bill-phone"
                             type="text"
                             placeholder="যেমন: 01712345678"
-                            className={`w-full bg-white border-2 border-l-0 rounded-none px-4 py-2.5 text-sm font-mono text-stone-900 focus:outline-none focus:ring-2 flex-1 shadow-sm ${billingErrors.phone ? 'border-red-600 focus:ring-red-650' : 'border-stone-900 focus:ring-[#0E6C57]'}`}
+                            className={`w-full bg-white border-2 border-l-0 rounded-none px-4 py-2.5 text-sm font-mono text-stone-900 focus:outline-none focus:ring-2 flex-1 shadow-sm ${billingErrors.phone ? 'border-red-600 focus:ring-red-650' : 'border-stone-900 focus:ring-[#249D8F]'}`}
                             value={billingPhone}
                             onChange={(e) => {
                               setBillingPhone(e.target.value);
@@ -3813,7 +3813,7 @@ export default function App() {
                         <label className="block text-xs font-bold text-stone-700 mb-1.5 uppercase tracking-wide">DISTRICT / DIVISION (জেলা / বিভাগ) :*</label>
                         <select
                           id="bill-city"
-                          className="w-full bg-white border-2 border-stone-900 rounded-none px-4 py-2 text-sm text-stone-900 focus:outline-none focus:ring-2 focus:ring-[#0E6C57] font-sans cursor-pointer h-11 shadow-sm"
+                          className="w-full bg-white border-2 border-stone-900 rounded-none px-4 py-2 text-sm text-stone-900 focus:outline-none focus:ring-2 focus:ring-[#249D8F] font-sans cursor-pointer h-11 shadow-sm"
                           value={billingCity}
                           onChange={(e) => setBillingCity(e.target.value)}
                         >
@@ -3832,7 +3832,7 @@ export default function App() {
                         id="bill-address"
                         rows={3}
                         placeholder="যেমন: গ্রাম, ডাকঘর, থানা বা হাউজ নং, রোড নং, এলাকা..."
-                        className={`w-full bg-white border-2 rounded-none p-3 text-sm text-stone-900 focus:outline-none focus:ring-2 font-sans shadow-sm ${billingErrors.address ? 'border-red-600 focus:ring-red-650' : 'border-stone-900 focus:ring-[#0E6C57]'}`}
+                        className={`w-full bg-white border-2 rounded-none p-3 text-sm text-stone-900 focus:outline-none focus:ring-2 font-sans shadow-sm ${billingErrors.address ? 'border-red-600 focus:ring-red-650' : 'border-stone-900 focus:ring-[#249D8F]'}`}
                         value={billingAddress}
                         onChange={(e) => {
                           setBillingAddress(e.target.value);
@@ -3847,7 +3847,7 @@ export default function App() {
                     </div>
 
                   {/* BLACK BANNER HEAD 2 */}
-                  <div className="bg-black text-[#FAFAFA] px-4 py-2 font-bold text-xs uppercase tracking-wider relative -left-6 w-[calc(100%+3rem)] select-none mt-6 border-y border-stone-900">
+                  <div className="bg-[#249D8F] text-white px-4 py-2 font-bold text-xs uppercase tracking-wider relative -left-6 w-[calc(100%+3rem)] select-none mt-6 border-y border-stone-900 shadow-xs">
                     ⚡ SELECT PAYMENT METHOD (পেমেন্ট পদ্ধতি নির্ধারণ করুন) :*
                   </div>
 
@@ -3879,16 +3879,16 @@ export default function App() {
 
                       {/* Right Column: Dynamic Payment Switchboards */}
                       <div className="bg-stone-100 border-2 border-stone-900 p-4 rounded-none flex flex-col justify-center space-y-3">
-                        <span className="text-[10px] font-black tracking-widest text-[#0E6C57] uppercase block">⚡ SELECT PAYMENT SYSTEM (পেমেন্ট পদ্ধতি)</span>
+                        <span className="text-[10px] font-black tracking-widest text-[#249D8F] uppercase block">⚡ SELECT PAYMENT SYSTEM (পেমেন্ট পদ্ধতি)</span>
                         
                         <div className="space-y-2.5">
                           {/* Cash on Delivery option if enabled */}
                           {settings.enableCOD !== false && (
-                            <label className={`flex items-start gap-3 p-3 border-2 cursor-pointer select-none transition-all ${paymentOption === 'Cash on Delivery' ? 'border-black bg-stone-950/5' : 'border-stone-300 bg-white hover:border-stone-400'}`}>
+                            <label className={`flex items-start gap-3 p-3 border-2 cursor-pointer select-none transition-all ${paymentOption === 'Cash on Delivery' ? 'border-[#249D8F] bg-[#249D8F]/10' : 'border-stone-300 bg-white hover:border-stone-400'}`}>
                               <input
                                 type="radio"
                                 name="payment_opt_real"
-                                className="h-4 w-4 mt-0.5 accent-black"
+                                className="h-4 w-4 mt-0.5 accent-[#249D8F]"
                                 checked={paymentOption === 'Cash on Delivery'}
                                 onChange={() => setPaymentOption('Cash on Delivery')}
                               />
@@ -3935,11 +3935,11 @@ export default function App() {
 
                           {/* SSLCommerz option if enabled */}
                           {settings.enableSSLCommerz !== false && (
-                            <label className={`flex items-start gap-3 p-3 border-2 cursor-pointer select-none transition-all ${paymentOption === 'SSLCommerz' ? 'border-black bg-stone-950/5' : 'border-stone-400 bg-white hover:border-stone-400'}`}>
+                            <label className={`flex items-start gap-3 p-3 border-2 cursor-pointer select-none transition-all ${paymentOption === 'SSLCommerz' ? 'border-[#249D8F] bg-[#249D8F]/10' : 'border-stone-400 bg-white hover:border-stone-400'}`}>
                               <input
                                 type="radio"
                                 name="payment_opt_real"
-                                className="h-4 w-4 mt-0.5 accent-black"
+                                className="h-4 w-4 mt-0.5 accent-[#249D8F]"
                                 checked={paymentOption === 'SSLCommerz'}
                                 onChange={() => setPaymentOption('SSLCommerz')}
                               />
@@ -3968,7 +3968,7 @@ export default function App() {
                         id="place-order-submit-btn"
                         type="submit"
                         onClick={handleCheckoutSubmit}
-                        className="w-full bg-black hover:bg-stone-900 text-[#FAFAFA] font-extrabold py-4 text-center shadow cursor-pointer text-sm active:scale-95 transition-all uppercase tracking-wider flex items-center justify-center gap-2 border-2 border-stone-900 animate-pulse"
+                        className="w-full bg-[#249D8F] hover:bg-[#1d8276] text-white font-extrabold py-4 text-center shadow cursor-pointer text-sm active:scale-95 transition-all uppercase tracking-wider flex items-center justify-center gap-2 border-2 border-stone-900 animate-pulse"
                       >
                         ⚡ CONFIRM SECURE ORDER (অর্ডার নিশ্চিত করুন)
                       </button>
@@ -3985,7 +3985,7 @@ export default function App() {
                 
                 {/* Applied coupons vouchers info panel */}
                 <div className="bg-[#FAF5EE] border-2 border-stone-900 p-0 shadow-sm overflow-hidden text-sm">
-                  <div className="bg-black text-[#FAFAFA] px-4 py-2.5 font-bold text-xs uppercase tracking-wider border-b border-stone-900 select-none">
+                  <div className="bg-[#249D8F] text-white px-4 py-2.5 font-bold text-xs uppercase tracking-wider border-b border-stone-900 select-none shadow-xs">
                     🎟️ PROMOTIONAL VOUCHER (কুপন ডিসকাউন্ট)
                   </div>
                   
@@ -3999,7 +3999,7 @@ export default function App() {
                         value={enteredCoupon}
                         onChange={(e) => setEnteredCoupon(e.target.value)}
                       />
-                      <button type="submit" className="bg-black hover:bg-stone-900 text-[#FAFAFA] font-bold px-4 text-xs transition-colors cursor-pointer border-2 border-stone-900">APPLY</button>
+                      <button type="submit" className="bg-[#249D8F] hover:bg-[#1d8276] text-white font-bold px-4 text-xs transition-colors cursor-pointer border-2 border-stone-900">APPLY</button>
                     </form>
 
                     {couponError && <p className="text-xs text-red-650 font-bold">{couponError}</p>}
@@ -4024,15 +4024,15 @@ export default function App() {
                 <div className="bg-[#FAF5EE] border-2 border-stone-900 p-0 shadow-sm overflow-hidden text-xs">
                   
                   {/* SEAT INFORMATION header styling */}
-                  <div className="bg-black text-[#FAFAFA] px-4 py-2.5 font-bold text-xs uppercase tracking-wider flex items-center justify-between border-b border-stone-900 select-none">
+                  <div className="bg-[#249D8F] text-white px-4 py-2.5 font-bold text-xs uppercase tracking-wider flex items-center justify-between border-b border-stone-900 select-none shadow-xs">
                     <span>🛒 SEAT / ITEM CHECKOUT INFO (পণ্য চেকআউট বিবরণ)</span>
-                    <span className="font-extrabold bg-neutral-800 px-2 py-0.5 rounded text-[10px]">{cart.length} ITEMS</span>
+                    <span className="font-extrabold bg-[#1a776c] px-2 py-0.5 rounded text-[10px] text-white border border-[#145d55]">{cart.length} ITEMS</span>
                   </div>
 
                   {/* Seat table columns matching: SEAT NO - FARE - REMOVE */}
                   <table className="w-full text-left border-collapse text-xs">
                     <thead>
-                      <tr className="bg-neutral-900 text-[#FAFAFA] text-[10px] font-bold uppercase tracking-wider text-center border-b border-stone-900">
+                      <tr className="bg-[#1a776c] text-white text-[10px] font-bold uppercase tracking-wider text-center border-b border-stone-900">
                         <th className="py-2.5 px-3 border-r border-stone-900 text-left">ITEM NAME (আইটেম / পণ্য)</th>
                         <th className="py-2.5 px-3 border-r border-stone-900">QTY (পরিমাণ)</th>
                         <th className="py-2.5 px-3">FARE (TAKA)</th>
@@ -4045,8 +4045,8 @@ export default function App() {
                           <td className="py-3 px-3 border-r border-[#DCDCDC] text-left leading-snug">
                             <div>{item.product.name}</div>
                             {item.product.sizes && item.product.sizes.length > 0 && (
-                              <div className="mt-1 flex items-center gap-1.5 bg-emerald-50 border border-[#0E6C57]/40 px-2 py-0.5 rounded text-[10px] w-fit">
-                                <span className="text-[#0E6C57] font-black uppercase text-[9px]">Select Size:</span>
+                              <div className="mt-1 flex items-center gap-1.5 bg-emerald-50 border border-[#249D8F]/40 px-2 py-0.5 rounded text-[10px] w-fit">
+                                <span className="text-[#249D8F] font-black uppercase text-[9px]">Select Size:</span>
                                 <select
                                   value={item.selectedSize || item.product.sizes[0]}
                                   onChange={(e) => {
@@ -4058,7 +4058,7 @@ export default function App() {
                                     });
                                     triggerToast(`✨ Size updated to ${newSize} for ${item.product.name}!`);
                                   }}
-                                  className="bg-white border border-stone-300 text-stone-800 rounded font-bold px-1.5 py-0.5 cursor-pointer text-[10px] uppercase outline-none focus:border-[#0E6C57]"
+                                  className="bg-white border border-stone-300 text-stone-800 rounded font-bold px-1.5 py-0.5 cursor-pointer text-[10px] uppercase outline-none focus:border-[#249D8F]"
                                 >
                                   {item.product.sizes.map(sz => (
                                     <option key={sz} value={sz}>{sz}</option>
@@ -4279,7 +4279,7 @@ export default function App() {
                               onClick={() => setDetailProductSize(sz)}
                               className={`px-3.5 py-1.5 rounded-lg text-xs font-black uppercase transition-all tracking-wider cursor-pointer border-2 ${
                                 isSel
-                                  ? 'bg-[#0E6C57] text-[#FAF5EE] border-[#0E6C57] shadow-md scale-105'
+                                  ? 'bg-[#249D8F] text-white border-[#249D8F] shadow-md scale-105'
                                   : 'bg-white text-stone-700 border-stone-300 hover:border-stone-500 hover:bg-stone-50'
                               }`}
                             >
@@ -4530,7 +4530,7 @@ export default function App() {
           <div className="bg-white border-2 border-stone-900 w-full max-w-lg rounded-3xl shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] relative overflow-hidden animate-scale-up">
             
             {/* Top decorative accent */}
-            <div className="h-3 bg-[#0E6C57] w-full" />
+            <div className="h-3 bg-[#249D8F] w-full" />
             
             {/* Close button */}
             <button
@@ -4573,7 +4573,7 @@ export default function App() {
                 
                 <div className="flex justify-between items-center border-b border-stone-200 pb-2">
                   <span className="text-xs font-bold text-stone-500">মোট মূল্য (Total Amount):</span>
-                  <span className="text-sm font-black text-[#0E6C57] font-sans">৳ {latestPlacedOrder.total.toLocaleString('en-US')}</span>
+                  <span className="text-sm font-black text-[#249D8F] font-sans">৳ {latestPlacedOrder.total.toLocaleString('en-US')}</span>
                 </div>
 
                 <div className="flex justify-between items-center border-b border-stone-200 pb-2">
@@ -4615,7 +4615,7 @@ export default function App() {
                     setLatestPlacedOrder(null);
                     setActiveTab('home');
                   }}
-                  className="w-full sm:w-auto px-6 py-3 bg-[#0E6C57] hover:bg-[#0b5443] text-white border-2 border-stone-900 font-black text-sm uppercase tracking-widest rounded-full shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-transform active:translate-y-0.5 cursor-pointer flex items-center justify-center gap-2"
+                  className="w-full sm:w-auto px-6 py-3 bg-[#249D8F] hover:bg-[#1d8276] text-white border-2 border-stone-900 font-black text-sm uppercase tracking-widest rounded-full shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-transform active:translate-y-0.5 cursor-pointer flex items-center justify-center gap-2"
                 >
                   <ShoppingBag className="h-4 w-4" />
                   কেনাকাটা চালিয়ে যান
